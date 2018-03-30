@@ -26,13 +26,17 @@
 #define GRANT_Z 4.0     // same level with the robot in it's initial position
 
 /* global variables */
+/* ROS messages */
 move_base_msgs::MoveBaseActionFeedback move_base_feedback_msg;
 actionlib_msgs::GoalStatusArray move_base_status_msg;
+geometry_msgs::PoseWithCovarianceStamped pose_msg;
+/* utility variables */
 bool first_time = true;
 
 /* callback functions declarations */
 void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr& status_msg);
 // void moveBaseFeedbackCallback(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback_msg);
+void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& ps_msg);
 
 /* utility functions declarations */
 geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta);
@@ -50,6 +54,7 @@ int main(int argc, char *argv[]) {
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
     ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);
     ros::Subscriber move_base_status_sub = nodeHandle.subscribe("/move_base/status", 1, &moveBaseStatusCallback);
+    // ros::Subscriber pose_sub = nodeHandle.subscribe("/pose", 1, &poseTopicCallback);
     // ros::Subscriber move_base_feedback_sub = nodeHandle.subscribe("/move_base/feedback", 1, &moveBaseFeedbackCallback);
 
     ros::Rate loop_rate(9.0);
@@ -63,20 +68,21 @@ int main(int argc, char *argv[]) {
     double x = -3.0, y = 6.5, angle = 45.0;
     ROS_INFO("To loop");
     while (ros::ok() && x < GRANT_X) {
-        ROS_INFO("IN loop");
+        // ROS_INFO("IN loop");
         // wait for the previous goal to finish
         // if (move_base_feedback_msg.status.status == SUCCEEDED) {
-        if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) ) {
-            ROS_INFO("in IF");
-            // if (move_base_feedback_msg.status.status == LOST) x--;    // send previous goal if it was lost
-            // if (x > 100)  break;
+        // if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) ) {
+        if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
+            // ROS_INFO("in IF");
             if (!first_time)
-                x += 2.0;
+                x += 0.5;
             geometry_msgs::PoseStamped goal;
             goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
             goal.pose.position.x = x; goal.pose.position.y = y; goal.pose.position.z = 0.0;
-            // goal.pose.orientation.x = 0.0; goal.pose.orientation.y = 0.0; goal.pose.orientation.z = 0.0; goal.pose.orientation.w = 1.0;
             goal.pose.orientation = turnEulerAngleToQuaternion(angle);
+
+            /* debugging */
+            ROS_WARN("%f", angle);
 
             if (!first_time){
                 if (angle == 45) {
@@ -90,7 +96,7 @@ int main(int argc, char *argv[]) {
             }
             goals_pub.publish(goal);
         }
-        ROS_INFO("after if");
+        // ROS_INFO("after if");
         ros::spinOnce();
         loop_rate.sleep();
     }
@@ -108,6 +114,9 @@ void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr& sta
 // void moveBaseFeedbackCallback(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback_msg) {
 //     move_base_feedback_msg = *feedback_msg;
 // }
+void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& ps_msg) {
+    pose_msg = *ps_msg;
+}
 
 /* utility functions definitions */
 geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta) {
