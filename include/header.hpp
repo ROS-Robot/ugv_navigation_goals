@@ -4,10 +4,17 @@
 #include <ros/ros.h>
 #include <ros/time.h>       // to calculate time between two messages at any platform
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
 #include <tf/tf.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <move_base_msgs/MoveBaseActionFeedback.h>
 #include "actionlib_msgs/GoalStatusArray.h"
+/* Grid Map */
+#include <grid_map_ros/grid_map_ros.hpp>
+#include <grid_map_msgs/GetGridMapInfo.h>
+#include <grid_map_msgs/GetGridMap.h>
+#include <grid_map_msgs/GridMap.h>
+#include <grid_map_core/grid_map_core.hpp>
 /* C++ utility libraries */
 #include <list>
 
@@ -29,29 +36,67 @@
 #define GRANT_Z 4.0     // same level with the robot in it's initial position
 
 /* our waypoint's structure */
-typedef struct waypoint {
+class Waypoint {
+public:
+    unsigned id;
     double cost;
-    geometry_msgs::PoseStamped pose;
+    geometry_msgs::PoseStamped & pose;
     double angle_with_next;
     double divertion;
     double traversability;          // TODO
     double traversability_slope;    // TODO
-} waypoint;
+
+    Waypoint(geometry_msgs::PoseStamped pose) : pose(pose) {};
+    ~Waypoint() {};
+};
+
+/* our problem's terrain structure */
+class Terrain {
+public:
+    geometry_msgs::Pose start;
+    geometry_msgs::Pose goal;
+    geometry_msgs::Pose goal_left;
+    geometry_msgs::Pose goal_right;
+    geometry_msgs::Pose start_left;
+    geometry_msgs::Pose start_right;
+    double goal_altitude;
+    double goal_slope;
+    std::vector<geometry_msgs::PoseStamped> lethal_obstacles;
+    grid_map::GridMap travers_map;          // TODO
+    grid_map::GridMap travers_slope_map;    // TODO
+
+    Terrain() {};
+    ~Terrain() {};
+};
 
 /* global variables */
-extern std::list<geometry_msgs::PoseStamped> goals_list;
+extern std::list<Waypoint> waypoints_list;
 /* ROS messages */
 extern move_base_msgs::MoveBaseActionFeedback move_base_feedback_msg;
 extern actionlib_msgs::GoalStatusArray move_base_status_msg;
 extern geometry_msgs::PoseWithCovarianceStamped pose_msg;
 /* utility variables */
 extern bool first_time;
+extern unsigned num_of_waypoints;
 
 /* callback functions declarations */
+
 void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr& status_msg);
 // void moveBaseFeedbackCallback(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback_msg);
 void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& ps_msg);
 
 /* utility functions declarations */
+
 geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta);
 double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped pose);
+
+/* problem's core functions declarations */
+
+/* generate optimal plan based on an initial set of waypoints */
+void generateOptimalPlan();
+/* is waypoint_a-->waypoint_b route going through a lethal obstacle? */
+bool throughLethalObstacle(const Waypoint & waypoint_a, const Waypoint & waypoint_b);
+/* is waypoint_a-->waypoint_b not a good route? */
+bool notGoodRoute(const Waypoint & waypoint_a, const Waypoint & waypoint_b);
+/* what is the closest alternative to waypoint_a? */
+void closestAlternative(const Waypoint & waypoint_a, const Waypoint & waypoint_b);
