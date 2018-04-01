@@ -61,16 +61,18 @@ public:
     geometry_msgs::Pose start_right;
     double goal_altitude;
     double goal_slope;
-    std::vector<geometry_msgs::PoseStamped> lethal_obstacles;
+    std::vector<geometry_msgs::PoseStamped>  lethal_obstacles;
     grid_map::GridMap travers_map;          // TODO
     grid_map::GridMap travers_slope_map;    // TODO
 
     Terrain() {};
+    Terrain(std::vector<geometry_msgs::PoseStamped> lethal_obstacles) : lethal_obstacles(lethal_obstacles) {};
     ~Terrain() {};
 };
 
 /* global variables */
 extern std::list<Waypoint> waypoints_list;
+extern Terrain terrain;
 /* ROS messages */
 extern move_base_msgs::MoveBaseActionFeedback move_base_feedback_msg;
 extern actionlib_msgs::GoalStatusArray move_base_status_msg;
@@ -89,6 +91,7 @@ void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr&
 
 geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta);
 double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped pose);
+bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
 
 /* problem's core functions declarations */
 

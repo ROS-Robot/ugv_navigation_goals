@@ -2,6 +2,7 @@
 
 /* global variables */
 std::list<Waypoint> waypoints_list;
+Terrain terrain;
 /* ROS messages */
 move_base_msgs::MoveBaseActionFeedback move_base_feedback_msg;
 actionlib_msgs::GoalStatusArray move_base_status_msg;
@@ -48,6 +49,14 @@ double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped ps) {
     return yaw_angle;
 }
 
+bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c) {
+    double x1 = pose_a.pose.position.x, y1 = pose_a.pose.position.y,
+        x2 = pose_b.pose.position.x, y2 = pose_b.pose.position.y,
+        x3 = pose_c.pose.position.x, y3 = pose_c.pose.position.y;
+
+    return ((y2-y1)/(x2-x1)) == ((y3-y1)/(x3-x1));
+}
+
 /* problem's core functions definitions */
 
 /* generate optimal plan based on an initial set of waypoints */
@@ -73,6 +82,10 @@ void generateOptimalPlan() {
 
 /* is waypoint_a-->waypoint_b route going through a lethal obstacle? */
 bool throughLethalObstacle(const Waypoint & waypoint_a, const Waypoint & waypoint_b) {
+    for (std::vector<geometry_msgs::PoseStamped>::const_iterator iterator = terrain.lethal_obstacles.begin(); iterator != terrain.lethal_obstacles.end(); ++iterator)
+        if (areCoLinear(waypoint_a.pose, waypoint_b.pose, *iterator))
+            return true;
+
     return false;
 }
 
