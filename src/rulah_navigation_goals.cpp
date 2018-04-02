@@ -10,6 +10,16 @@ int main(int argc, char *argv[]) {
     first_time = true;
     num_of_waypoints = 0;
 
+    // initialize terrain
+    terrain.goal.position.x = 1.5; terrain.goal.position.y = 6.0; terrain.start.position.x = -5.0; terrain.start.position.y = 6.0;
+    terrain.goal_left.position.x = 1.5; terrain.goal_left.position.y = 7.0; terrain.start_left.position.x = -5.0; terrain.start_left.position.y = 7.0;
+    terrain.goal_right.position.x = 1.5; terrain.goal_right.position.y = 5.0; terrain.start_right.position.x = -5.0; terrain.start_right.position.y = 5.0;
+    terrain.slope = 40.0;
+    geometry_msgs::PoseStamped temp;
+    temp.pose.position.x = -3.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
+    temp.pose.position.x = -1.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
+    temp.pose.position.x = -1.5; temp.pose.position.y = 6.2; terrain.lethal_obstacles.push_back(temp);
+
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
     ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);
     ros::Subscriber move_base_status_sub = nodeHandle.subscribe("/move_base/status", 1, &moveBaseStatusCallback);
@@ -20,7 +30,7 @@ int main(int argc, char *argv[]) {
     /* PUBLISH INITIAL POSE */
     geometry_msgs::PoseWithCovarianceStamped init;
     init.header.stamp = ros::Time::now(); init.header.frame_id = "odom";
-    init.pose.pose.position.x = -5.0; init.pose.pose.position.y = 6.0; init.pose.pose.position.z = 4.0;
+    init.pose.pose.position.x = terrain.start.position.x; init.pose.pose.position.y = terrain.start.position.y; init.pose.pose.position.z = 4.0;
     init.pose.pose.orientation.x = 0.0; init.pose.pose.orientation.y = 0.0; init.pose.pose.orientation.z = 0.0; init.pose.pose.orientation.w = 1.0;
 
     /* CREATE INITIAL PLAN */
@@ -36,9 +46,10 @@ int main(int argc, char *argv[]) {
 
         Waypoint temp(goal);
         temp.id = num_of_waypoints;
-        temp.angle_with_next = 0;   // assignment at iterator below
+        temp.cost = 0.0;    // assignment at the iterator below
+        temp.arc = 0;       // assignment at the iterator below
         temp.divertion = std::abs(y-init.pose.pose.position.y);
-        temp.traversability = 0;    // TODO LATER
+        temp.traversability = 0;        // TODO LATER
         temp.traversability_slope = 0;  // TODO LATER
 
         /* debugging */
@@ -57,12 +68,16 @@ int main(int argc, char *argv[]) {
 
     for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
         if (std::next(iterator,2) != waypoints_list.end()) {
-            iterator->angle_with_next = eulerAngleOf(*(std::next(iterator,1)), *(iterator), *(std::next(iterator,2)));
+            iterator->arc = eulerAngleOf(std::next(iterator,1)->pose, iterator->pose, std::next(iterator,2)->pose);
         }
+        if (iterator == waypoints_list.begin())
+            iterator->cost = iterator->divertion;
+        else
+            iterator->cost = std::prev(iterator, 1)->cost + iterator->divertion;
     }
 
     ROS_INFO("We have the goals:");
-    for (std::list<Waypoint>::const_iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator)
+    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator)
         ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
                     iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z,
                     iterator->pose.pose.orientation.x, iterator->pose.pose.orientation.y, iterator->pose.pose.orientation.z, iterator->pose.pose.orientation.w);
@@ -72,7 +87,7 @@ int main(int argc, char *argv[]) {
 
     /* GRADUALLY SEND PLAN TO move_base */
     x = -3.0, y = 6.5, angle = 45.0;
-    std::list<Waypoint>::const_iterator iterator = waypoints_list.begin();
+    std::list<Waypoint>::iterator iterator = waypoints_list.begin();
     ROS_INFO("To loop");
     // first_time = true;
     while (ros::ok() && iterator != waypoints_list.end()) {

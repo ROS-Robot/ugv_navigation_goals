@@ -43,7 +43,7 @@ public:
     unsigned id;
     double cost;
     geometry_msgs::PoseStamped & pose;
-    double angle_with_next;
+    double arc;                     // the arc which has as an edge the current waypoint and is formed with it, it's previous and it's next waypoints
     double divertion;
     double traversability;          // TODO
     double traversability_slope;    // TODO
@@ -61,8 +61,8 @@ public:
     geometry_msgs::Pose goal_right;
     geometry_msgs::Pose start_left;
     geometry_msgs::Pose start_right;
-    double goal_altitude;
-    double goal_slope;
+    double goal_altitude;                   // TODO
+    double slope;
     std::vector<geometry_msgs::PoseStamped>  lethal_obstacles;
     grid_map::GridMap travers_map;          // TODO
     grid_map::GridMap travers_slope_map;    // TODO
@@ -95,7 +95,7 @@ geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta);
 double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped pose);
 bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
 /* returns the euler angle where pose_a is the vertex */
-double eulerAngleOf(const Waypoint & a, const Waypoint & b, const Waypoint & c);
+double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
 
 /* problem's core functions declarations */
 
@@ -104,6 +104,6 @@ void generateOptimalPlan();
 /* is waypoint_a-->waypoint_b route going through a lethal obstacle? */
 bool throughLethalObstacle(const Waypoint & waypoint_a, const Waypoint & waypoint_b);
 /* is waypoint_a-->waypoint_b not a good route? */
-bool notGoodRoute(const Waypoint & waypoint_a, const Waypoint & waypoint_b);
-/* what is the closest alternative to waypoint_a? */
-void closestAlternative(const Waypoint & waypoint_a, const Waypoint & waypoint_b);
+bool notGoodRoute(const Waypoint & waypoint_a);
+/* what is the closest better (relative to it's cost) alternative to waypoint_a? */
+void closestBetterAlternative(const Waypoint & waypoint_a);
