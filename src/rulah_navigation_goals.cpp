@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
 
         Waypoint temp(goal);
         temp.id = num_of_waypoints;
-        temp.angle_with_next = 0;   // TODO
-        temp.divertion = 0;         // TODO
+        temp.angle_with_next = 0;   // assignment at iterator below
+        temp.divertion = std::abs(y-init.pose.pose.position.y);
         temp.traversability = 0;    // TODO LATER
         temp.traversability_slope = 0;  // TODO LATER
 
@@ -53,6 +53,12 @@ int main(int argc, char *argv[]) {
             y = 6.5;
         }
         waypoints_list.push_back(temp);
+    }
+
+    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
+        if (std::next(iterator,2) != waypoints_list.end()) {
+            iterator->angle_with_next = eulerAngleOf(*(std::next(iterator,1)), *(iterator), *(std::next(iterator,2)));
+        }
     }
 
     ROS_INFO("We have the goals:");
@@ -86,39 +92,6 @@ int main(int argc, char *argv[]) {
         ros::spinOnce();
         loop_rate.sleep();
     }
-    // while (ros::ok() && x < GRANT_X) {
-    //     // ROS_INFO("IN loop");
-    //     // wait for the previous goal to finish
-    //     // if (move_base_feedback_msg.status.status == SUCCEEDED) {
-    //     // if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) ) {
-    //     if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
-    //         // ROS_INFO("in IF");
-    //         if (!first_time)
-    //             x += 0.5;
-    //         geometry_msgs::PoseStamped goal;
-    //         goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
-    //         goal.pose.position.x = x; goal.pose.position.y = y; goal.pose.position.z = 0.0;
-    //         goal.pose.orientation = turnEulerAngleToQuaternion(angle);
-    //
-    //         /* debugging */
-    //         ROS_WARN("%f", angle);
-    //
-    //         if (!first_time) {
-    //             if (angle == 45) {
-    //                 angle = 135;
-    //                 y = 5.5;
-    //             }
-    //             else {
-    //                 angle = 45;
-    //                 y = 6.5;
-    //             }
-    //         }
-    //         goals_pub.publish(goal);
-    //     }
-    //     // ROS_INFO("after if");
-    //     ros::spinOnce();
-    //     loop_rate.sleep();
-    // }
-    // ros::spin();
+
     return 0;
 }

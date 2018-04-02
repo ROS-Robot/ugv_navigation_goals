@@ -57,6 +57,15 @@ bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs:
     return ((y2-y1)/(x2-x1)) == ((y3-y1)/(x3-x1));
 }
 
+/* returns the euler angle where a.pose is the vertex */
+double eulerAngleOf(const Waypoint & a, const Waypoint & b, const Waypoint & c) {
+    double p_ab = std::sqrt((a.pose.pose.position.x-b.pose.pose.position.x)*(a.pose.pose.position.x-b.pose.pose.position.x) + (a.pose.pose.position.y-b.pose.pose.position.y)*(a.pose.pose.position.y-b.pose.pose.position.y)),
+        p_bc = std::sqrt((b.pose.pose.position.x-c.pose.pose.position.x)*(b.pose.pose.position.x-c.pose.pose.position.x) + (b.pose.pose.position.y-c.pose.pose.position.y)*(b.pose.pose.position.y-c.pose.pose.position.y)),
+        p_ac = std::sqrt((a.pose.pose.position.x-c.pose.pose.position.x)*(a.pose.pose.position.x-c.pose.pose.position.x) + (a.pose.pose.position.y-c.pose.pose.position.y)*(a.pose.pose.position.y-c.pose.pose.position.y));
+    double res = std::acos((p_ab*p_ab+p_ac*p_ac-p_bc*p_bc)/(2*p_ab*p_ac));
+    return res * 180.0 / PI;
+}
+
 /* problem's core functions definitions */
 
 /* generate optimal plan based on an initial set of waypoints */

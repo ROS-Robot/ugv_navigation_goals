@@ -17,8 +17,10 @@
 #include <grid_map_core/grid_map_core.hpp>
 /* C++ utility libraries */
 #include <list>
+#include <math.h>       /* acos */
 
 /* useful definitions */
+#define PI 3.14159265
 // actionlib_msgs/GoalStatus Message : uint8 status
 #define PENDING 0
 #define ACTIVE 1
@@ -92,6 +94,8 @@ void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr&
 geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta);
 double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped pose);
 bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
+/* returns the euler angle where pose_a is the vertex */
+double eulerAngleOf(const Waypoint & a, const Waypoint & b, const Waypoint & c);
 
 /* problem's core functions declarations */
 
