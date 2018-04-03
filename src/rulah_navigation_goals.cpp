@@ -44,13 +44,13 @@ int main(int argc, char *argv[]) {
         goal.pose.position.x = x; goal.pose.position.y = y; goal.pose.position.z = 0.0;
         goal.pose.orientation = turnEulerAngleToQuaternion(angle);
 
-        Waypoint temp(goal);
-        temp.id = num_of_waypoints;
-        temp.cost = 0.0;    // assignment at the iterator below
-        temp.arc = 0;       // assignment at the iterator below
-        temp.divertion = std::abs(y-init.pose.pose.position.y);
-        temp.traversability = 0;        // TODO LATER
-        temp.traversability_slope = 0;  // TODO LATER
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        tempw.deviation = std::abs(y-init.pose.pose.position.y);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
 
         /* debugging */
         ROS_WARN("%f", angle);
@@ -63,20 +63,23 @@ int main(int argc, char *argv[]) {
             angle = 45;
             y = 6.5;
         }
-        waypoints_list.push_back(temp);
+        waypoints_list.push_back(tempw);
     }
 
     for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
-        if (std::next(iterator,2) != waypoints_list.end()) {
-            iterator->arc = eulerAngleOf(std::next(iterator,1)->pose, iterator->pose, std::next(iterator,2)->pose);
-        }
-        if (iterator == waypoints_list.begin())
-            iterator->cost = iterator->divertion;
-        else
-            iterator->cost = std::prev(iterator, 1)->cost + iterator->divertion;
+        if (iterator == waypoints_list.begin()) iterator->arc = eulerAngleOf(iterator->pose, init, std::next(iterator,1)->pose);
+        else if (std::next(iterator,1) != waypoints_list.end()) iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
+        else iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, terrain.goal);
     }
 
-    ROS_INFO("We have the goals:");
+    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
+        if (iterator == waypoints_list.begin())
+            iterator->cost = iterator->deviation;
+        else
+            iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
+    }
+
+    ROS_INFO("We have the initial goals:");
     for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator)
         ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
                     iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z,

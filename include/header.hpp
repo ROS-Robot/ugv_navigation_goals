@@ -36,19 +36,25 @@
 #define GRANT_X 1.5
 #define GRANT_Y 10.5    // 10m ahead of the robot's initial position
 #define GRANT_Z 4.0     // same level with the robot in it's initial position
+#define MAX_VIABLE_ALT 4    // find up to 4 viable alternative waypoints when needed
+#define MIN_JUMP 0.2    // the minimum jump in space when looking for an alternative waypoint
+#define MAX_REPS_FOR_OPT 20 // maximum number of optimization repetitions
 
 /* our waypoint's structure */
 class Waypoint {
 public:
     unsigned id;
     double cost;
-    geometry_msgs::PoseStamped & pose;
+    geometry_msgs::PoseStamped pose;
     double arc;                     // the arc which has as an edge the current waypoint and is formed with it, it's previous and it's next waypoints
-    double divertion;
+    double deviation;
     double traversability;          // TODO
     double traversability_slope;    // TODO
 
-    Waypoint(geometry_msgs::PoseStamped pose) : pose(pose) {};
+    Waypoint(geometry_msgs::PoseStamped goal) {
+        this->pose.header = goal.header;
+        this->pose.pose = goal.pose;
+    };
     ~Waypoint() {};
 };
 
@@ -96,6 +102,11 @@ double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped pose);
 bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
 /* returns the euler angle where pose_a is the vertex */
 double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
+double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseWithCovarianceStamped& pose_b, const geometry_msgs::PoseStamped & pose_c);
+double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::Pose & pose_c);
+/* returns the outer product of AP and AB */
+/* source: https://math.stackexchange.com/questions/274712/calculate-on-which-side-of-a-straight-line-is-a-given-point-located */
+double outerProduct(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b);
 
 /* problem's core functions declarations */
 
