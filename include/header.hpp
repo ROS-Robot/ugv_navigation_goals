@@ -51,6 +51,7 @@ public:
     double traversability;          // TODO
     double traversability_slope;    // TODO
 
+    Waypoint() {};
     Waypoint(geometry_msgs::PoseStamped goal) {
         this->pose.header = goal.header;
         this->pose.pose = goal.pose;
@@ -107,6 +108,11 @@ double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_ms
 /* returns the outer product of AP and AB */
 /* source: https://math.stackexchange.com/questions/274712/calculate-on-which-side-of-a-straight-line-is-a-given-point-located */
 double outerProduct(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b);
+double outerProduct(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::Pose & pose_a, const geometry_msgs::Pose & pose_b);
+/* returns the distance of P from the line defined by A and B */
+/* source: wikipedia, Distance_from_a_point_to_a_line */
+double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b);
+double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::Pose & pose_a, const geometry_msgs::Pose & pose_b);
 
 /* problem's core functions declarations */
 
@@ -117,4 +123,4 @@ bool throughLethalObstacle(const Waypoint & waypoint_a, const Waypoint & waypoin
 /* is waypoint_a-->waypoint_b not a good route? */
 bool notGoodRoute(const Waypoint & waypoint_a);
 /* what is the closest better (relative to it's cost) alternative to waypoint_a? */
-void closestBetterAlternative(const Waypoint & waypoint_a);
+Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & waypoint_b);

@@ -87,6 +87,27 @@ double outerProduct(const geometry_msgs::PoseStamped & pose_p, const geometry_ms
 
     return d;
 }
+double outerProduct(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::Pose & pose_a, const geometry_msgs::Pose & pose_b) {
+    double d = (pose_p.pose.position.x-pose_a.position.x)*(pose_b.position.y-pose_a.position.y)-(pose_p.pose.position.y-pose_a.position.y)*(pose_b.position.x-pose_a.position.x);
+
+    return d;
+}
+/* returns the distance of P from the line defined by A and B */
+/* source: wikipedia, Distance_from_a_point_to_a_line */
+double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b) {
+    double d = std::abs((pose_b.pose.position.y-pose_a.pose.position.y)*pose_p.pose.position.x-(pose_b.pose.position.x-pose_a.pose.position.x)*pose_p.pose.position.y+pose_b.pose.position.x*pose_a.pose.position.y-pose_b.pose.position.y*pose_a.pose.position.x)
+                /
+                std::sqrt((pose_b.pose.position.y-pose_a.pose.position.y)*(pose_b.pose.position.y-pose_a.pose.position.y)+(pose_b.pose.position.x-pose_a.pose.position.x)*(pose_b.pose.position.x-pose_a.pose.position.x));
+
+    return d;
+}
+double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::Pose & pose_a, const geometry_msgs::Pose & pose_b) {
+    double d = std::abs((pose_b.position.y-pose_a.position.y)*pose_p.pose.position.x-(pose_b.position.x-pose_a.position.x)*pose_p.pose.position.y+pose_b.position.x*pose_a.position.y-pose_b.position.y*pose_a.position.x)
+                /
+                std::sqrt((pose_b.position.y-pose_a.position.y)*(pose_b.position.y-pose_a.position.y)+(pose_b.position.x-pose_a.position.x)*(pose_b.position.x-pose_a.position.x));
+
+    return d;
+}
 
 /* problem's core functions definitions */
 
@@ -99,14 +120,14 @@ void generateOptimalPlan() {
         // eliminate routes that go through lethal obstacles
         for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
             if (std::next(iterator,1) != waypoints_list.end() && throughLethalObstacle(*iterator, *(std::next(iterator,1)))) {
-                closestBetterAlternative(*iterator);
+                closestBetterAlternative(*iterator, *(std::next(iterator,1)));
                 changes++;
             }
         }
         // eliminate routes that are inappropriate for the given problem
         for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
             if (std::next(iterator,1) != waypoints_list.end() && notGoodRoute(*iterator)) {
-                closestBetterAlternative(*iterator);
+                closestBetterAlternative(*iterator, *(std::next(iterator,1)));
                 changes++;
             }
         }
@@ -152,7 +173,228 @@ bool notGoodRoute(const Waypoint & waypoint_a) {
 }
 
 /* what is the closest better (relative to it's cost) alternative to waypoint_a? */
-void closestBetterAlternative(const Waypoint & waypoint_a) {
-    // generate a list of possible waypoint_a's alternatives
+Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & waypoint_b) {
+    // generate a list of all viable waypoint_a's alternatives
+    std::vector<Waypoint> alternatives;
+    int viable = 0;
+    // north
+    if (viable < MAX_VIABLE_ALT) {
+        geometry_msgs::PoseStamped goal;
+        goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
+        goal.pose.position.x = waypoint_a.pose.pose.position.x+1; goal.pose.position.y = waypoint_a.pose.pose.position.y;
+        goal.pose.orientation.w = 1.0;
 
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
+
+        /* in order of appearance, we want our new waypoint:
+            not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
+            to be below the finish line, to be above the start line and TODO*/
+        if (!throughLethalObstacle(tempw, waypoint_b) && outerProduct(goal, terrain.goal_left, terrain.start_left) > 0 &&
+            outerProduct(goal, terrain.goal_right, terrain.start_right) < 0 && outerProduct(goal, terrain.goal_left, terrain.goal_right) > 0 &&
+            outerProduct(goal, terrain.start_left, terrain.start_right) < 0) {
+            alternatives.push_back(tempw);
+            viable++;
+        }
+    }
+    // east
+    if (viable < MAX_VIABLE_ALT) {
+        geometry_msgs::PoseStamped goal;
+        goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
+        goal.pose.position.x = waypoint_a.pose.pose.position.x; goal.pose.position.y = waypoint_a.pose.pose.position.y-1;
+        goal.pose.orientation.w = 1.0;
+
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
+
+        /* in order of appearance, we want our new waypoint:
+            not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
+            to be below the finish line, to be above the start line and TODO*/
+        if (!throughLethalObstacle(tempw, waypoint_b) && outerProduct(goal, terrain.goal_left, terrain.start_left) > 0 &&
+            outerProduct(goal, terrain.goal_right, terrain.start_right) < 0 && outerProduct(goal, terrain.goal_left, terrain.goal_right) > 0 &&
+            outerProduct(goal, terrain.start_left, terrain.start_right) < 0) {
+            alternatives.push_back(tempw);
+            viable++;
+        }
+    }
+    // south
+    if (viable < MAX_VIABLE_ALT) {
+        geometry_msgs::PoseStamped goal;
+        goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
+        goal.pose.position.x = waypoint_a.pose.pose.position.x-1; goal.pose.position.y = waypoint_a.pose.pose.position.y;
+        goal.pose.orientation.w = 1.0;
+
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
+
+        /* in order of appearance, we want our new waypoint:
+            not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
+            to be below the finish line, to be above the start line and TODO*/
+        if (!throughLethalObstacle(tempw, waypoint_b) && outerProduct(goal, terrain.goal_left, terrain.start_left) > 0 &&
+            outerProduct(goal, terrain.goal_right, terrain.start_right) < 0 && outerProduct(goal, terrain.goal_left, terrain.goal_right) > 0 &&
+            outerProduct(goal, terrain.start_left, terrain.start_right) < 0) {
+            alternatives.push_back(tempw);
+            viable++;
+        }
+    }
+    // west
+    if (viable < MAX_VIABLE_ALT) {
+        geometry_msgs::PoseStamped goal;
+        goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
+        goal.pose.position.x = waypoint_a.pose.pose.position.x; goal.pose.position.y = waypoint_a.pose.pose.position.y+1;
+        goal.pose.orientation.w = 1.0;
+
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
+
+        /* in order of appearance, we want our new waypoint:
+            not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
+            to be below the finish line, to be above the start line and TODO*/
+        if (!throughLethalObstacle(tempw, waypoint_b) && outerProduct(goal, terrain.goal_left, terrain.start_left) > 0 &&
+            outerProduct(goal, terrain.goal_right, terrain.start_right) < 0 && outerProduct(goal, terrain.goal_left, terrain.goal_right) > 0 &&
+            outerProduct(goal, terrain.start_left, terrain.start_right) < 0) {
+            alternatives.push_back(tempw);
+            viable++;
+        }
+    }
+    // north-east
+    if (viable < MAX_VIABLE_ALT) {
+        geometry_msgs::PoseStamped goal;
+        goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
+        goal.pose.position.x = waypoint_a.pose.pose.position.x+1; goal.pose.position.y = waypoint_a.pose.pose.position.y-1;
+        goal.pose.orientation.w = 1.0;
+
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
+
+        /* in order of appearance, we want our new waypoint:
+            not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
+            to be below the finish line, to be above the start line and TODO*/
+        if (!throughLethalObstacle(tempw, waypoint_b) && outerProduct(goal, terrain.goal_left, terrain.start_left) > 0 &&
+            outerProduct(goal, terrain.goal_right, terrain.start_right) < 0 && outerProduct(goal, terrain.goal_left, terrain.goal_right) > 0 &&
+            outerProduct(goal, terrain.start_left, terrain.start_right) < 0) {
+            alternatives.push_back(tempw);
+            viable++;
+        }
+    }
+    // north-west
+    if (viable < MAX_VIABLE_ALT) {
+        geometry_msgs::PoseStamped goal;
+        goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
+        goal.pose.position.x = waypoint_a.pose.pose.position.x+1; goal.pose.position.y = waypoint_a.pose.pose.position.y+1;
+        goal.pose.orientation.w = 1.0;
+
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
+
+        /* in order of appearance, we want our new waypoint:
+            not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
+            to be below the finish line, to be above the start line and TODO*/
+        if (!throughLethalObstacle(tempw, waypoint_b) && outerProduct(goal, terrain.goal_left, terrain.start_left) > 0 &&
+            outerProduct(goal, terrain.goal_right, terrain.start_right) < 0 && outerProduct(goal, terrain.goal_left, terrain.goal_right) > 0 &&
+            outerProduct(goal, terrain.start_left, terrain.start_right) < 0) {
+            alternatives.push_back(tempw);
+            viable++;
+        }
+    }
+    // south-east
+    if (viable < MAX_VIABLE_ALT) {
+        geometry_msgs::PoseStamped goal;
+        goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
+        goal.pose.position.x = waypoint_a.pose.pose.position.x-1; goal.pose.position.y = waypoint_a.pose.pose.position.y-1;
+        goal.pose.orientation.w = 1.0;
+
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
+
+        /* in order of appearance, we want our new waypoint:
+            not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
+            to be below the finish line, to be above the start line and TODO*/
+        if (!throughLethalObstacle(tempw, waypoint_b) && outerProduct(goal, terrain.goal_left, terrain.start_left) > 0 &&
+            outerProduct(goal, terrain.goal_right, terrain.start_right) < 0 && outerProduct(goal, terrain.goal_left, terrain.goal_right) > 0 &&
+            outerProduct(goal, terrain.start_left, terrain.start_right) < 0) {
+            alternatives.push_back(tempw);
+            viable++;
+        }
+    }
+    // south-west
+    if (viable < MAX_VIABLE_ALT) {
+        geometry_msgs::PoseStamped goal;
+        goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
+        goal.pose.position.x = waypoint_a.pose.pose.position.x-1; goal.pose.position.y = waypoint_a.pose.pose.position.y+1;
+        goal.pose.orientation.w = 1.0;
+
+        Waypoint tempw(goal);
+        tempw.id = num_of_waypoints;
+        tempw.cost = 0.0;    // assignment at the iterator below
+        tempw.arc = 0;       // assignment at the iterator below
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.traversability = 0;        // TODO LATER
+        tempw.traversability_slope = 0;  // TODO LATER
+
+        /* in order of appearance, we want our new waypoint:
+            not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
+            to be below the finish line, to be above the start line and TODO*/
+        if (!throughLethalObstacle(tempw, waypoint_b) && outerProduct(goal, terrain.goal_left, terrain.start_left) > 0 &&
+            outerProduct(goal, terrain.goal_right, terrain.start_right) < 0 && outerProduct(goal, terrain.goal_left, terrain.goal_right) > 0 &&
+            outerProduct(goal, terrain.start_left, terrain.start_right) < 0) {
+            alternatives.push_back(tempw);
+            viable++;
+        }
+    }
+
+    // find the alternative with the lowest cost
+    std::vector<Waypoint>::iterator best_it;
+    double best_cost = -1.0;
+    for (std::vector<Waypoint>::iterator i = alternatives.begin(); i != alternatives.end(); ++i) {
+        if (i->cost < best_cost) {
+            best_cost = i->cost;
+            best_it = i;
+        }
+    }
+
+    return *best_it;
 }

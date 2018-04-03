@@ -42,13 +42,15 @@ int main(int argc, char *argv[]) {
         geometry_msgs::PoseStamped goal;
         goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
         goal.pose.position.x = x; goal.pose.position.y = y; goal.pose.position.z = 0.0;
-        goal.pose.orientation = turnEulerAngleToQuaternion(angle);
+        goal.pose.orientation.w = 1.0;
+        // goal.pose.orientation = turnEulerAngleToQuaternion(angle);
 
         Waypoint tempw(goal);
         tempw.id = num_of_waypoints;
         tempw.cost = 0.0;    // assignment at the iterator below
         tempw.arc = 0;       // assignment at the iterator below
-        tempw.deviation = std::abs(y-init.pose.pose.position.y);
+        // distance from the straight line that connects the start with the goal (finish)
+        tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -66,12 +68,13 @@ int main(int argc, char *argv[]) {
         waypoints_list.push_back(tempw);
     }
 
+    // calculate angles
     for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
         if (iterator == waypoints_list.begin()) iterator->arc = eulerAngleOf(iterator->pose, init, std::next(iterator,1)->pose);
         else if (std::next(iterator,1) != waypoints_list.end()) iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
         else iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, terrain.goal);
     }
-
+    // calculate costs
     for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
         if (iterator == waypoints_list.begin())
             iterator->cost = iterator->deviation;
@@ -87,6 +90,20 @@ int main(int argc, char *argv[]) {
 
     /* FORM OPTIMAL PLAN */
     generateOptimalPlan();
+
+    // recalculate angles
+    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
+        if (iterator == waypoints_list.begin()) iterator->arc = eulerAngleOf(iterator->pose, init, std::next(iterator,1)->pose);
+        else if (std::next(iterator,1) != waypoints_list.end()) iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
+        else iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, terrain.goal);
+    }
+    // recalculate costs
+    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
+        if (iterator == waypoints_list.begin())
+            iterator->cost = iterator->deviation;
+        else
+            iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
+    }
 
     /* GRADUALLY SEND PLAN TO move_base */
     x = -3.0, y = 6.5, angle = 45.0;
