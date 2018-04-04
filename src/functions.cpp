@@ -117,20 +117,23 @@ void generateOptimalPlan() {
     if (!MAX_REPS_FOR_OPT) return;  // no optimization
     unsigned changes = 0, counter = 0;
     do {
+        // ROS_INFO("A");
         // eliminate routes that go through lethal obstacles
-        for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
+        for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); iterator++) {
             if (std::next(iterator,1) != waypoints_list.end() && throughLethalObstacle(*iterator, *(std::next(iterator,1)))) {
-                closestBetterAlternative(*iterator, *(std::next(iterator,1)));
+                Waypoint temp = closestBetterAlternative(*iterator, *(std::next(iterator,1)));
                 changes++;
             }
         }
+        // ROS_INFO("B");
         // eliminate routes that are inappropriate for the given problem
-        for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
+        for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); iterator++) {
             if (std::next(iterator,1) != waypoints_list.end() && notGoodRoute(*iterator)) {
-                closestBetterAlternative(*iterator, *(std::next(iterator,1)));
+                Waypoint temp = closestBetterAlternative(*iterator, *(std::next(iterator,1)));
                 changes++;
             }
         }
+        // ROS_INFO("C");
         counter++;
     } while (changes && counter < MAX_REPS_FOR_OPT);
     if (counter == MAX_REPS_FOR_OPT) ROS_WARN("Max reps for optimization reached!");
@@ -174,8 +177,10 @@ bool notGoodRoute(const Waypoint & waypoint_a) {
 
 /* what is the closest better (relative to it's cost) alternative to waypoint_a? */
 Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & waypoint_b) {
+    // ROS_INFO("closestBetterAlternative in");
     // generate a list of all viable waypoint_a's alternatives
     std::vector<Waypoint> alternatives;
+    Waypoint tempw;
     int viable = 0;
     // north
     if (viable < MAX_VIABLE_ALT) {
@@ -184,12 +189,12 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         goal.pose.position.x = waypoint_a.pose.pose.position.x+1; goal.pose.position.y = waypoint_a.pose.pose.position.y;
         goal.pose.orientation.w = 1.0;
 
-        Waypoint tempw(goal);
+        tempw.pose = goal;
         tempw.id = num_of_waypoints;
-        tempw.cost = 0.0;    // assignment at the iterator below
-        tempw.arc = 0;       // assignment at the iterator below
+        tempw.arc = 0;
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -210,12 +215,12 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         goal.pose.position.x = waypoint_a.pose.pose.position.x; goal.pose.position.y = waypoint_a.pose.pose.position.y-1;
         goal.pose.orientation.w = 1.0;
 
-        Waypoint tempw(goal);
+        tempw.pose = goal;
         tempw.id = num_of_waypoints;
-        tempw.cost = 0.0;    // assignment at the iterator below
-        tempw.arc = 0;       // assignment at the iterator below
+        tempw.arc = 0;
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -236,12 +241,12 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         goal.pose.position.x = waypoint_a.pose.pose.position.x-1; goal.pose.position.y = waypoint_a.pose.pose.position.y;
         goal.pose.orientation.w = 1.0;
 
-        Waypoint tempw(goal);
+        tempw.pose = goal;
         tempw.id = num_of_waypoints;
-        tempw.cost = 0.0;    // assignment at the iterator below
-        tempw.arc = 0;       // assignment at the iterator below
+        tempw.arc = 0;
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -262,12 +267,12 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         goal.pose.position.x = waypoint_a.pose.pose.position.x; goal.pose.position.y = waypoint_a.pose.pose.position.y+1;
         goal.pose.orientation.w = 1.0;
 
-        Waypoint tempw(goal);
+        tempw.pose = goal;
         tempw.id = num_of_waypoints;
-        tempw.cost = 0.0;    // assignment at the iterator below
-        tempw.arc = 0;       // assignment at the iterator below
+        tempw.arc = 0;
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -288,12 +293,12 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         goal.pose.position.x = waypoint_a.pose.pose.position.x+1; goal.pose.position.y = waypoint_a.pose.pose.position.y-1;
         goal.pose.orientation.w = 1.0;
 
-        Waypoint tempw(goal);
+        tempw.pose = goal;
         tempw.id = num_of_waypoints;
-        tempw.cost = 0.0;    // assignment at the iterator below
-        tempw.arc = 0;       // assignment at the iterator below
+        tempw.arc = 0;
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -314,12 +319,12 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         goal.pose.position.x = waypoint_a.pose.pose.position.x+1; goal.pose.position.y = waypoint_a.pose.pose.position.y+1;
         goal.pose.orientation.w = 1.0;
 
-        Waypoint tempw(goal);
+        tempw.pose = goal;
         tempw.id = num_of_waypoints;
-        tempw.cost = 0.0;    // assignment at the iterator below
-        tempw.arc = 0;       // assignment at the iterator below
+        tempw.arc = 0;
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -340,12 +345,12 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         goal.pose.position.x = waypoint_a.pose.pose.position.x-1; goal.pose.position.y = waypoint_a.pose.pose.position.y-1;
         goal.pose.orientation.w = 1.0;
 
-        Waypoint tempw(goal);
+        tempw.pose = goal;
         tempw.id = num_of_waypoints;
-        tempw.cost = 0.0;    // assignment at the iterator below
-        tempw.arc = 0;       // assignment at the iterator below
+        tempw.arc = 0;
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -366,12 +371,12 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         goal.pose.position.x = waypoint_a.pose.pose.position.x-1; goal.pose.position.y = waypoint_a.pose.pose.position.y+1;
         goal.pose.orientation.w = 1.0;
 
-        Waypoint tempw(goal);
+        tempw.pose = goal;
         tempw.id = num_of_waypoints;
-        tempw.cost = 0.0;    // assignment at the iterator below
-        tempw.arc = 0;       // assignment at the iterator below
+        tempw.arc = 0;
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
+        tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
         tempw.traversability = 0;        // TODO LATER
         tempw.traversability_slope = 0;  // TODO LATER
 
@@ -387,14 +392,15 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
     }
 
     // find the alternative with the lowest cost
-    std::vector<Waypoint>::iterator best_it;
-    double best_cost = -1.0;
-    for (std::vector<Waypoint>::iterator i = alternatives.begin(); i != alternatives.end(); ++i) {
+    std::vector<Waypoint>::iterator best_it = alternatives.end();
+    double best_cost = waypoint_a.cost;
+    for (std::vector<Waypoint>::iterator i = alternatives.begin(); i != alternatives.end(); i++) {
         if (i->cost < best_cost) {
             best_cost = i->cost;
             best_it = i;
         }
     }
-
+    // ROS_INFO("closestBetterAlternative out");
+    if (best_it == alternatives.end()) return waypoint_a;
     return *best_it;
 }

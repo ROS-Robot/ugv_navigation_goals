@@ -105,6 +105,12 @@ int main(int argc, char *argv[]) {
             iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
     }
 
+    ROS_INFO("We have the optimal goals:");
+    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator)
+        ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
+                    iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z,
+                    iterator->pose.pose.orientation.x, iterator->pose.pose.orientation.y, iterator->pose.pose.orientation.z, iterator->pose.pose.orientation.w);
+
     /* GRADUALLY SEND PLAN TO move_base */
     x = -3.0, y = 6.5, angle = 45.0;
     std::list<Waypoint>::iterator iterator = waypoints_list.begin();
