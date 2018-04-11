@@ -48,8 +48,11 @@ public:
     geometry_msgs::PoseStamped pose;
     double arc;                     // the arc which has as an edge the current waypoint and is formed with it, it's previous and it's next waypoints
     double deviation;
-    double traversability;          // TODO
-    double traversability_slope;    // TODO
+    double roll;
+    double pitch;
+    double yaw;                     // TODO: reconsider
+    double traversability;          // TODO: remove
+    double traversability_slope;    // TODO: remove
 
     Waypoint() {};
     Waypoint(geometry_msgs::PoseStamped goal) {
@@ -113,6 +116,8 @@ double outerProduct(const geometry_msgs::PoseStamped & pose_p, const geometry_ms
 /* source: wikipedia, Distance_from_a_point_to_a_line */
 double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b);
 double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::Pose & pose_a, const geometry_msgs::Pose & pose_b);
+/* returns the distance between two points */
+double distance(const geometry_msgs::Point & p_a, const geometry_msgs::Point & p_b);
 
 /* problem's core functions declarations */
 
@@ -124,3 +129,12 @@ bool throughLethalObstacle(const Waypoint & waypoint_a, const Waypoint & waypoin
 bool notGoodRoute(const Waypoint & waypoint_a);
 /* what is the closest better (relative to it's cost) alternative to waypoint_a? */
 Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & waypoint_b);
+
+/* is a waypoint admissible for path planning?
+ * w_c: the candidate-waypoint, w_f: it's previous, currently fixed, waypoint */
+bool isAdmissible(Waypoint & w_c, const Waypoint & w_f);
+/* evaluate a given plan (a vector of waypoints) as a possible solution */
+double evaluate(const std::vector<Waypoint> plan);
+/* calculate the pitch of the platform at a certain position */
+double pitchAt(Waypoint & w);
+double pitchAt(const geometry_msgs::Point & p);

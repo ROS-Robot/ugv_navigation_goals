@@ -109,6 +109,12 @@ double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometr
     return d;
 }
 
+/* returns the distance between two points */
+double distance(const geometry_msgs::Point & p_a, const geometry_msgs::Point & p_b) {
+    double d = std::sqrt((p_a.x-p_b.x)*(p_a.x-p_b.x)+(p_a.y-p_b.y)*(p_a.y-p_b.y));
+    return d;
+}
+
 /* problem's core functions definitions */
 
 /* generate optimal plan based on an initial set of waypoints */
@@ -403,4 +409,86 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
     // ROS_INFO("closestBetterAlternative out");
     if (best_it == alternatives.end()) return waypoint_a;
     return *best_it;
+}
+
+
+/* is a waypoint admissible for path planning?
+ * w_c: the candidate-waypoint, w_f: it's previous, currently fixed, waypoint */
+bool isAdmissible(Waypoint & w_c, const Waypoint & w_f){
+    /* in order of appearance, we want w_c:
+        not to be leading us at a lethal obstacle in order to reach w_f, to be on the right of the left border of the field,
+        to be on the left of the right border of the field to be below the finish line, to be above the start line */
+    if ( throughLethalObstacle(w_c, w_f) || !outerProduct(w_c.pose, terrain.goal_left, terrain.start_left) > 0 ||
+        !outerProduct(w_c.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(w_c.pose, terrain.goal_left, terrain.goal_right) > 0 ||
+        !outerProduct(w_c.pose, terrain.start_left, terrain.start_right) < 0 ) {
+        return false;
+    }
+
+    /* we also don't want the pitch at w_c to be greater than the pitch in terrain.start */
+    if (pitchAt(w_c) > pitchAt(terrain.start.position))
+        return false;
+
+    return true;    // we reached so far, we have an admissible waypoint
+}
+
+/* evaluate a given plan (a vector of waypoints) as a possible solution */
+double evaluate(const std::vector<Waypoint> plan) {
+    double score = 0.0, s_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
+            s_roll_pos = 0.0, s_arc = 0.0;
+
+    for (std::vector<Waypoint>::const_iterator it = plan.begin(); it != plan.end(); ++it) {
+            s_dev += it->deviation;
+            s_pitch += it->pitch;
+            s_yaw += it->yaw;
+            /* TODO: the roll thing... */
+            if (1)
+                s_roll_pos += it->roll;
+            else
+                s_roll_neg += it->roll;
+            s_arc += it->arc;
+    }
+
+    /* TODO: perhaps add weights for normalization? */
+    score = s_dev + s_pitch - s_yaw + s_roll_neg - s_roll_pos + s_arc;
+
+    return score;
+}
+
+/* calculate the pitch of the platform at a certain position */
+double pitchAt(Waypoint & w) {
+    double pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0, sinThetaP = 0.0;
+    geometry_msgs::Point p = w.pose.pose.position;
+
+    /* if the platform is looking towards goal_right */
+    if (w.arc <= 90) {
+        x_3 = std::abs(p.x-terrain.goal_right.position.x);
+        x_2 = distance(p, terrain.goal_right.position);
+        sinTheta = std::sin(terrain.slope*PI/180.0);
+        sinThetaP = sinTheta * x_3 / x_2;
+    }
+    /* if the platform is looking towards goal_left */
+    else {
+        x_3 = std::abs(p.x-terrain.goal_left.position.x);
+        x_2 = distance(p, terrain.goal_left.position);
+        sinTheta = std::sin(terrain.slope*PI/180.0);
+        sinThetaP = sinTheta * x_3 / x_2;
+    }
+
+    pitch = std::asin(sinThetaP);
+    w.pitch = pitch;
+
+    return pitch;
+}
+
+double pitchAt(const geometry_msgs::Point & p) {
+    double pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0, sinThetaP = 0.0;
+
+    x_3 = std::abs(p.x-terrain.goal_right.position.x);
+    x_2 = distance(p, terrain.goal_right.position);
+    sinTheta = std::sin(terrain.slope*PI/180.0);
+    sinThetaP = sinTheta * x_3 / x_2;
+
+    pitch = std::asin(sinThetaP);
+
+    return pitch;
 }

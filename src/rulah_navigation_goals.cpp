@@ -11,9 +11,9 @@ int main(int argc, char *argv[]) {
     num_of_waypoints = 0;
 
     // initialize terrain
-    terrain.goal.position.x = 1.5; terrain.goal.position.y = 6.0; terrain.start.position.x = -5.0; terrain.start.position.y = 6.0;
-    terrain.goal_left.position.x = 1.5; terrain.goal_left.position.y = 7.0; terrain.start_left.position.x = -5.0; terrain.start_left.position.y = 7.0;
-    terrain.goal_right.position.x = 1.5; terrain.goal_right.position.y = 5.0; terrain.start_right.position.x = -5.0; terrain.start_right.position.y = 5.0;
+    terrain.goal.position.x = 1.5; terrain.goal.position.y = 6.0; terrain.start.position.x = -4.85; terrain.start.position.y = 6.0;
+    terrain.goal_left.position.x = 1.5; terrain.goal_left.position.y = 7.0; terrain.start_left.position.x = -4.85; terrain.start_left.position.y = 7.0;
+    terrain.goal_right.position.x = 1.5; terrain.goal_right.position.y = 5.0; terrain.start_right.position.x = -4.85; terrain.start_right.position.y = 5.0;
     terrain.slope = 40.0;
     geometry_msgs::PoseStamped temp;
     temp.pose.position.x = -3.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     init.pose.pose.orientation.x = 0.0; init.pose.pose.orientation.y = 0.0; init.pose.pose.orientation.z = 0.0; init.pose.pose.orientation.w = 1.0;
 
     /* CREATE INITIAL PLAN */
-    double x = -3.0, y = 6.5, angle = 45.0;
+    double x = -4.85, y = 6.5, angle = 45.0;
     ROS_INFO("Creating initial plan");
     while (x < GRANT_X) {
         num_of_waypoints++;
@@ -42,8 +42,8 @@ int main(int argc, char *argv[]) {
         geometry_msgs::PoseStamped goal;
         goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
         goal.pose.position.x = x; goal.pose.position.y = y; goal.pose.position.z = 0.0;
-        goal.pose.orientation.w = 1.0;
-        // goal.pose.orientation = turnEulerAngleToQuaternion(angle);
+        // goal.pose.orientation.w = 1.0;
+        goal.pose.orientation = turnEulerAngleToQuaternion(angle);
 
         Waypoint tempw(goal);
         tempw.id = num_of_waypoints;
@@ -88,28 +88,28 @@ int main(int argc, char *argv[]) {
                     iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z,
                     iterator->pose.pose.orientation.x, iterator->pose.pose.orientation.y, iterator->pose.pose.orientation.z, iterator->pose.pose.orientation.w);
 
-    /* FORM OPTIMAL PLAN */
-    generateOptimalPlan();
-
-    // recalculate angles
-    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
-        if (iterator == waypoints_list.begin()) iterator->arc = eulerAngleOf(iterator->pose, init, std::next(iterator,1)->pose);
-        else if (std::next(iterator,1) != waypoints_list.end()) iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
-        else iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, terrain.goal);
-    }
-    // recalculate costs
-    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
-        if (iterator == waypoints_list.begin())
-            iterator->cost = iterator->deviation;
-        else
-            iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
-    }
-
-    ROS_INFO("We have the optimal goals:");
-    for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator)
-        ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
-                    iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z,
-                    iterator->pose.pose.orientation.x, iterator->pose.pose.orientation.y, iterator->pose.pose.orientation.z, iterator->pose.pose.orientation.w);
+    // /* FORM OPTIMAL PLAN */
+    // generateOptimalPlan();
+    //
+    // // recalculate angles
+    // for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
+    //     if (iterator == waypoints_list.begin()) iterator->arc = eulerAngleOf(iterator->pose, init, std::next(iterator,1)->pose);
+    //     else if (std::next(iterator,1) != waypoints_list.end()) iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
+    //     else iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, terrain.goal);
+    // }
+    // // recalculate costs
+    // for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
+    //     if (iterator == waypoints_list.begin())
+    //         iterator->cost = iterator->deviation;
+    //     else
+    //         iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
+    // }
+    //
+    // ROS_INFO("We have the optimal goals:");
+    // for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator)
+    //     ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
+    //                 iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z,
+    //                 iterator->pose.pose.orientation.x, iterator->pose.pose.orientation.y, iterator->pose.pose.orientation.z, iterator->pose.pose.orientation.w);
 
     /* GRADUALLY SEND PLAN TO move_base */
     x = -3.0, y = 6.5, angle = 45.0;
