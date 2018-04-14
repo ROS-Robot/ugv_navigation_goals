@@ -492,3 +492,57 @@ double pitchAt(const geometry_msgs::Point & p) {
 
     return pitch;
 }
+
+/* calculate the roll of the platform at a certain position */
+double rollAt(Waypoint & w) {
+    double  roll = 0.0, pitch = 0.0, x_3 = 0.0, x_2 = 0.0,
+            sinTheta = 0.0, sinThetaP = 0.0, cosTheta0 = 0.0,
+            theta0 = 0.0, sinThetaR = 0.0;
+    geometry_msgs::Point p = w.pose.pose.position;
+
+    /* if the platform is looking towards goal_right */
+    if (w.arc <= 90) {
+        x_3 = std::abs(p.x-terrain.goal_right.position.x);
+        x_2 = distance(p, terrain.goal_right.position);
+        sinTheta = std::sin(terrain.slope*PI/180.0);
+        sinThetaP = sinTheta * x_3 / x_2;
+    }
+    /* if the platform is looking towards goal_left */
+    else {
+        x_3 = std::abs(p.x-terrain.goal_left.position.x);
+        x_2 = distance(p, terrain.goal_left.position);
+        sinTheta = std::sin(terrain.slope*PI/180.0);
+        sinThetaP = sinTheta * x_3 / x_2;
+    }
+
+    pitch = std::asin(sinThetaP);
+    w.pitch = pitch;
+
+    cosTheta0 = sinThetaP / sinTheta;
+    theta0 = std::acos(cosTheta0);
+    sinThetaR = sinThetaP / std::tan(90 - theta0*PI/180.0);
+    roll = std::asin(sinThetaR);
+    w.roll = roll;
+
+    return roll;
+}
+
+double rollAt(const geometry_msgs::Point & p) {
+    double  roll = 0.0, pitch = 0.0, x_3 = 0.0, x_2 = 0.0,
+            sinTheta = 0.0, sinThetaP = 0.0, cosTheta0 = 0.0,
+            theta0 = 0.0, sinThetaR = 0.0;
+
+    x_3 = std::abs(p.x-terrain.goal_right.position.x);
+    x_2 = distance(p, terrain.goal_right.position);
+    sinTheta = std::sin(terrain.slope*PI/180.0);
+    sinThetaP = sinTheta * x_3 / x_2;
+
+    pitch = std::asin(sinThetaP);
+
+    cosTheta0 = sinThetaP / sinTheta;
+    theta0 = std::acos(cosTheta0);
+    sinThetaR = sinThetaP / std::tan(90 - theta0*PI/180.0);
+    roll = std::asin(sinThetaR);
+
+    return roll;
+}

@@ -138,3 +138,6 @@ double evaluate(const std::vector<Waypoint> plan);
 /* calculate the pitch of the platform at a certain position */
 double pitchAt(Waypoint & w);
 double pitchAt(const geometry_msgs::Point & p);
+/* calculate the roll of the platform at a certain position */
+double rollAt(Waypoint & w);
+double rollAt(const geometry_msgs::Point & p);
