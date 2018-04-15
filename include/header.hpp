@@ -50,9 +50,10 @@ public:
     double deviation;
     double roll;
     double pitch;
-    double yaw;                     // TODO: reconsider
-    double traversability;          // TODO: remove
-    double traversability_slope;    // TODO: remove
+    double yaw;                     // TODO: fix
+    bool looking_right;
+    // double traversability;          // TODO: remove
+    // double traversability_slope;    // TODO: remove
 
     Waypoint() {};
     Waypoint(geometry_msgs::PoseStamped goal) {
@@ -74,8 +75,8 @@ public:
     double goal_altitude;                   // TODO
     double slope;
     std::vector<geometry_msgs::PoseStamped>  lethal_obstacles;
-    grid_map::GridMap travers_map;          // TODO
-    grid_map::GridMap travers_slope_map;    // TODO
+    // grid_map::GridMap travers_map;          // TODO
+    // grid_map::GridMap travers_slope_map;    // TODO
 
     Terrain() {};
     Terrain(std::vector<geometry_msgs::PoseStamped> lethal_obstacles) : lethal_obstacles(lethal_obstacles) {};
@@ -134,10 +135,13 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
  * w_c: the candidate-waypoint, w_f: it's previous, currently fixed, waypoint */
 bool isAdmissible(Waypoint & w_c, const Waypoint & w_f);
 /* evaluate a given plan (a vector of waypoints) as a possible solution */
-double evaluate(const std::vector<Waypoint> plan);
+double evaluate(const std::list<Waypoint> plan);
 /* calculate the pitch of the platform at a certain position */
 double pitchAt(Waypoint & w);
 double pitchAt(const geometry_msgs::Point & p);
 /* calculate the roll of the platform at a certain position */
 double rollAt(Waypoint & w);
 double rollAt(const geometry_msgs::Point & p);
+/* calculate the yaw of the platform at a certain position */
+double yawAt(Waypoint & w);
+double yawAt(const geometry_msgs::Point & p);
