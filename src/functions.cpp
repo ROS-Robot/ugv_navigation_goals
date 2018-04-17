@@ -439,7 +439,7 @@ double evaluate(const std::list<Waypoint> plan) {
             ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
                         it->pose.pose.position.x, it->pose.pose.position.y, it->pose.pose.position.z,
                         it->pose.pose.orientation.x, it->pose.pose.orientation.y, it->pose.pose.orientation.z, it->pose.pose.orientation.w);
-            ROS_INFO("deviation = %f, roll = %f, pitch = %f, yaw = %f, arc = %f", it->deviation, it->roll, it->pitch, it->yaw, it->arc);
+            ROS_INFO("deviation = %f, roll = %f, pitch = %f, yaw = %f, arc = %f, looking_right = %d", it->deviation, it->roll, it->pitch, it->yaw, it->arc, it->looking_right);
 
             s_dev += it->deviation;
             s_pitch += it->pitch;
@@ -478,7 +478,7 @@ double pitchAt(Waypoint & w) {
         sinThetaP = sinTheta * x_3 / x_2;
     }
 
-    pitch = std::asin(sinThetaP);
+    pitch = std::asin(sinThetaP)*180.0/PI;
     w.pitch = pitch;
 
     return pitch;
@@ -492,7 +492,7 @@ double pitchAt(const geometry_msgs::Point & p) {
     sinTheta = std::sin(terrain.slope*PI/180.0);
     sinThetaP = sinTheta * x_3 / x_2;
 
-    pitch = std::asin(sinThetaP);
+    pitch = std::asin(sinThetaP)*180.0/PI;
 
     return pitch;
 }
@@ -504,28 +504,45 @@ double rollAt(Waypoint & w) {
             theta0 = 0.0, sinThetaR = 0.0;
     geometry_msgs::Point p = w.pose.pose.position;
 
+    ROS_INFO("%d", w.id);
+
     /* if the platform is looking towards goal_right */
     if (w.looking_right) {
+        ROS_INFO("looking right");
         x_3 = std::abs(p.x-terrain.goal_right.position.x);
+        ROS_INFO("x_3 = %f", x_3);
         x_2 = distance(p, terrain.goal_right.position);
+        ROS_INFO("x_2 = %f", x_2);
         sinTheta = std::sin(terrain.slope*PI/180.0);
+        ROS_INFO("sinTheta = %f", sinTheta);
         sinThetaP = sinTheta * x_3 / x_2;
+        ROS_INFO("sinThetaP = %f", sinThetaP);
     }
     /* if the platform is looking towards goal_left */
     else {
+        ROS_INFO("looking left");
         x_3 = std::abs(p.x-terrain.goal_left.position.x);
+        ROS_INFO("x_3 = %f", x_3);
         x_2 = distance(p, terrain.goal_left.position);
+        ROS_INFO("x_2 = %f", x_2);
         sinTheta = std::sin(terrain.slope*PI/180.0);
+        ROS_INFO("sinTheta = %f", sinTheta);
         sinThetaP = sinTheta * x_3 / x_2;
+        ROS_INFO("sinThetaP = %f", sinThetaP);
     }
 
-    pitch = std::asin(sinThetaP);
+    pitch = std::asin(sinThetaP)*180.0/PI;
+    ROS_INFO("pitch = %f", pitch);
     w.pitch = pitch;
 
     cosTheta0 = sinThetaP / sinTheta;
-    theta0 = std::acos(cosTheta0);
-    sinThetaR = sinThetaP / std::tan(90 - theta0*PI/180.0);
-    roll = std::asin(sinThetaR);
+    ROS_INFO("cosTheta0 = %f", cosTheta0);
+    theta0 = std::acos(cosTheta0)*180.0/PI;
+    ROS_INFO("theta0 = %f", theta0);
+    sinThetaR = sinThetaP / std::tan((90.0 - theta0)*PI/180.0);
+    ROS_INFO("sinThetaR = %f", sinThetaR);
+    roll = std::asin(sinThetaR)*180.0/PI;
+    ROS_INFO("roll = %f", roll);
     w.roll = roll;
 
     return roll;
@@ -541,12 +558,12 @@ double rollAt(const geometry_msgs::Point & p) {
     sinTheta = std::sin(terrain.slope*PI/180.0);
     sinThetaP = sinTheta * x_3 / x_2;
 
-    pitch = std::asin(sinThetaP);
+    pitch = std::asin(sinThetaP)*180.0/PI;
 
     cosTheta0 = sinThetaP / sinTheta;
-    theta0 = std::acos(cosTheta0);
-    sinThetaR = sinThetaP / std::tan(90 - theta0*PI/180.0);
-    roll = std::asin(sinThetaR);
+    theta0 = std::acos(cosTheta0)*180.0/PI;
+    sinThetaR = sinThetaP / std::tan((90.0 - theta0)*PI/180.0);
+    roll = std::asin(sinThetaR)*180.0/PI;
 
     return roll;
 }
@@ -573,11 +590,11 @@ double yawAt(Waypoint & w) {
         sinThetaP = sinTheta * x_3 / x_2;
     }
 
-    pitch = std::asin(sinThetaP);
+    pitch = std::asin(sinThetaP)*180.0/PI;
     w.pitch = pitch;
 
     cosTheta0 = sinThetaP / sinTheta;
-    theta0 = std::acos(cosTheta0);
+    theta0 = std::acos(cosTheta0)*180.0/PI;
     /*
         TODO: calculate yaw
     */
@@ -596,10 +613,10 @@ double yawAt(const geometry_msgs::Point & p) {
     sinTheta = std::sin(terrain.slope*PI/180.0);
     sinThetaP = sinTheta * x_3 / x_2;
 
-    pitch = std::asin(sinThetaP);
+    pitch = std::asin(sinThetaP)*180.0/PI;
 
     cosTheta0 = sinThetaP / sinTheta;
-    theta0 = std::acos(cosTheta0);
+    theta0 = std::acos(cosTheta0)*180.0/PI;
     /*
         TODO: calculate yaw
     */

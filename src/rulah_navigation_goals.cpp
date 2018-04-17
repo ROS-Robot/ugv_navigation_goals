@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     ROS_INFO("Creating initial plan");
     while (x < GRANT_X) {
         num_of_waypoints++;
-        x += 0.5;
+        x += 0.75;
         geometry_msgs::PoseStamped goal;
         goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
         goal.pose.position.x = x; goal.pose.position.y = y; goal.pose.position.z = 0.0;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 
     /* EVALUATE INITIAL PLAN (for debugging) */
     double eval = evaluate(waypoints_list);
-    ROS_INFO("Evaluation = %f", eval);
+    ROS_WARN("Evaluation = %f", eval);
 
     // /* FORM OPTIMAL PLAN */
     // generateOptimalPlan();
@@ -134,16 +134,16 @@ int main(int argc, char *argv[]) {
     /* GRADUALLY SEND PLAN TO move_base */
     x = -3.0, y = 6.5, angle = 45.0;
     std::list<Waypoint>::iterator iterator = waypoints_list.begin();
-    ROS_INFO("Sending goals to move_base");
+    // ROS_INFO("Sending goals to move_base");
     // first_time = true;
     while (ros::ok() && iterator != waypoints_list.end()) {
         goals_pub.publish(iterator->pose);
         if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
-            ROS_INFO("Publishing goal");
+            // ROS_INFO("Publishing goal");
             goals_pub.publish(iterator->pose);
             first_time == false;
             if (!first_time) {
-                ROS_INFO("iterator++");
+                // ROS_INFO("iterator++");
                 iterator++;
                 first_time = true;
             }
