@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     ROS_INFO("Creating initial plan");
     while (x < GRANT_X) {
         num_of_waypoints++;
-        x += 0.75;
+        x += 0.95;
         geometry_msgs::PoseStamped goal;
         goal.header.stamp = ros::Time::now(); goal.header.frame_id = "odom";
         goal.pose.position.x = x; goal.pose.position.y = y; goal.pose.position.z = 0.0;
@@ -58,12 +58,12 @@ int main(int argc, char *argv[]) {
         /* debugging */
         // ROS_WARN("%f", angle);
 
-        if (angle == 45) {
-            angle = 135;
+        if (angle == 45.0) {
+            angle = 135.0;
             y = 5.5;
         }
         else {
-            angle = 45;
+            angle = 45.0;
             y = 6.5;
         }
         waypoints_list.push_back(tempw);
@@ -96,6 +96,9 @@ int main(int argc, char *argv[]) {
         pitchAt(*iterator);
         rollAt(*iterator);
         yawAt(*iterator);
+        if (iterator != waypoints_list.begin()) {
+            ROS_WARN("waypoint %d admissibility = %d", iterator->id, isAdmissible(*iterator, *(std::prev(iterator,1))));
+        }
     }
 
     ROS_INFO("We have the initial goals:");
@@ -105,8 +108,9 @@ int main(int argc, char *argv[]) {
                     iterator->pose.pose.orientation.x, iterator->pose.pose.orientation.y, iterator->pose.pose.orientation.z, iterator->pose.pose.orientation.w);
 
     /* EVALUATE INITIAL PLAN (for debugging) */
-    double eval = evaluate(waypoints_list);
-    ROS_WARN("Evaluation = %f", eval);
+    bool has_worst_local_cost = false;
+    double eval = evaluate(waypoints_list, has_worst_local_cost);
+    ROS_WARN("Evaluation = %f\t(has_worst_local_cost = %d)", eval, has_worst_local_cost);
 
     // /* FORM OPTIMAL PLAN */
     // generateOptimalPlan();

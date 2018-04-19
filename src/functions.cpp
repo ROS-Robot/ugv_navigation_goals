@@ -423,39 +423,54 @@ bool isAdmissible(Waypoint & w_c, const Waypoint & w_f){
     }
 
     /* we also don't want the pitch at w_c to be greater than the pitch in terrain.start */
-    if (pitchAt(w_c) > pitchAt(terrain.start.position))
+    if (pitchAt(w_c) > pitchAt(terrain.start.position) || rollAt(w_c) < rollAt(terrain.start.position))
         return false;
 
     return true;    // we reached so far, we have an admissible waypoint
 }
 
 /* evaluate a given plan (a vector of waypoints) as a possible solution */
-double evaluate(const std::list<Waypoint> plan) {
-    double score = 0.0, s_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
+double evaluate(std::list<Waypoint> & plan, bool & has_worst_local_cost) {
+    double cost = 0.0, s_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
             s_roll_pos = 0.0, s_arc = 0.0;
-
-    for (std::list<Waypoint>::const_iterator it = plan.begin(); it != plan.end(); ++it) {
+            /* TODO: trade-offs discussion at final text*/
+    for (std::list<Waypoint>::iterator it = plan.begin(); it != plan.end(); ++it) {
             /* for debugging */
             ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
                         it->pose.pose.position.x, it->pose.pose.position.y, it->pose.pose.position.z,
                         it->pose.pose.orientation.x, it->pose.pose.orientation.y, it->pose.pose.orientation.z, it->pose.pose.orientation.w);
             ROS_INFO("deviation = %f, roll = %f, pitch = %f, yaw = %f, arc = %f, looking_right = %d", it->deviation, it->roll, it->pitch, it->yaw, it->arc, it->looking_right);
 
-            s_dev += it->deviation;
-            s_pitch += it->pitch;
-            s_yaw += it->yaw;
+            it->cost = 0;
+            s_dev += it->deviation; it->cost += it->deviation/(it->deviation/(100*it->deviation));
+            s_pitch += it->pitch; it->cost += 1.5*it->pitch;
+            s_yaw += it->yaw; it->cost -= 0.5*it->yaw;
             /* TODO: fix roll, pitch, yaw signs */
-            if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
+            if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
                 s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
-            else
+                it->cost -= 1.3*it->roll;
+            }
+            else {
                 s_roll_neg += it->roll;     // roll that negatively impacts the movement of the vehicle
+                it->cost += 1.3*it->roll;
+            }
             s_arc += it->arc;
+            it->cost += 0.4*it->arc;
+
+            if (it->cost > terrain.worst_local_cost) {
+                terrain.worst_local_cost = it->cost;
+                has_worst_local_cost = true;
+            }
+
+            ROS_WARN("waypoint %d cost = %f", it->id, it->cost);
     }
 
-    /* TODO: perhaps add weights for normalization (?) */
-    score = s_dev + s_pitch - s_yaw + s_roll_neg - s_roll_pos + s_arc;
+    /* s_dev/(s_dev/(100*s_dev)) because e.g. 0.5 / (0.5/(100*0.5)) = 50, 6.5 / (6.5/(100*6.5)) = 650, etc */
+    cost = s_dev/(s_dev/(100*s_dev)) + 1.5*s_pitch - 0.5*s_yaw + 1.3*s_roll_neg - 1.3*s_roll_pos + 0.4*s_arc;
 
-    return score;
+    if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
+
+    return cost;
 }
 
 /* calculate the pitch of the platform at a certain position */

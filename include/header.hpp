@@ -17,6 +17,7 @@
 #include <grid_map_core/grid_map_core.hpp>
 /* C++ utility libraries */
 #include <list>
+#include <limits>       /* numeric_limits */
 #include <math.h>       /* acos */
 
 /* useful definitions */
@@ -74,12 +75,18 @@ public:
     geometry_msgs::Pose start_right;
     double goal_altitude;                   // TODO
     double slope;
+    double worst_local_cost;
+    double worst_global_cost;
     std::vector<geometry_msgs::PoseStamped>  lethal_obstacles;
     // grid_map::GridMap travers_map;          // TODO
     // grid_map::GridMap travers_slope_map;    // TODO
 
-    Terrain() {};
-    Terrain(std::vector<geometry_msgs::PoseStamped> lethal_obstacles) : lethal_obstacles(lethal_obstacles) {};
+    Terrain() :
+        worst_local_cost(std::numeric_limits<double>::min()), worst_global_cost(std::numeric_limits<double>::min())
+        {};
+    Terrain(std::vector<geometry_msgs::PoseStamped> lethal_obstacles) :
+        lethal_obstacles(lethal_obstacles), worst_local_cost(std::numeric_limits<double>::min()), worst_global_cost(std::numeric_limits<double>::min())
+        {};
     ~Terrain() {};
 };
 
@@ -135,7 +142,7 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
  * w_c: the candidate-waypoint, w_f: it's previous, currently fixed, waypoint */
 bool isAdmissible(Waypoint & w_c, const Waypoint & w_f);
 /* evaluate a given plan (a vector of waypoints) as a possible solution */
-double evaluate(const std::list<Waypoint> plan);
+double evaluate(std::list<Waypoint> & plan, bool & has_worst_local_cost);
 /* calculate the pitch of the platform at a certain position */
 double pitchAt(Waypoint & w);
 double pitchAt(const geometry_msgs::Point & p);
