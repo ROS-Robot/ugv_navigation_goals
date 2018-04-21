@@ -50,11 +50,11 @@ double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped ps) {
 }
 
 bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c) {
-    double x1 = pose_a.pose.position.x, y1 = pose_a.pose.position.y,
+    double x_1 = pose_a.pose.position.x, y1 = pose_a.pose.position.y,
         x2 = pose_b.pose.position.x, y2 = pose_b.pose.position.y,
         x3 = pose_c.pose.position.x, y3 = pose_c.pose.position.y;
 
-    return ((y2-y1)/(x2-x1)) == ((y3-y1)/(x3-x1));
+    return ((y2-y1)/(x2-x_1)) == ((y3-y1)/(x3-x_1));
 }
 
 /* returns the euler angle where pose_a is the vertex */
@@ -475,21 +475,42 @@ double evaluate(std::list<Waypoint> & plan, bool & has_worst_local_cost) {
 
 /* calculate the pitch of the platform at a certain position */
 double pitchAt(Waypoint & w) {
-    double pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0, sinThetaP = 0.0;
+    double  pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0, sinThetaP = 0.0,
+            x_1 = 0.0, y_0 = 0.0;
     geometry_msgs::Point p = w.pose.pose.position;
 
     /* if the platform is looking towards goal_right */
     if (w.looking_right) {
-        x_3 = std::abs(p.x-terrain.goal_right.position.x);
-        x_2 = distance(p, terrain.goal_right.position);
+        // x_3 = std::abs(p.x-terrain.goal_right.position.x);
+        // x_2 = distance(p, terrain.goal_right.position);
         sinTheta = std::sin(terrain.slope*PI/180.0);
+        double d = distance(terrain.start.position, p);
+        double l = d / std::cos(terrain.slope*PI/180.0);
+        double h = sinTheta * l;
+        double d1 = distance(terrain.start.position, terrain.goal_right.position);
+        double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+        double h1 = sinTheta * l1;
+        y_0 = h1-h;
+        x_3 = y_0 / sinTheta;
+        x_1 = std::abs(p.y-terrain.goal_right.position.y);
+        x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
         sinThetaP = sinTheta * x_3 / x_2;
     }
     /* if the platform is looking towards goal_left */
     else {
-        x_3 = std::abs(p.x-terrain.goal_left.position.x);
-        x_2 = distance(p, terrain.goal_left.position);
+        // x_3 = std::abs(p.x-terrain.goal_left.position.x);
+        // x_2 = distance(p, terrain.goal_left.position);
         sinTheta = std::sin(terrain.slope*PI/180.0);
+        double d = distance(terrain.start.position, p);
+        double l = d / std::cos(terrain.slope*PI/180.0);
+        double h = sinTheta * l;
+        double d1 = distance(terrain.start.position, terrain.goal_left.position);
+        double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+        double h1 = sinTheta * l1;
+        y_0 = h1-h;
+        x_3 = y_0 / sinTheta;
+        x_1 = std::abs(p.y-terrain.goal_left.position.y);
+        x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
         sinThetaP = sinTheta * x_3 / x_2;
     }
 
@@ -500,11 +521,22 @@ double pitchAt(Waypoint & w) {
 }
 
 double pitchAt(const geometry_msgs::Point & p) {
-    double pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0, sinThetaP = 0.0;
+    double  pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0, sinThetaP = 0.0,
+            x_1 = 0.0, y_0 = 0.0;
 
-    x_3 = std::abs(p.x-terrain.goal_right.position.x);
-    x_2 = distance(p, terrain.goal_right.position);
+    // x_3 = std::abs(p.x-terrain.goal_right.position.x);
+    // x_2 = distance(p, terrain.goal_right.position);
     sinTheta = std::sin(terrain.slope*PI/180.0);
+    double d = distance(terrain.start.position, p);
+    double l = d / std::cos(terrain.slope*PI/180.0);
+    double h = sinTheta * l;
+    double d1 = distance(terrain.start.position, terrain.goal_right.position);
+    double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+    double h1 = sinTheta * l1;
+    y_0 = h1-h;
+    x_3 = y_0 / sinTheta;
+    x_1 = std::abs(p.y-terrain.goal_right.position.y);
+    x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
     sinThetaP = sinTheta * x_3 / x_2;
 
     pitch = std::asin(sinThetaP)*180.0/PI;
@@ -516,7 +548,7 @@ double pitchAt(const geometry_msgs::Point & p) {
 double rollAt(Waypoint & w) {
     double  roll = 0.0, pitch = 0.0, x_3 = 0.0, x_2 = 0.0,
             sinTheta = 0.0, sinThetaP = 0.0, cosTheta0 = 0.0,
-            theta0 = 0.0, sinThetaR = 0.0;
+            theta0 = 0.0, sinThetaR = 0.0, x_1 = 0.0, y_0 = 0.0;
     geometry_msgs::Point p = w.pose.pose.position;
 
     ROS_INFO("%d", w.id);
@@ -524,24 +556,60 @@ double rollAt(Waypoint & w) {
     /* if the platform is looking towards goal_right */
     if (w.looking_right) {
         ROS_INFO("looking right");
-        x_3 = std::abs(p.x-terrain.goal_right.position.x);
-        ROS_INFO("x_3 = %f", x_3);
-        x_2 = distance(p, terrain.goal_right.position);
-        ROS_INFO("x_2 = %f", x_2);
+        // x_3 = std::abs(p.x-terrain.goal_right.position.x);
+        // x_2 = distance(p, terrain.goal_right.position);
         sinTheta = std::sin(terrain.slope*PI/180.0);
         ROS_INFO("sinTheta = %f", sinTheta);
+        double d = distance(terrain.start.position, p);
+        ROS_INFO("d = %f", d);
+        double l = d / std::cos(terrain.slope*PI/180.0);
+        ROS_INFO("l = %f", l);
+        double h = sinTheta * l;
+        ROS_INFO("h = %f", h);
+        double d1 = distance(terrain.start.position, terrain.goal_right.position);
+        ROS_INFO("d1 = %f", d1);
+        double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+        ROS_INFO("l1 = %f", l1);
+        double h1 = sinTheta * l1;
+        ROS_INFO("h1 = %f", h1);
+        y_0 = h1-h;
+        ROS_INFO("y_0 = %f", y_0);
+        x_3 = y_0 / sinTheta;
+        ROS_INFO("x_3 = %f", x_3);
+        x_1 = std::abs(p.y-terrain.goal_right.position.y);
+        ROS_INFO("x_1 = %f", x_1);
+        x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
+        ROS_INFO("x_2 = %f", x_2);
         sinThetaP = sinTheta * x_3 / x_2;
         ROS_INFO("sinThetaP = %f", sinThetaP);
     }
     /* if the platform is looking towards goal_left */
     else {
         ROS_INFO("looking left");
-        x_3 = std::abs(p.x-terrain.goal_left.position.x);
-        ROS_INFO("x_3 = %f", x_3);
-        x_2 = distance(p, terrain.goal_left.position);
-        ROS_INFO("x_2 = %f", x_2);
+        // x_3 = std::abs(p.x-terrain.goal_left.position.x);
+        // x_2 = distance(p, terrain.goal_left.position);
         sinTheta = std::sin(terrain.slope*PI/180.0);
         ROS_INFO("sinTheta = %f", sinTheta);
+        double d = distance(terrain.start.position, p);
+        ROS_INFO("d = %f", d);
+        double l = d / std::cos(terrain.slope*PI/180.0);
+        ROS_INFO("l = %f", l);
+        double h = sinTheta * l;
+        ROS_INFO("h = %f", h);
+        double d1 = distance(terrain.start.position, terrain.goal_left.position);
+        ROS_INFO("d1 = %f", d1);
+        double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+        ROS_INFO("l1 = %f", l1);
+        double h1 = sinTheta * l1;
+        ROS_INFO("h1 = %f", h1);
+        y_0 = h1-h;
+        ROS_INFO("y_0 = %f", y_0);
+        x_3 = y_0 / sinTheta;
+        ROS_INFO("x_3 = %f", x_3);
+        x_1 = std::abs(p.y-terrain.goal_left.position.y);
+        ROS_INFO("x_1 = %f", x_1);
+        x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
+        ROS_INFO("x_2 = %f", x_2);
         sinThetaP = sinTheta * x_3 / x_2;
         ROS_INFO("sinThetaP = %f", sinThetaP);
     }
@@ -566,11 +634,21 @@ double rollAt(Waypoint & w) {
 double rollAt(const geometry_msgs::Point & p) {
     double  roll = 0.0, pitch = 0.0, x_3 = 0.0, x_2 = 0.0,
             sinTheta = 0.0, sinThetaP = 0.0, cosTheta0 = 0.0,
-            theta0 = 0.0, sinThetaR = 0.0;
+            theta0 = 0.0, sinThetaR = 0.0, x_1 = 0.0, y_0 = 0.0;
 
-    x_3 = std::abs(p.x-terrain.goal_right.position.x);
-    x_2 = distance(p, terrain.goal_right.position);
+    // x_3 = std::abs(p.x-terrain.goal_right.position.x);
+    // x_2 = distance(p, terrain.goal_right.position);
     sinTheta = std::sin(terrain.slope*PI/180.0);
+    double d = distance(terrain.start.position, p);
+    double l = d / std::cos(terrain.slope*PI/180.0);
+    double h = sinTheta * l;
+    double d1 = distance(terrain.start.position, terrain.goal_right.position);
+    double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+    double h1 = sinTheta * l1;
+    y_0 = h1-h;
+    x_3 = y_0 / sinTheta;
+    x_1 = std::abs(p.y-terrain.goal_right.position.y);
+    x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
     sinThetaP = sinTheta * x_3 / x_2;
 
     pitch = std::asin(sinThetaP)*180.0/PI;
@@ -587,21 +665,41 @@ double rollAt(const geometry_msgs::Point & p) {
 double yawAt(Waypoint & w) {
     double  roll = 0.0, pitch = 0.0, x_3 = 0.0, x_2 = 0.0,
             sinTheta = 0.0, sinThetaP = 0.0, cosTheta0 = 0.0,
-            theta0 = 0.0, sinThetaR = 0.0, yaw = 0.0;
+            theta0 = 0.0, sinThetaR = 0.0, yaw = 0.0, x_1 = 0.0, y_0 = 0.0;
     geometry_msgs::Point p = w.pose.pose.position;
 
     /* if the platform is looking towards goal_right */
     if (w.looking_right) {
-        x_3 = std::abs(p.x-terrain.goal_right.position.x);
-        x_2 = distance(p, terrain.goal_right.position);
+        // x_3 = std::abs(p.x-terrain.goal_right.position.x);
+        // x_2 = distance(p, terrain.goal_right.position);
         sinTheta = std::sin(terrain.slope*PI/180.0);
+        double d = distance(terrain.start.position, p);
+        double l = d / std::cos(terrain.slope*PI/180.0);
+        double h = sinTheta * l;
+        double d1 = distance(terrain.start.position, terrain.goal_right.position);
+        double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+        double h1 = sinTheta * l1;
+        y_0 = h1-h;
+        x_3 = y_0 / sinTheta;
+        x_1 = std::abs(p.y-terrain.goal_right.position.y);
+        x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
         sinThetaP = sinTheta * x_3 / x_2;
     }
     /* if the platform is looking towards goal_left */
     else {
-        x_3 = std::abs(p.x-terrain.goal_left.position.x);
-        x_2 = distance(p, terrain.goal_left.position);
+        // x_3 = std::abs(p.x-terrain.goal_left.position.x);
+        // x_2 = distance(p, terrain.goal_left.position);
         sinTheta = std::sin(terrain.slope*PI/180.0);
+        double d = distance(terrain.start.position, p);
+        double l = d / std::cos(terrain.slope*PI/180.0);
+        double h = sinTheta * l;
+        double d1 = distance(terrain.start.position, terrain.goal_left.position);
+        double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+        double h1 = sinTheta * l1;
+        y_0 = h1-h;
+        x_3 = y_0 / sinTheta;
+        x_1 = std::abs(p.y-terrain.goal_left.position.y);
+        x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
         sinThetaP = sinTheta * x_3 / x_2;
     }
 
@@ -621,11 +719,21 @@ double yawAt(Waypoint & w) {
 double yawAt(const geometry_msgs::Point & p) {
     double  roll = 0.0, pitch = 0.0, x_3 = 0.0, x_2 = 0.0,
             sinTheta = 0.0, sinThetaP = 0.0, cosTheta0 = 0.0,
-            theta0 = 0.0, sinThetaR = 0.0, yaw = 0.0;
+            theta0 = 0.0, sinThetaR = 0.0, x_1 = 0.0, y_0 = 0.0;
 
-    x_3 = std::abs(p.x-terrain.goal_right.position.x);
-    x_2 = distance(p, terrain.goal_right.position);
+    // x_3 = std::abs(p.x-terrain.goal_right.position.x);
+    // x_2 = distance(p, terrain.goal_right.position);
     sinTheta = std::sin(terrain.slope*PI/180.0);
+    double d = distance(terrain.start.position, p);
+    double l = d / std::cos(terrain.slope*PI/180.0);
+    double h = sinTheta * l;
+    double d1 = distance(terrain.start.position, terrain.goal_right.position);
+    double l1 = d1 / std::cos(terrain.slope*PI/180.0);
+    double h1 = sinTheta * l1;
+    y_0 = h1-h;
+    x_3 = y_0 / sinTheta;
+    x_1 = std::abs(p.y-terrain.goal_right.position.y);
+    x_2 = std::sqrt(x_1*x_1 + (y_0/sinTheta)*(y_0/sinTheta));
     sinThetaP = sinTheta * x_3 / x_2;
 
     pitch = std::asin(sinThetaP)*180.0/PI;

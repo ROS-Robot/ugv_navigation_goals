@@ -77,9 +77,9 @@ int main(int argc, char *argv[]) {
             iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
 
             if (std::next(iterator,1)->pose.pose.position.y > iterator->pose.pose.position.y)
-                iterator->looking_right = false;
+                iterator->looking_right = true; // we haven't turned yet
             else
-                iterator->looking_right = true;
+                iterator->looking_right = false; // we haven't turned yet
         }
         else
             iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, terrain.goal);
