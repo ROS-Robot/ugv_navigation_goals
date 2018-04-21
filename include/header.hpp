@@ -40,6 +40,9 @@
 #define MAX_VIABLE_ALT 4    // find up to 4 viable alternative waypoints when needed
 #define MIN_JUMP 0.2    // the minimum jump in space when looking for an alternative waypoint
 #define MAX_REPS_FOR_OPT 20 // maximum number of optimization repetitions
+// search problem related
+#define SEGMENTS_PER_CURVE 2
+#define SEARCH_STEP 0.5
 
 /* our waypoint's structure */
 class Waypoint {
@@ -143,6 +146,9 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
 bool isAdmissible(Waypoint & w_c, const Waypoint & w_f);
 /* evaluate a given plan (a vector of waypoints) as a possible solution */
 double evaluate(std::list<Waypoint> & plan, bool & has_worst_local_cost);
+
+/* vehicle dynamics functions declarations */
+
 /* calculate the pitch of the platform at a certain position */
 double pitchAt(Waypoint & w);
 double pitchAt(const geometry_msgs::Point & p);
@@ -152,3 +158,14 @@ double rollAt(const geometry_msgs::Point & p);
 /* calculate the yaw of the platform at a certain position */
 double yawAt(Waypoint & w);
 double yawAt(const geometry_msgs::Point & p);
+
+/* Bezier curves functions declarations */
+/* sources: http://devmag.org.za/2011/04/05/bzier-curves-a-tutorial/ ,
+            http://devmag.org.za/2011/06/23/bzier-path-algorithms/ */
+
+/* calculate Bezier point of a quadratic Bezier curve */
+void calculateBezierPoint(const float t, const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, geometry_msgs::Point & p);
+/* calculate segmentation points of a Bezier curve, in order to "form" it */
+void formBezierCurve(const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, std::list<Waypoint> & waypoints);
+/* create a Bezier path, by stiching many Bezier curves together */
+void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path);

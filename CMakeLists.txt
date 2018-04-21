@@ -35,7 +35,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(rulah_navigation_goals src/rulah_navigation_goals.cpp src/functions.cpp)
+add_executable(rulah_navigation_goals src/rulah_navigation_goals.cpp src/functions.cpp src/bezier_curve.cpp src/utilities.cpp src/vehicle_dynamics.cpp)
 target_link_libraries(rulah_navigation_goals ${catkin_LIBRARIES})
 
 #############
