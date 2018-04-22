@@ -1,5 +1,29 @@
 #include "../include/header.hpp"
 
+#define TEST_BEZIER
+
+#ifdef TEST_BEZIER
+
+/* node's main function */
+int main(int argc, char *argv[]) {
+    /* SET-UP */
+    ros::init(argc, argv, "rulah_navigation_goals");
+    ros::NodeHandle nodeHandle("~");
+    ROS_INFO("It's on");
+
+    /* INITIALIZE TERRAIN */
+    terrain.goal.position.x = 1.5; terrain.goal.position.y = 6.0; terrain.start.position.x = -4.85; terrain.start.position.y = 6.0;
+    terrain.goal_left.position.x = 1.5; terrain.goal_left.position.y = 7.0; terrain.start_left.position.x = -4.85; terrain.start_left.position.y = 7.0;
+    terrain.goal_right.position.x = 1.5; terrain.goal_right.position.y = 5.0; terrain.start_right.position.x = -4.85; terrain.start_right.position.y = 5.0;
+    terrain.slope = 40.0;
+
+    /* TEST BEZIER CURVE FUNCTIONS, BY CREATING A DUMB PLAN */
+
+    return 0;
+}
+
+#elif TEST_CALCULATIONS
+
 /* node's main function */
 int main(int argc, char *argv[]) {
     /* SET-UP */
@@ -10,7 +34,7 @@ int main(int argc, char *argv[]) {
     first_time = true;
     num_of_waypoints = 0;
 
-    // initialize terrain
+    /* INITIALIZE TERRAIN */
     terrain.goal.position.x = 1.5; terrain.goal.position.y = 6.0; terrain.start.position.x = -4.85; terrain.start.position.y = 6.0;
     terrain.goal_left.position.x = 1.5; terrain.goal_left.position.y = 7.0; terrain.start_left.position.x = -4.85; terrain.start_left.position.y = 7.0;
     terrain.goal_right.position.x = 1.5; terrain.goal_right.position.y = 5.0; terrain.start_right.position.x = -4.85; terrain.start_right.position.y = 5.0;
@@ -160,3 +184,12 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+#else
+
+int main(int argc, char *argv[]) {
+    /* code */
+    return 0;
+}
+
+#endif

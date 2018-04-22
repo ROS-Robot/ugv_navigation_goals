@@ -169,3 +169,5 @@ void calculateBezierPoint(const float t, const geometry_msgs::Point p0, const ge
 void formBezierCurve(const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, std::list<Waypoint> & waypoints);
 /* create a Bezier path, by stiching many Bezier curves together */
 void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path);
+/* interpolate a Bezier path */
+void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);

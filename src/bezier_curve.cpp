@@ -51,3 +51,57 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         }
     }
 }
+
+/* interpolate a Bezier path */
+void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
+    if (segments.size() <= 2)
+        return;
+
+    for (int i = 0; i < segments.size(); i++) {
+        /* is first */
+        if (i == 0) {
+            geometry_msgs::Point p1 = segments.at(i).pose.pose.position;
+            geometry_msgs::Point p2 = segments.at(i+1).pose.pose.position;
+
+            geometry_msgs::Point tangent;
+            tangent.x = p2.x - p1.x; tangent.y = p2.y - p1.y;
+            geometry_msgs::Point q1;
+            q1.x = p1.x + scale * tangent.x; q1.y = p1.y + scale * tangent.y;
+
+            segments.at(i).pose.pose.position.x = p1.x; segments.at(i).pose.pose.position.y = p1.y;
+            segments.at(i+1).pose.pose.position.x = q1.x; segments.at(i+1).pose.pose.position.y = q1.y;
+        }
+        /* is last */
+        else if (i == segments.size()-1) {
+            geometry_msgs::Point p0 = segments.at(i-1).pose.pose.position;
+            geometry_msgs::Point p1 = segments.at(i).pose.pose.position;
+
+            geometry_msgs::Point tangent;
+            tangent.x = p1.x - p0.x; tangent.y = p1.y - p0.y;
+            geometry_msgs::Point q0;
+            q0.x = p1.x - scale * tangent.x; q0.y = p1.y - scale * tangent.y;
+
+            segments.at(i-1).pose.pose.position.x = q0.x; segments.at(i-1).pose.pose.position.y = q0.y;
+            segments.at(i).pose.pose.position.x = p1.x; segments.at(i).pose.pose.position.y = p1.y;
+        }
+        /* is anything else */
+        else {
+            geometry_msgs::Point p0 = segments.at(i-1).pose.pose.position;
+            geometry_msgs::Point p1 = segments.at(i).pose.pose.position;
+            geometry_msgs::Point p2 = segments.at(i+1).pose.pose.position;
+
+            geometry_msgs::Point tangent;
+            tangent.x = p2.x - p0.x; tangent.y = p2.y - p0.y;
+            double p1_m_p0_magn = std::sqrt((p1.x-p0.x)*(p1.x-p0.x)+(p1.y-p0.y)*(p1.y-p0.y));
+            double p2_m_p1_magn = std::sqrt((p2.x-p1.x)*(p2.x-p1.x)+(p2.y-p1.y)*(p2.y-p1.y));
+            geometry_msgs::Point q0;
+            q0.x = p1.x - scale * tangent.x * p1_m_p0_magn; q0.y = p1.y - scale * tangent.y * p1_m_p0_magn;
+            geometry_msgs::Point q1;
+            q1.x = p1.x + scale * tangent.x * p2_m_p1_magn; q1.y = p1.y + scale * tangent.y * p2_m_p1_magn;
+
+            segments.at(i-1).pose.pose.position.x = q0.x; segments.at(i-1).pose.pose.position.y = q0.y;
+            segments.at(i).pose.pose.position.x = p1.x; segments.at(i).pose.pose.position.y = p1.y;
+            segments.at(i+1).pose.pose.position.x = q1.x; segments.at(i+1).pose.pose.position.y = q1.y;
+        }
+    }
+}
