@@ -1,6 +1,6 @@
 #include "../include/header.hpp"
 
-#define TEST_BEZIER
+// #define TEST_BEZIER
 
 #ifdef TEST_BEZIER
 
@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
     init.header.stamp = ros::Time::now(); init.header.frame_id = "odom";
     init.pose.pose.position.x = terrain.start.position.x; init.pose.pose.position.y = terrain.start.position.y; init.pose.pose.position.z = 4.0;
     init.pose.pose.orientation.x = 0.0; init.pose.pose.orientation.y = 0.0; init.pose.pose.orientation.z = 0.0; init.pose.pose.orientation.w = 1.0;
+    init_pose_pub.publish(init);
 
     /* CREATE INITIAL PLAN */
     double x = -4.85, y = 6.5, angle = 45.0;
@@ -188,7 +189,97 @@ int main(int argc, char *argv[]) {
 #else
 
 int main(int argc, char *argv[]) {
-    /* code */
+    /* SET-UP */
+    ros::init(argc, argv, "rulah_navigation_goals");
+    ros::NodeHandle nodeHandle("~");
+    ROS_INFO("It's on");
+
+    /* INITIALIZE PROBLEM'S ENVIRONMENT */
+    terrain.goal.position.x = 1.5; terrain.goal.position.y = 6.0; terrain.start.position.x = -4.85; terrain.start.position.y = 6.0;
+    terrain.goal_left.position.x = 1.5; terrain.goal_left.position.y = 7.0; terrain.start_left.position.x = -4.85; terrain.start_left.position.y = 7.0;
+    terrain.goal_right.position.x = 1.5; terrain.goal_right.position.y = 5.0; terrain.start_right.position.x = -4.85; terrain.start_right.position.y = 5.0;
+    terrain.slope = 40.0;
+    geometry_msgs::PoseStamped temp;
+    temp.pose.position.x = -3.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
+    temp.pose.position.x = -1.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
+    temp.pose.position.x = -1.5; temp.pose.position.y = 6.2; terrain.lethal_obstacles.push_back(temp);
+
+    ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
+    ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);
+    ros::Subscriber move_base_status_sub = nodeHandle.subscribe("/move_base/status", 1, &moveBaseStatusCallback);
+    // ros::Subscriber pose_sub = nodeHandle.subscribe("/pose", 1, &poseTopicCallback);
+    // ros::Subscriber move_base_feedback_sub = nodeHandle.subscribe("/move_base/feedback", 1, &moveBaseFeedbackCallback);
+    ros::Rate loop_rate(9.0);
+
+    /* publish initial pose */
+    geometry_msgs::PoseWithCovarianceStamped init;
+    init.header.stamp = ros::Time::now(); init.header.frame_id = "odom";
+    init.pose.pose.position.x = terrain.start.position.x; init.pose.pose.position.y = terrain.start.position.y; init.pose.pose.position.z = 4.0;
+    init.pose.pose.orientation.x = 0.0; init.pose.pose.orientation.y = 0.0; init.pose.pose.orientation.z = 0.0; init.pose.pose.orientation.w = 1.0;
+    init_pose_pub.publish(init);
+
+    /* CREATE GRAPH'S GRID */
+    // cols = distance of goal_left from goal_right and possibly some border
+    // rows = distance of goal_left from goal_left from start_left and what remains distributed equally up and down
+    int cols = ((distance(terrain.goal_left.position, terrain.goal_right.position) / 2 ) / SEARCH_STEP) * 2;
+    int rows = ((distance(terrain.goal_left.position, terrain.start_left.position) / 2) / SEARCH_STEP) * 2;
+    std::vector< std::vector<Waypoint> > graph_grid;
+    for (int i = 0; i < rows; i++) {
+        std::vector<Waypoint> tempVec;
+        for (int j = 0; j < cols; j++) {
+            Waypoint temp;
+            tempVec.push_back(temp);
+        }
+        graph_grid.push_back(tempVec);
+    }
+    double up_down_border = std::fmod((distance(terrain.goal_left.position, terrain.start_left.position) / 2), SEARCH_STEP);
+
+    /* FIND A "GOOD ENOUGH" BEZIER PATH */
+    std::vector<Waypoint> control_points;
+    greedyBezierControlPoints(control_points);
+
+    /* STITCH BEZIER CURVES TO FORM BEZIER PATH */
+    std::vector<Waypoint> bezier_path;
+
+    Waypoint p0;
+    // initially p0 is start
+    p0.pose.pose.position.x = terrain.start.position.x; p0.pose.pose.position.y = terrain.start.position.y;
+    // take every two consecutive lines, with a fixed p0 from the previous line
+    for (int r = 0; r < rows; r += 2) {
+        // take every possible combination of quadratic Bezier curve control points p1 and p2 from these two lines
+        for (int i = r; i < r+2; i++) {
+            for (int j = 0; j < cols; j++) {
+                // evaluate the Bezier curve that they create
+                // TODO
+            }
+        }
+    }
+
+    /* INTERPOLATE BEZIER PATH */
+    interpolateBezierPath(bezier_path, INTERPOLATION_SCALE);
+
+    /* SEND BEZIER PATH TO move_base */
+    std::vector<Waypoint>::iterator iterator = bezier_path.begin();
+    // ROS_INFO("Sending goals to move_base");
+    // first_time = true;
+    while (ros::ok() && iterator != bezier_path.end()) {
+        goals_pub.publish(iterator->pose);
+        if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
+            // ROS_INFO("Publishing goal");
+            goals_pub.publish(iterator->pose);
+            first_time == false;
+            if (!first_time) {
+                // ROS_INFO("iterator++");
+                iterator++;
+                first_time = true;
+            }
+            // first_time = false;
+        }
+        // ROS_INFO("after if");
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
+
     return 0;
 }
 

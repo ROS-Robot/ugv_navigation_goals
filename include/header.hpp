@@ -43,6 +43,7 @@
 // search problem related
 #define SEGMENTS_PER_CURVE 2
 #define SEARCH_STEP 0.5
+#define INTERPOLATION_SCALE 1
 
 /* our waypoint's structure */
 class Waypoint {
@@ -56,14 +57,15 @@ public:
     double pitch;
     double yaw;                     // TODO: fix
     bool looking_right;
-    // double traversability;          // TODO: remove
-    // double traversability_slope;    // TODO: remove
 
-    Waypoint() {};
-    Waypoint(geometry_msgs::PoseStamped goal) {
-        this->pose.header = goal.header;
-        this->pose.pose = goal.pose;
-    };
+    Waypoint() :
+        id(0), cost(-1), arc(0.0), deviation(0.0), roll(0.0), pitch(0.0), yaw(0.0), looking_right(false)
+        {};
+    Waypoint(geometry_msgs::PoseStamped goal) :
+        id(0), cost(-1), arc(0.0), deviation(0.0), roll(0.0), pitch(0.0), yaw(0.0), looking_right(false) {
+            this->pose.header = goal.header;
+            this->pose.pose = goal.pose;
+        };
     ~Waypoint() {};
 };
 
@@ -76,13 +78,11 @@ public:
     geometry_msgs::Pose goal_right;
     geometry_msgs::Pose start_left;
     geometry_msgs::Pose start_right;
-    double goal_altitude;                   // TODO
+    double goal_altitude;                   // TODO, you calculate it anyways, add it here or remove it from here
     double slope;
     double worst_local_cost;
     double worst_global_cost;
     std::vector<geometry_msgs::PoseStamped>  lethal_obstacles;
-    // grid_map::GridMap travers_map;          // TODO
-    // grid_map::GridMap travers_slope_map;    // TODO
 
     Terrain() :
         worst_local_cost(std::numeric_limits<double>::min()), worst_global_cost(std::numeric_limits<double>::min())
@@ -166,8 +166,12 @@ double yawAt(const geometry_msgs::Point & p);
 /* calculate Bezier point of a quadratic Bezier curve */
 void calculateBezierPoint(const float t, const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, geometry_msgs::Point & p);
 /* calculate segmentation points of a Bezier curve, in order to "form" it */
-void formBezierCurve(const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, std::list<Waypoint> & waypoints);
+void formBezierCurve(const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, std::vector<Waypoint> & waypoints);
 /* create a Bezier path, by stiching many Bezier curves together */
 void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path);
 /* interpolate a Bezier path */
 void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);
+/* evaluate a Bezier curve */
+double evaluateBezierCurve(std::vector<Waypoint> & control_points);
+/* find some "good enough" Bezier control points greedily */
+void greedyBezierControlPoints(std::vector<Waypoint> & control_points);

@@ -10,7 +10,7 @@ void calculateBezierPoint(const float t, const geometry_msgs::Point p0, const ge
 }
 
 /* calculate segmentation points of a Bezier curve, in order to "form" it */
-void formBezierCurve(const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, std::list<Waypoint> & waypoints) {
+void formBezierCurve(const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, std::vector<Waypoint> & waypoints) {
     Waypoint first;
     first.pose.pose.position.x = p0.x;
     first.pose.pose.position.y = p0.y;
@@ -104,4 +104,14 @@ void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
             segments.at(i+1).pose.pose.position.x = q1.x; segments.at(i+1).pose.pose.position.y = q1.y;
         }
     }
+}
+
+/* evaluate a Bezier curve */
+double evaluateBezierCurve(std::vector<Waypoint> & control_points) {
+    return 0.0;
+}
+
+/* find some "good enough" Bezier control points greedily */
+void greedyBezierControlPoints(std::vector<Waypoint> & control_points) {
+
 }
