@@ -23,14 +23,14 @@ void formBezierCurve(const geometry_msgs::Point p0, const geometry_msgs::Point p
         waypoints.push_back(temp);
     }
     Waypoint last;
-    last.pose.pose.position.x = p0.x;
-    last.pose.pose.position.y = p0.y;
+    last.pose.pose.position.x = p2.x;
+    last.pose.pose.position.y = p2.y;
     waypoints.push_back(last);
 }
 
 /* create a Bezier path, by stiching many Bezier curves together */
 void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path) {
-    for (int i = 0; i < control_points.size(); i += 2) {
+    for (int i = 0; i < control_points.size()-2; i += 2) {
         geometry_msgs::Point p0 = control_points.at(i).pose.pose.position;
         geometry_msgs::Point p1 = control_points.at(i+1).pose.pose.position;
         geometry_msgs::Point p2 = control_points.at(i+2).pose.pose.position;
@@ -107,8 +107,47 @@ void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
 }
 
 /* evaluate a Bezier curve */
-double evaluateBezierCurve(std::vector<Waypoint> & control_points) {
-    return 0.0;
+double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_worst_local_cost) {
+    double cost = 0.0, s_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
+            s_roll_pos = 0.0, s_arc = 0.0;
+            /* TODO: trade-offs discussion at final text*/
+    for (std::vector<Waypoint>::iterator it = control_points.begin(); it != control_points.end(); ++it) {
+            /* for debugging */
+            ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
+                        it->pose.pose.position.x, it->pose.pose.position.y, it->pose.pose.position.z,
+                        it->pose.pose.orientation.x, it->pose.pose.orientation.y, it->pose.pose.orientation.z, it->pose.pose.orientation.w);
+            ROS_INFO("deviation = %f, roll = %f, pitch = %f, yaw = %f, arc = %f, looking_right = %d", it->deviation, it->roll, it->pitch, it->yaw, it->arc, it->looking_right);
+
+            it->cost = 0;
+            s_dev += it->deviation; it->cost += it->deviation/(it->deviation/(100*it->deviation));
+            s_pitch += it->pitch; it->cost += 1.5*it->pitch;
+            s_yaw += it->yaw; it->cost -= 0.5*it->yaw;
+            /* TODO: fix roll, pitch, yaw signs */
+            if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
+                s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
+                it->cost -= 1.3*it->roll;
+            }
+            else {
+                s_roll_neg += it->roll;     // roll that negatively impacts the movement of the vehicle
+                it->cost += 1.3*it->roll;
+            }
+            s_arc += it->arc;
+            it->cost += 0.4*it->arc;
+
+            if (it->cost > terrain.worst_local_cost) {
+                terrain.worst_local_cost = it->cost;
+                has_worst_local_cost = true;
+            }
+
+            ROS_WARN("waypoint %d cost = %f", it->id, it->cost);
+    }
+
+    /* s_dev/(s_dev/(100*s_dev)) because e.g. 0.5 / (0.5/(100*0.5)) = 50, 6.5 / (6.5/(100*6.5)) = 650, etc */
+    cost = s_dev/(s_dev/(100*s_dev)) + 1.5*s_pitch - 0.5*s_yaw + 1.3*s_roll_neg - 1.3*s_roll_pos + 0.4*s_arc;
+
+    if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
+
+    return cost;
 }
 
 /* find some "good enough" Bezier control points greedily */

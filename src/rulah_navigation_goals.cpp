@@ -1,6 +1,6 @@
 #include "../include/header.hpp"
 
-// #define TEST_BEZIER
+#define TEST_BEZIER
 
 #ifdef TEST_BEZIER
 
@@ -18,6 +18,57 @@ int main(int argc, char *argv[]) {
     terrain.slope = 40.0;
 
     /* TEST BEZIER CURVE FUNCTIONS, BY CREATING A DUMB PLAN */
+    std::vector<Waypoint> control_points, bezier_path;
+    geometry_msgs::Point p0, p1, p2;
+
+    /* Find the control_points of a series of Bezier curves */
+    /* 1 */
+    p0.x = terrain.start.position.x; p0.y = terrain.start.position.y; p1.x = -4.4; p1.y = 6.4; p2.x = -4.0; p2.y = 6.2;
+    Waypoint temp;
+    temp.pose.pose.position.x = p0.x; temp.pose.pose.position.y = p0.y; control_points.push_back(temp);
+    temp.pose.pose.position.x = p1.x; temp.pose.pose.position.y = p1.y; control_points.push_back(temp);
+    temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y; control_points.push_back(temp);
+    /* 2 */
+    p0.x = p2.x; p0.y = p2.y; p1.x = -3.5; p1.y = 5.8; p2.x = -3; p2.y = 6.0;
+    temp.pose.pose.position.x = p1.x; temp.pose.pose.position.y = p1.y; control_points.push_back(temp);
+    temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y; control_points.push_back(temp);
+    /* 3 */
+    p0.x = p2.x; p0.y = p2.y; p1.x = -2.5; p1.y = 6.2; p2.x = -2; p2.y = 6.4;
+    temp.pose.pose.position.x = p1.x; temp.pose.pose.position.y = p1.y; control_points.push_back(temp);
+    temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y; control_points.push_back(temp);
+    /* 4 */
+    p0.x = p2.x; p0.y = p2.y; p1.x = -1.7; p1.y = 5.6; p2.x = -1; p2.y = 5.8;
+    temp.pose.pose.position.x = p1.x; temp.pose.pose.position.y = p1.y; control_points.push_back(temp);
+    temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y; control_points.push_back(temp);
+    /* 5 */
+    p0.x = p2.x; p0.y = p2.y; p1.x = -0.8; p1.y = 6.0; p2.x = 0.0; p2.y = 6.2;
+    temp.pose.pose.position.x = p1.x; temp.pose.pose.position.y = p1.y; control_points.push_back(temp);
+    temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y; control_points.push_back(temp);
+    /* 6 */
+    p0.x = p2.x; p0.y = p2.y; p1.x = 0.0; p1.y = 6.2; p2.x = terrain.goal.position.x; p2.y = terrain.goal.position.y;
+    temp.pose.pose.position.x = p1.x; temp.pose.pose.position.y = p1.y; control_points.push_back(temp);
+    temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y; control_points.push_back(temp);
+
+    /* Print the above Bezier control points */
+    ROS_INFO("Control Points:");
+    for (int i = 0; i < control_points.size(); i++)
+        ROS_INFO("(%f, %f)", control_points.at(i).pose.pose.position.x, control_points.at(i).pose.pose.position.y);
+
+    /* Create a Bezier path by stiching the above Bezier curves together */
+    createBezierPath(control_points, bezier_path);
+
+    /* Print Bezier path */
+    ROS_INFO("Bezier path");
+    for (int i = 0; i < bezier_path.size(); i++)
+        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
+    /* Interpolate the above Bezier path */
+    interpolateBezierPath(bezier_path, INTERPOLATION_SCALE);
+
+    /* Print interpolated Bezier path */
+    ROS_INFO("Interpolated Bezier path");
+    for (int i = 0; i < bezier_path.size(); i++)
+        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
 
     return 0;
 }

@@ -42,7 +42,7 @@
 #define MAX_REPS_FOR_OPT 20 // maximum number of optimization repetitions
 // search problem related
 #define SEGMENTS_PER_CURVE 2
-#define SEARCH_STEP 0.5
+#define SEARCH_STEP 0.2
 #define INTERPOLATION_SCALE 1
 
 /* our waypoint's structure */
@@ -172,6 +172,6 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 /* interpolate a Bezier path */
 void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);
 /* evaluate a Bezier curve */
-double evaluateBezierCurve(std::vector<Waypoint> & control_points);
+double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_worst_local_cost);
 /* find some "good enough" Bezier control points greedily */
 void greedyBezierControlPoints(std::vector<Waypoint> & control_points);
