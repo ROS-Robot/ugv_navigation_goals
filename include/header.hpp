@@ -19,6 +19,7 @@
 #include <list>
 #include <limits>       /* numeric_limits */
 #include <math.h>       /* acos */
+#include <assert.h>       /* for debugging */
 
 /* useful definitions */
 #define PI 3.14159265
@@ -67,6 +68,28 @@ public:
             this->pose.pose = goal.pose;
         };
     ~Waypoint() {};
+    /* An implementation of operator= for our Waypoint class */
+    Waypoint& operator= (const Waypoint & waypoint)
+    {
+        // self-assignment guard
+        if (this == &waypoint)
+            return *this;
+
+        // do the copy
+        id = waypoint.id;
+        cost = waypoint.cost;
+        pose.header = waypoint.pose.header;
+        pose.pose = waypoint.pose.pose;
+        arc = waypoint.arc;
+        deviation = waypoint.deviation;
+        roll = waypoint.roll;
+        pitch = waypoint.pitch;
+        yaw = waypoint.yaw;
+        looking_right = waypoint.looking_right;
+
+        // return the existing object so we can chain this operator
+        return *this;
+    }
 };
 
 /* our problem's terrain structure */
@@ -164,9 +187,9 @@ double yawAt(const geometry_msgs::Point & p);
             http://devmag.org.za/2011/06/23/bzier-path-algorithms/ */
 
 /* calculate Bezier point of a quadratic Bezier curve */
-void calculateBezierPoint(const float t, const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, geometry_msgs::Point & p);
+void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, geometry_msgs::Point & p);
 /* calculate segmentation points of a Bezier curve, in order to "form" it */
-void formBezierCurve(const geometry_msgs::Point p0, const geometry_msgs::Point p1, const geometry_msgs::Point p2, std::vector<Waypoint> & waypoints);
+void formBezierCurve(const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, std::vector<Waypoint> & bezier_curve);
 /* create a Bezier path, by stiching many Bezier curves together */
 void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path);
 /* interpolate a Bezier path */
