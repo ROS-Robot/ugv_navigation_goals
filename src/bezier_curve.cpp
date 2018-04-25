@@ -61,8 +61,8 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
             calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
             bezier_path.push_back(temp);
         }
-        temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y;
-        bezier_path.push_back(temp);
+        // temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y;
+        // bezier_path.push_back(temp);
     }
     // ROS_WARN("createBezierPath out");
 }
