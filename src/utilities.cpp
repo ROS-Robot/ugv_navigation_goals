@@ -36,6 +36,7 @@ double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_ms
     double p_ab = std::sqrt((pose_a.pose.position.x-pose_b.pose.position.x)*(pose_a.pose.position.x-pose_b.pose.position.x) + (pose_a.pose.position.y-pose_b.pose.position.y)*(pose_a.pose.position.y-pose_b.pose.position.y)),
         p_bc = std::sqrt((pose_b.pose.position.x-pose_c.pose.position.x)*(pose_b.pose.position.x-pose_c.pose.position.x) + (pose_b.pose.position.y-pose_c.pose.position.y)*(pose_b.pose.position.y-pose_c.pose.position.y)),
         p_ac = std::sqrt((pose_a.pose.position.x-pose_c.pose.position.x)*(pose_a.pose.position.x-pose_c.pose.position.x) + (pose_a.pose.position.y-pose_c.pose.position.y)*(pose_a.pose.position.y-pose_c.pose.position.y));
+    assert((2*p_ab*p_ac));
     double res = std::acos((p_ab*p_ab+p_ac*p_ac-p_bc*p_bc)/(2*p_ab*p_ac));
     return res * 180.0 / PI;
 }
@@ -43,6 +44,7 @@ double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_ms
     double p_ab = std::sqrt((pose_a.pose.position.x-pose_b.pose.pose.position.x)*(pose_a.pose.position.x-pose_b.pose.pose.position.x) + (pose_a.pose.position.y-pose_b.pose.pose.position.y)*(pose_a.pose.position.y-pose_b.pose.pose.position.y)),
         p_bc = std::sqrt((pose_b.pose.pose.position.x-pose_c.pose.position.x)*(pose_b.pose.pose.position.x-pose_c.pose.position.x) + (pose_b.pose.pose.position.y-pose_c.pose.position.y)*(pose_b.pose.pose.position.y-pose_c.pose.position.y)),
         p_ac = std::sqrt((pose_a.pose.position.x-pose_c.pose.position.x)*(pose_a.pose.position.x-pose_c.pose.position.x) + (pose_a.pose.position.y-pose_c.pose.position.y)*(pose_a.pose.position.y-pose_c.pose.position.y));
+    assert((2*p_ab*p_ac));
     double res = std::acos((p_ab*p_ab+p_ac*p_ac-p_bc*p_bc)/(2*p_ab*p_ac));
     return res * 180.0 / PI;
 }
@@ -50,6 +52,7 @@ double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_ms
     double p_ab = std::sqrt((pose_a.pose.position.x-pose_b.pose.position.x)*(pose_a.pose.position.x-pose_b.pose.position.x) + (pose_a.pose.position.y-pose_b.pose.position.y)*(pose_a.pose.position.y-pose_b.pose.position.y)),
         p_bc = std::sqrt((pose_b.pose.position.x-pose_c.position.x)*(pose_b.pose.position.x-pose_c.position.x) + (pose_b.pose.position.y-pose_c.position.y)*(pose_b.pose.position.y-pose_c.position.y)),
         p_ac = std::sqrt((pose_a.pose.position.x-pose_c.position.x)*(pose_a.pose.position.x-pose_c.position.x) + (pose_a.pose.position.y-pose_c.position.y)*(pose_a.pose.position.y-pose_c.position.y));
+    assert((2*p_ab*p_ac));
     double res = std::acos((p_ab*p_ab+p_ac*p_ac-p_bc*p_bc)/(2*p_ab*p_ac));
     return res * 180.0 / PI;
 }

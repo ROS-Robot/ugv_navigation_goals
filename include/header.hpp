@@ -196,5 +196,3 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);
 /* evaluate a Bezier curve */
 double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_worst_local_cost);
-/* find some "good enough" Bezier control points greedily */
-void greedyBezierControlPoints(std::vector<Waypoint> & control_points);
