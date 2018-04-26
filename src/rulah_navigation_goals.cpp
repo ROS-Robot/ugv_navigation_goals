@@ -64,6 +64,14 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
 
+    /* Clean up the Bezier path from irrational sequences of waypoints that may have occured buring calculations */
+    cleanUpBezierPath(bezier_path);
+
+    /* Print Bezier path */
+    ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
+    for (int i = 0; i < bezier_path.size(); i++)
+        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
     /* Interpolate the above Bezier path */
     interpolateBezierPath(bezier_path, INTERPOLATION_SCALE);
 
@@ -335,9 +343,9 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < cols; i++) {        // row 1 (lower)
             for (int j = 0; j < cols; j++) {    // row 2 (upper)
                 double  p1_x = terrain.goal.position.x - (up_down_border + r * SEARCH_STEP),
-                        p1_y = left_right_border + i * SEARCH_STEP,
+                        p1_y = terrain.goal_left.position.y - left_right_border + i * SEARCH_STEP,
                         p2_x = terrain.goal.position.x - (up_down_border + (r+1) * SEARCH_STEP),
-                        p2_y = left_right_border + j * SEARCH_STEP;
+                        p2_y = terrain.goal_left.position.y - left_right_border + j * SEARCH_STEP;
                 /* we don't want to go straight ahead, also take a chance to deal with equalities caused by grid resolution */
                 if (i == j || (p2_x == p0.pose.pose.position.x && p2_y == p0.pose.pose.position.y) || (p1_x == p0.pose.pose.position.x && p1_y == p0.pose.pose.position.y) || (p2_x == p1_x && p2_y == p1_y))
                     continue;
@@ -409,7 +417,7 @@ int main(int argc, char *argv[]) {
                 //     p0.pose.pose.position.x, p0.pose.pose.position.y, p1.pose.pose.position.x, p1.pose.pose.position.y, p2.pose.pose.position.x, p2.pose.pose.position.y);
                 // ROS_INFO("evaluating");
                 local_cost = evaluateBezierCurve(bezier_curve, has_worst_local_cost);
-                ROS_INFO("local_cost = %f", local_cost);
+                // ROS_INFO("local_cost = %f", local_cost);
                 // TODO: is the following OK here??? Is is necessary???
                 // if the path that is currently may have the worst local cost, punish it with extra cost
                 // if (local_cost == terrain.worst_local_cost)
@@ -445,6 +453,14 @@ int main(int argc, char *argv[]) {
 
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
+    for (int i = 0; i < bezier_path.size(); i++)
+        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
+    /* Clean up the Bezier path from irrational sequences of waypoints that may have occured buring calculations */
+    cleanUpBezierPath(bezier_path);
+
+    /* Print Bezier path */
+    ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
 

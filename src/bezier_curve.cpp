@@ -67,6 +67,19 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
     // ROS_WARN("createBezierPath out");
 }
 
+/* clean up a Bezier path from irrational sequences of waypoints that may have occured buring calculations */
+void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
+    int counter = 0;
+    for (std::vector<Waypoint>::iterator it = bezier_path.begin(); it != bezier_path.end(); it++) {
+        if (it != bezier_path.begin() &&
+            (std::prev(it,1)->pose.pose.position.x == it->pose.pose.position.x || std::prev(it,1)->pose.pose.position.y == it->pose.pose.position.y)) {
+            counter++;
+            ROS_INFO("a %d", counter); bezier_path.erase(it); ROS_INFO("b");
+            it = std::prev(it,1);
+        }
+    }
+}
+
 /* interpolate a Bezier path */
 void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
     if (segments.size() <= 2)
