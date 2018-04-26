@@ -1,6 +1,7 @@
 #include "../include/header.hpp"
 
 // #define TEST_BEZIER
+// #define TEST_CALCULATIONS
 
 #ifdef TEST_BEZIER
 
@@ -110,7 +111,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-#elif TEST_CALCULATIONS
+#elif defined( TEST_CALCULATIONS )
 
 /* node's main function */
 int main(int argc, char *argv[]) {
@@ -325,7 +326,8 @@ int main(int argc, char *argv[]) {
     control_points.push_back(p0);
     // take every two consecutive lines, with a fixed p0 from the previous line
     double path_cost = 0.0;
-    for (int r = 0; r < rows-1; r += 2) {
+    // for (int r = 0; r < rows-1; r += 2) {
+    for (int r = rows-1; r >= 0; r -= 2) {
         double local_cost = 0.0, best_local_cost = std::numeric_limits<double>::max();
         bool has_worst_local_cost = false;
         // take every possible combination of quadratic Bezier curve control points p1 and p2 from these two lines
@@ -343,7 +345,8 @@ int main(int argc, char *argv[]) {
                 /* create temporary waypoint for i (p1) */
                 Waypoint p1; p1.pose.pose.orientation.w = 1.0; p1.pose.header.frame_id = "odom";
                 // for debugging
-                assert(r < rows && r+1 < rows);
+                // assert(r < rows && r+1 < rows);
+                assert(r >= 0);
                 // ROS_INFO("p0 = %f %f %f", p0.pose.pose.position.x, p0.pose.pose.position.y, p0.deviation);
                 // TODO: p1 coords
                 p1.pose.pose.position.x = p1_x;
