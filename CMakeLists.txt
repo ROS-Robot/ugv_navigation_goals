@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   move_base_msgs
   geometry_msgs
+  nav_msgs
   actionlib_msgs
   tf
   roscpp

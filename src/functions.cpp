@@ -7,6 +7,8 @@ Terrain terrain;
 move_base_msgs::MoveBaseActionFeedback move_base_feedback_msg;
 actionlib_msgs::GoalStatusArray move_base_status_msg;
 geometry_msgs::PoseWithCovarianceStamped pose_msg;
+nav_msgs::Odometry odom_msg;
+geometry_msgs::PoseWithCovariance curr_pose_msg;
 /* utility variables */
 bool first_time;
 unsigned num_of_waypoints;
@@ -24,6 +26,11 @@ void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr& sta
 // }
 void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& ps_msg) {
     pose_msg = *ps_msg;
+}
+
+void odometryTopicCallback(const nav_msgs::Odometry::ConstPtr& od_msg) {
+    odom_msg = *od_msg;
+    curr_pose_msg.pose = odom_msg.pose.pose;
 }
 
 /* problem's core functions definitions */

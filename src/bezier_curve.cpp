@@ -69,12 +69,10 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 
 /* clean up a Bezier path from irrational sequences of waypoints that may have occured buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
-    int counter = 0;
     for (std::vector<Waypoint>::iterator it = bezier_path.begin(); it != bezier_path.end(); it++) {
         if (it != bezier_path.begin() &&
-            (std::prev(it,1)->pose.pose.position.x == it->pose.pose.position.x || std::prev(it,1)->pose.pose.position.y == it->pose.pose.position.y)) {
-            counter++;
-            ROS_INFO("a %d", counter); bezier_path.erase(it); ROS_INFO("b");
+            (std::prev(it,1)->pose.pose.position.x >= it->pose.pose.position.x || std::prev(it,1)->pose.pose.position.y == it->pose.pose.position.y)) {
+            bezier_path.erase(it);
             it = std::prev(it,1);
         }
     }
@@ -140,7 +138,7 @@ void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
 /* evaluate a Bezier curve */
 double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_worst_local_cost) {
     // ROS_WARN("evaluateBezierCurve in");
-    double cost = 0.0, s_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
+    double cost = 0.0, s_norm_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
             s_roll_pos = 0.0, s_arc = 0.0;
             /* TODO: trade-offs discussion at final text*/
     for (std::vector<Waypoint>::iterator it = control_points.begin(); it != control_points.end(); ++it) {
@@ -151,9 +149,10 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
             // ROS_INFO("deviation = %f, roll = %f, pitch = %f, yaw = %f, arc = %f, looking_right = %d", it->deviation, it->roll, it->pitch, it->yaw, it->arc, it->looking_right);
 
             it->cost = 0;
-            s_dev += it->deviation; it->cost += it->deviation/(it->deviation/(100*it->deviation));
-            s_pitch += it->pitch; it->cost += 1.5*it->pitch;
-            s_yaw += it->yaw; it->cost -= 0.5*it->yaw;
+            // normalize deviation (between 0 and 1) and multiply by 100 to be like the angle values
+            s_norm_dev += it->deviation / distance(terrain.start_left.position, terrain.start.position); it->cost += 100*it->deviation / distance(terrain.start_left.position, terrain.start.position);
+            s_pitch += it->pitch; it->cost += 1.7*it->pitch;
+            s_yaw += it->yaw; it->cost -= 0.3*it->yaw;
             /* TODO: fix roll, pitch, yaw signs */
             if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
                 s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
@@ -174,8 +173,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
             // ROS_WARN("waypoint %d cost = %f", it->id, it->cost);
     }
 
-    /* s_dev/(s_dev/(100*s_dev)) because e.g. 0.5 / (0.5/(100*0.5)) = 50, 6.5 / (6.5/(100*6.5)) = 650, etc */
-    cost = s_dev/(s_dev/(100*s_dev)) + 1.5*s_pitch - 0.5*s_yaw + 1.3*s_roll_neg - 1.3*s_roll_pos + 0.4*s_arc;
+    cost = 100*s_norm_dev + 1.7*s_pitch - 0.3*s_yaw + 1.3*s_roll_neg - 1.3*s_roll_pos;// + 0.4*s_arc;
 
     if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
 

@@ -8,6 +8,7 @@
 #include <tf/tf.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <move_base_msgs/MoveBaseActionFeedback.h>
+#include <nav_msgs/Odometry.h>
 #include "actionlib_msgs/GoalStatusArray.h"
 /* Grid Map */
 #include <grid_map_ros/grid_map_ros.hpp>
@@ -43,8 +44,9 @@
 #define MAX_REPS_FOR_OPT 20 // maximum number of optimization repetitions
 // search problem related
 #define SEGMENTS_PER_CURVE 2
-#define SEARCH_STEP 0.2
+#define SEARCH_STEP 0.5
 #define INTERPOLATION_SCALE 1
+#define ROBOT_BODY_FIX 0.15
 
 /* our waypoint's structure */
 class Waypoint {
@@ -123,6 +125,8 @@ extern Terrain terrain;
 extern move_base_msgs::MoveBaseActionFeedback move_base_feedback_msg;
 extern actionlib_msgs::GoalStatusArray move_base_status_msg;
 extern geometry_msgs::PoseWithCovarianceStamped pose_msg;
+extern nav_msgs::Odometry odom_msg;
+extern geometry_msgs::PoseWithCovariance curr_pose_msg;
 /* utility variables */
 extern bool first_time;
 extern unsigned num_of_waypoints;
@@ -132,6 +136,7 @@ extern unsigned num_of_waypoints;
 void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr& status_msg);
 // void moveBaseFeedbackCallback(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback_msg);
 void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& ps_msg);
+void odometryTopicCallback(const nav_msgs::Odometry::ConstPtr& od_msg);
 
 /* utility functions declarations */
 
@@ -181,6 +186,9 @@ double rollAt(const geometry_msgs::Point & p);
 /* calculate the yaw of the platform at a certain position */
 double yawAt(Waypoint & w);
 double yawAt(const geometry_msgs::Point & p);
+/* calculate the height that the platform has reached at a certain position */
+double heightAt(Waypoint & w);
+double heightAt(const geometry_msgs::Point & p);
 
 /* Bezier curves functions declarations */
 /* sources: http://devmag.org.za/2011/04/05/bzier-curves-a-tutorial/ ,

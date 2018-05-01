@@ -258,27 +258,27 @@ int main(int argc, char *argv[]) {
     //                 iterator->pose.pose.orientation.x, iterator->pose.pose.orientation.y, iterator->pose.pose.orientation.z, iterator->pose.pose.orientation.w);
 
     /* GRADUALLY SEND PLAN TO move_base */
-    x = -3.0, y = 6.5, angle = 45.0;
-    std::list<Waypoint>::iterator iterator = waypoints_list.begin();
-    // ROS_INFO("Sending goals to move_base");
-    // first_time = true;
-    while (ros::ok() && iterator != waypoints_list.end()) {
-        goals_pub.publish(iterator->pose);
-        if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
-            // ROS_INFO("Publishing goal");
-            goals_pub.publish(iterator->pose);
-            first_time == false;
-            if (!first_time) {
-                // ROS_INFO("iterator++");
-                iterator++;
-                first_time = true;
-            }
-            // first_time = false;
-        }
-        // ROS_INFO("after if");
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
+    // x = -3.0, y = 6.5, angle = 45.0;
+    // std::list<Waypoint>::iterator iterator = waypoints_list.begin();
+    // // ROS_INFO("Sending goals to move_base");
+    // // first_time = true;
+    // while (ros::ok() && iterator != waypoints_list.end()) {
+    //     goals_pub.publish(iterator->pose);
+    //     if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
+    //         // ROS_INFO("Publishing goal");
+    //         goals_pub.publish(iterator->pose);
+    //         first_time == false;
+    //         if (!first_time) {
+    //             // ROS_INFO("iterator++");
+    //             iterator++;
+    //             first_time = true;
+    //         }
+    //         // first_time = false;
+    //     }
+    //     // ROS_INFO("after if");
+    //     ros::spinOnce();
+    //     loop_rate.sleep();
+    // }
 
     return 0;
 }
@@ -292,19 +292,23 @@ int main(int argc, char *argv[]) {
     ROS_INFO("It's on");
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
-    terrain.goal.position.x = 1.5; terrain.goal.position.y = 6.0; terrain.start.position.x = -4.85; terrain.start.position.y = 6.0;
-    terrain.goal_left.position.x = 1.5; terrain.goal_left.position.y = 7.0; terrain.start_left.position.x = -4.85; terrain.start_left.position.y = 7.0;
-    terrain.goal_right.position.x = 1.5; terrain.goal_right.position.y = 5.0; terrain.start_right.position.x = -4.85; terrain.start_right.position.y = 5.0;
-    terrain.slope = 40.0;
+    terrain.goal.position.x = -0.5; terrain.goal.position.y = 1.0; terrain.start.position.x = -5.3; terrain.start.position.y = 1.0;
+    terrain.goal_left.position.x = -0.5; terrain.goal_left.position.y = 4.0; terrain.start_left.position.x = -5.3; terrain.start_left.position.y = 4.0;
+    terrain.goal_right.position.x = -0.5; terrain.goal_right.position.y = -2.0; terrain.start_right.position.x = -5.3; terrain.start_right.position.y = -2.0;
+    terrain.slope = 30.0;
+
+    first_time = true;
+    num_of_waypoints = 0;
     // TODO: incorporate lethal obstacles
-    geometry_msgs::PoseStamped temp;
-    temp.pose.position.x = -3.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
-    temp.pose.position.x = -1.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
-    temp.pose.position.x = -1.5; temp.pose.position.y = 6.2; terrain.lethal_obstacles.push_back(temp);
+    // geometry_msgs::PoseStamped temp;
+    // temp.pose.position.x = -3.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
+    // temp.pose.position.x = -1.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
+    // temp.pose.position.x = -1.5; temp.pose.position.y = 6.2; terrain.lethal_obstacles.push_back(temp);
 
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
     ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);
     ros::Subscriber move_base_status_sub = nodeHandle.subscribe("/move_base/status", 1, &moveBaseStatusCallback);
+    ros::Subscriber odom_sub = nodeHandle.subscribe("/odom/perfect", 1, &odometryTopicCallback);
     ros::Rate loop_rate(9.0);
 
     /* publish initial pose */
@@ -316,12 +320,12 @@ int main(int argc, char *argv[]) {
 
     /* CREATE GRAPH'S GRID */
     // cols = distance of goal_left from goal_right and possibly some border
-    int cols = distance(terrain.goal_left.position, terrain.goal_right.position) / SEARCH_STEP;
+    int cols = (distance(terrain.goal_left.position, terrain.goal_right.position) - ROBOT_BODY_FIX) / SEARCH_STEP;
     // rows = distance of goal_left from goal_left from start_left and what remains distributed equally up and down
-    int rows = distance(terrain.goal_left.position, terrain.start_left.position) / SEARCH_STEP;
-    double left_right_border = std::fmod(distance(terrain.goal_left.position, terrain.goal_right.position), SEARCH_STEP) / 2;
-    double up_down_border = std::fmod(distance(terrain.goal_left.position, terrain.start_left.position), SEARCH_STEP) / 2;
-    // ROS_INFO("cols = %d, rows = %d, left_right_border = %f, up_down_border = %f", cols, rows, left_right_border, up_down_border);
+    int rows = (distance(terrain.goal_left.position, terrain.start_left.position) - ROBOT_BODY_FIX) / SEARCH_STEP;
+    double left_right_border = std::fmod((distance(terrain.goal_left.position, terrain.goal_right.position) - ROBOT_BODY_FIX), SEARCH_STEP) / 2;
+    double up_down_border = std::fmod((distance(terrain.goal_left.position, terrain.start_left.position) - ROBOT_BODY_FIX), SEARCH_STEP) / 2;
+    ROS_INFO("cols = %d, rows = %d, left_right_border = %f, up_down_border = %f", cols, rows, left_right_border, up_down_border);
 
     /* FIND THE CONTROL POINTS OF A "GOOD ENOUGH" BEZIER PATH */
     // TODO: consider admissibility for trimming search???
@@ -343,9 +347,14 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < cols; i++) {        // row 1 (lower)
             for (int j = 0; j < cols; j++) {    // row 2 (upper)
                 double  p1_x = terrain.goal.position.x - (up_down_border + r * SEARCH_STEP),
-                        p1_y = terrain.goal_left.position.y - left_right_border + i * SEARCH_STEP,
+                        p1_y = terrain.goal_left.position.y - (left_right_border + i * SEARCH_STEP),
                         p2_x = terrain.goal.position.x - (up_down_border + (r+1) * SEARCH_STEP),
-                        p2_y = terrain.goal_left.position.y - left_right_border + j * SEARCH_STEP;
+                        p2_y = terrain.goal_left.position.y - (left_right_border + j * SEARCH_STEP);
+                        /* if we are in the last phase of our search make an effort to reach our goal instantly */
+                        if (r == 0 || r == 1) {
+                            p2_x = terrain.goal.position.x;
+                            p2_y = terrain.goal.position.y;
+                        }
                 /* we don't want to go straight ahead, also take a chance to deal with equalities caused by grid resolution */
                 if (i == j || (p2_x == p0.pose.pose.position.x && p2_y == p0.pose.pose.position.y) || (p1_x == p0.pose.pose.position.x && p1_y == p0.pose.pose.position.y) || (p2_x == p1_x && p2_y == p1_y))
                     continue;
@@ -387,9 +396,9 @@ int main(int argc, char *argv[]) {
                         iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
 
                         if (std::next(iterator,1)->pose.pose.position.y > iterator->pose.pose.position.y)
-                            iterator->looking_right = true; // we haven't turned yet
+                            iterator->looking_right = true;     // we haven't turned yet
                         else
-                            iterator->looking_right = false; // we haven't turned yet
+                            iterator->looking_right = false;    // we haven't turned yet
                     }
                     else {
                         // ROS_INFO("arc C");
@@ -405,12 +414,14 @@ int main(int argc, char *argv[]) {
                     else
                         iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
                 }
-                // calculate roll, pitch, yaw
+                // calculate roll, pitch, yaw and height
                 // ROS_INFO("roll, pitch, yaw");
                 for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
                     pitchAt(*iterator);
                     rollAt(*iterator);
                     yawAt(*iterator);
+                    // TODO: do I need height for the goals?
+                    heightAt(*iterator);
                 }
                 /* evaluate the Bezier curve */
                 // ROS_INFO("p0 = (%f, %f), p1 = (%f, %f), p2 = (%f, %f)",
@@ -476,19 +487,81 @@ int main(int argc, char *argv[]) {
 
     /* SEND BEZIER PATH TO move_base */
     std::vector<Waypoint>::iterator iterator = bezier_path.begin();
+    ros::spinOnce();
+    ros::Rate(9.0).sleep();
     while (ros::ok() && iterator != bezier_path.end()) {
-        goals_pub.publish(iterator->pose);
-        if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
-            goals_pub.publish(iterator->pose);
-            first_time == false;
-            if (!first_time) {
-                iterator++;
-                first_time = true;
+        // if (iterator == bezier_path.begin()) iterator++;
+        ROS_INFO("(%f, %f) vs (%f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y);
+        while((iterator->pose.pose.position.x > curr_pose_msg.pose.position.x)){// || (std::abs(std::abs(iterator->pose.pose.position.y) - std::abs(curr_pose_msg.pose.position.y)) > 0.1)) {   // 0.1 because Rulah's length is 0.3
+            if (first_time) goals_pub.publish(iterator->pose);
+            ros::spinOnce();
+            ros::Rate(9.0).sleep();
+            if(first_time) {
+                first_time = false;
             }
         }
+        iterator++;
+        first_time = true;
         ros::spinOnce();
-        loop_rate.sleep();
+        ros::Rate(9.0).sleep();
+        ROS_INFO("Moving on...");
     }
+    // while (ros::ok() && iterator != bezier_path.end()) {
+    //     // TODO: do I have to send the initial as well???
+    //     if (iterator == bezier_path.begin()) {
+    //         iterator++;
+    //         continue;
+    //     }
+    //
+    //     if (first_time) {
+    //         goals_pub.publish(iterator->pose);
+    //         first_time = false;
+    //     }
+    //     else if (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) {
+    //         iterator++;
+    //         first_time = true;
+    //     }
+    //     else
+    //         first_time = false;
+    //
+    //     ros::spinOnce();
+    //     loop_rate.sleep();
+    // }
+    // while (ros::ok() && iterator != bezier_path.end()) {
+    //     // TODO: do I have to send the initial as well???
+    //     if (iterator == bezier_path.begin()) iterator++;
+    //
+    //     goals_pub.publish(iterator->pose);
+    //     if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) ) {
+    //         goals_pub.publish(iterator->pose);
+    //         first_time = false;
+    //         if (!first_time) {
+    //             iterator++;
+    //             first_time = true;
+    //         }
+    //     }
+    //     ros::spinOnce();
+    //     ros::Rate(1.0).sleep();
+    // }
+    // while (ros::ok() && iterator != bezier_path.end()) {
+    //     // TODO: do I have to send the initial as well???
+    //     if (iterator == bezier_path.begin()) {
+    //         iterator++;
+    //         continue;
+    //     }
+    //
+    //     goals_pub.publish(iterator->pose);
+    //     if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
+    //         goals_pub.publish(iterator->pose);
+    //         first_time = false;
+    //         if (!first_time) {
+    //             iterator++;
+    //             first_time = true;
+    //         }
+    //     }
+    //     ros::spinOnce();
+    //     loop_rate.sleep();
+    // }
 
     return 0;
 }
