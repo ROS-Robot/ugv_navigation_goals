@@ -278,7 +278,7 @@ double yawAt(const geometry_msgs::Point & p) {
 
 /* calculate the height that the platform has reached at a certain position */
 double heightAt(Waypoint & w) {
-    double pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0, h1 = 0.0;
+    double pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0, h = 0.0;
     geometry_msgs::Point p = w.pose.pose.position;
 
     /* if the platform is looking towards goal_right */
@@ -289,9 +289,6 @@ double heightAt(Waypoint & w) {
         double d = distance(terrain.start.position, p);
         double l = d / std::cos(terrain.slope*PI/180.0);
         double h = sinTheta * l;
-        double d1 = distance(terrain.start.position, terrain.goal_right.position);
-        double l1 = d1 / std::cos(terrain.slope*PI/180.0);
-        h1 = sinTheta * l1;
     }
     /* if the platform is looking towards goal_left */
     else {
@@ -300,18 +297,15 @@ double heightAt(Waypoint & w) {
         sinTheta = std::sin(terrain.slope*PI/180.0);
         double d = distance(terrain.start.position, p);
         double l = d / std::cos(terrain.slope*PI/180.0);
-        double h = sinTheta * l;
-        double d1 = distance(terrain.start.position, terrain.goal_left.position);
-        double l1 = d1 / std::cos(terrain.slope*PI/180.0);
-        h1 = sinTheta * l1;
+        h = sinTheta * l;
     }
 
-    w.pose.pose.position.z = h1;
+    w.pose.pose.position.z = h + 4.0;
 
-    return h1;
+    return h;
 }
 
-double heightAt(const geometry_msgs::Point & p) {
+double heightAt(geometry_msgs::Point & p) {
     double pitch = 0.0, x_3 = 0.0, x_2 = 0.0, sinTheta = 0.0;
 
     // x_3 = std::abs(p.x-terrain.goal_right.position.x);
@@ -320,9 +314,8 @@ double heightAt(const geometry_msgs::Point & p) {
     double d = distance(terrain.start.position, p);
     double l = d / std::cos(terrain.slope*PI/180.0);
     double h = sinTheta * l;
-    double d1 = distance(terrain.start.position, terrain.goal_right.position);
-    double l1 = d1 / std::cos(terrain.slope*PI/180.0);
-    double h1 = sinTheta * l1;
 
-    return h1;
+    p.z = h + 4.0;
+
+    return h;
 }

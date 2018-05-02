@@ -43,7 +43,7 @@
 #define MIN_JUMP 0.2    // the minimum jump in space when looking for an alternative waypoint
 #define MAX_REPS_FOR_OPT 20 // maximum number of optimization repetitions
 // search problem related
-#define SEGMENTS_PER_CURVE 2
+#define SEGMENTS_PER_CURVE 5
 #define SEARCH_STEP 0.5
 #define INTERPOLATION_SCALE 1
 #define ROBOT_BODY_FIX 0.15
@@ -188,7 +188,7 @@ double yawAt(Waypoint & w);
 double yawAt(const geometry_msgs::Point & p);
 /* calculate the height that the platform has reached at a certain position */
 double heightAt(Waypoint & w);
-double heightAt(const geometry_msgs::Point & p);
+double heightAt(geometry_msgs::Point & p);
 
 /* Bezier curves functions declarations */
 /* sources: http://devmag.org.za/2011/04/05/bzier-curves-a-tutorial/ ,

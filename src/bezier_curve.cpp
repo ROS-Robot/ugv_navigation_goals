@@ -7,6 +7,7 @@ void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, cons
     double one_minus_t = 1-t;
     p.x = one_minus_t*one_minus_t*p0.x + 2*one_minus_t*t*p1.x + t*t*p2.x;
     p.y = one_minus_t*one_minus_t*p0.y + 2*one_minus_t*t*p1.y + t*t*p2.y;
+    p.z = heightAt(p) + 4.0;
 }
 
 /* calculate segmentation points of a Bezier curve, in order to "form" it */

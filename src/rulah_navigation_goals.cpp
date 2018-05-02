@@ -292,7 +292,8 @@ int main(int argc, char *argv[]) {
     ROS_INFO("It's on");
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
-    terrain.goal.position.x = -0.5; terrain.goal.position.y = 1.0; terrain.start.position.x = -5.3; terrain.start.position.y = 1.0;
+    terrain.goal.position.x = -0.5; terrain.goal.position.y = 1.0; terrain.goal.position.z = 6.9;
+    terrain.start.position.x = -5.3; terrain.start.position.y = 1.0; terrain.start.position.z = 4.3;
     terrain.goal_left.position.x = -0.5; terrain.goal_left.position.y = 4.0; terrain.start_left.position.x = -5.3; terrain.start_left.position.y = 4.0;
     terrain.goal_right.position.x = -0.5; terrain.goal_right.position.y = -2.0; terrain.start_right.position.x = -5.3; terrain.start_right.position.y = -2.0;
     terrain.slope = 30.0;
@@ -314,7 +315,7 @@ int main(int argc, char *argv[]) {
     /* publish initial pose */
     geometry_msgs::PoseStamped init;
     init.header.stamp = ros::Time::now(); init.header.frame_id = "odom";
-    init.pose.position.x = terrain.start.position.x; init.pose.position.y = terrain.start.position.y; init.pose.position.z = 4.0;
+    init.pose.position.x = terrain.start.position.x; init.pose.position.y = terrain.start.position.y; init.pose.position.z = terrain.start.position.z;
     init.pose.orientation.x = 0.0; init.pose.orientation.y = 0.0; init.pose.orientation.z = 0.0; init.pose.orientation.w = 1.0;
     init_pose_pub.publish(init);
 
@@ -449,7 +450,7 @@ int main(int argc, char *argv[]) {
         // add local curve's control points to the path
         if (best_local_waypoints.size()) {
             // ROS_INFO("A");
-            ROS_INFO("p1 = (%f, %f), p2 = (%f, %f)", best_local_waypoints.at(1).pose.pose.position.x, best_local_waypoints.at(1).pose.pose.position.y, best_local_waypoints.at(2).pose.pose.position.x, best_local_waypoints.at(2).pose.pose.position.y);
+            // ROS_INFO("p1 = (%f, %f, %f), p2 = (%f, %f, %f)", best_local_waypoints.at(1).pose.pose.position.x, best_local_waypoints.at(1).pose.pose.position.y, best_local_waypoints.at(1).pose.pose.position.z, best_local_waypoints.at(2).pose.pose.position.x, best_local_waypoints.at(2).pose.pose.position.y, best_local_waypoints.at(2).pose.pose.position.z);
             control_points.push_back(best_local_waypoints.at(1));
             // ROS_INFO("B");
             control_points.push_back(best_local_waypoints.at(2));
@@ -465,7 +466,7 @@ int main(int argc, char *argv[]) {
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
-        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+        ROS_INFO("(%f, %f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y, bezier_path.at(i).pose.pose.position.z);
 
     /* Clean up the Bezier path from irrational sequences of waypoints that may have occured buring calculations */
     cleanUpBezierPath(bezier_path);
@@ -473,7 +474,7 @@ int main(int argc, char *argv[]) {
     /* Print Bezier path */
     ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
-        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+        ROS_INFO("(%f, %f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y, bezier_path.at(i).pose.pose.position.z);
 
     /* INTERPOLATE BEZIER PATH */
     // TODO: why does it not work? is it really necessary?
@@ -491,8 +492,8 @@ int main(int argc, char *argv[]) {
     ros::Rate(9.0).sleep();
     while (ros::ok() && iterator != bezier_path.end()) {
         // if (iterator == bezier_path.begin()) iterator++;
-        ROS_INFO("(%f, %f) vs (%f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y);
-        while((iterator->pose.pose.position.x > curr_pose_msg.pose.position.x)){// || (std::abs(std::abs(iterator->pose.pose.position.y) - std::abs(curr_pose_msg.pose.position.y)) > 0.1)) {   // 0.1 because Rulah's length is 0.3
+        ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
+        while((iterator->pose.pose.position.x > curr_pose_msg.pose.position.x) || (iterator->pose.pose.position.z > curr_pose_msg.pose.position.z) || (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED)){// || (std::abs(std::abs(iterator->pose.pose.position.y) - std::abs(curr_pose_msg.pose.position.y)) > 0.1)) {   // 0.1 because Rulah's length is 0.3
             if (first_time) goals_pub.publish(iterator->pose);
             ros::spinOnce();
             ros::Rate(9.0).sleep();
