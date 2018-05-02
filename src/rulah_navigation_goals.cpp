@@ -493,7 +493,8 @@ int main(int argc, char *argv[]) {
     while (ros::ok() && iterator != bezier_path.end()) {
         // if (iterator == bezier_path.begin()) iterator++;
         ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
-        while((iterator->pose.pose.position.x > curr_pose_msg.pose.position.x) || (iterator->pose.pose.position.z > curr_pose_msg.pose.position.z) || (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED)){// || (std::abs(std::abs(iterator->pose.pose.position.y) - std::abs(curr_pose_msg.pose.position.y)) > 0.1)) {   // 0.1 because Rulah's length is 0.3
+        while((iterator->pose.pose.position.x > curr_pose_msg.pose.position.x) || (iterator->pose.pose.position.z > curr_pose_msg.pose.position.z - 4.22) || (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED)){// || (std::abs(std::abs(iterator->pose.pose.position.y) - std::abs(curr_pose_msg.pose.position.y)) > 0.1)) {   // 0.1 because Rulah's length is 0.3
+            ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
             if (first_time) goals_pub.publish(iterator->pose);
             ros::spinOnce();
             ros::Rate(9.0).sleep();
