@@ -300,7 +300,7 @@ double heightAt(Waypoint & w) {
         h = sinTheta * l;
     }
 
-    w.pose.pose.position.z = h + 4.22;
+    // w.pose.pose.position.z = h + 4.22;
 
     return h;
 }
@@ -315,7 +315,7 @@ double heightAt(geometry_msgs::Point & p) {
     double l = d / std::cos(terrain.slope*PI/180.0);
     double h = sinTheta * l;
 
-    p.z = h + 4.22;
+    // p.z = h + 4.22;
 
     return h;
 }

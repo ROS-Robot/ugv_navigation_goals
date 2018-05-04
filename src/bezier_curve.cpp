@@ -7,7 +7,7 @@ void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, cons
     double one_minus_t = 1-t;
     p.x = one_minus_t*one_minus_t*p0.x + 2*one_minus_t*t*p1.x + t*t*p2.x;
     p.y = one_minus_t*one_minus_t*p0.y + 2*one_minus_t*t*p1.y + t*t*p2.y;
-    p.z = heightAt(p) + 4.22;
+    // p.z = heightAt(p) + 4.22;
 }
 
 /* calculate segmentation points of a Bezier curve, in order to "form" it */
@@ -71,6 +71,7 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 /* clean up a Bezier path from irrational sequences of waypoints that may have occured buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
     for (std::vector<Waypoint>::iterator it = bezier_path.begin(); it != bezier_path.end(); it++) {
+        // if (it != bezier_path.begin()) it->pose.pose.position.z -= 4.0;
         if (it != bezier_path.begin() &&
             (std::prev(it,1)->pose.pose.position.x >= it->pose.pose.position.x || std::prev(it,1)->pose.pose.position.y == it->pose.pose.position.y)) {
             bezier_path.erase(it);

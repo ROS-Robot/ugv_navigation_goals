@@ -292,8 +292,8 @@ int main(int argc, char *argv[]) {
     ROS_INFO("It's on");
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
-    terrain.goal.position.x = -0.5; terrain.goal.position.y = 1.0; terrain.goal.position.z = 6.9;
-    terrain.start.position.x = -5.3; terrain.start.position.y = 1.0; terrain.start.position.z = 4.3;
+    terrain.goal.position.x = -0.5; terrain.goal.position.y = 1.0; terrain.goal.position.z = 0.0;// 6.9;
+    terrain.start.position.x = -5.3; terrain.start.position.y = 1.0; terrain.start.position.z = 0.0;// 0.3;
     terrain.goal_left.position.x = -0.5; terrain.goal_left.position.y = 4.0; terrain.start_left.position.x = -5.3; terrain.start_left.position.y = 4.0;
     terrain.goal_right.position.x = -0.5; terrain.goal_right.position.y = -2.0; terrain.start_right.position.x = -5.3; terrain.start_right.position.y = -2.0;
     terrain.slope = 30.0;
@@ -309,7 +309,7 @@ int main(int argc, char *argv[]) {
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
     ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);
     ros::Subscriber move_base_status_sub = nodeHandle.subscribe("/move_base/status", 1, &moveBaseStatusCallback);
-    ros::Subscriber odom_sub = nodeHandle.subscribe("/odom/perfect", 1, &odometryTopicCallback);
+    ros::Subscriber odom_sub = nodeHandle.subscribe("/odometry/filtered", 1, &odometryTopicCallback);
     ros::Rate loop_rate(9.0);
 
     /* publish initial pose */
@@ -422,7 +422,7 @@ int main(int argc, char *argv[]) {
                     rollAt(*iterator);
                     yawAt(*iterator);
                     // TODO: do I need height for the goals?
-                    heightAt(*iterator);
+                    // heightAt(*iterator);
                 }
                 /* evaluate the Bezier curve */
                 // ROS_INFO("p0 = (%f, %f), p1 = (%f, %f), p2 = (%f, %f)",
@@ -491,15 +491,20 @@ int main(int argc, char *argv[]) {
     ros::spinOnce();
     ros::Rate(9.0).sleep();
     while (ros::ok() && iterator != bezier_path.end()) {
-        // if (iterator == bezier_path.begin()) iterator++;
-        ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
-        while((iterator->pose.pose.position.x > curr_pose_msg.pose.position.x) || (iterator->pose.pose.position.z > curr_pose_msg.pose.position.z - 4.22) || (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED)){// || (std::abs(std::abs(iterator->pose.pose.position.y) - std::abs(curr_pose_msg.pose.position.y)) > 0.1)) {   // 0.1 because Rulah's length is 0.3
+        if (iterator == bezier_path.begin()) iterator++;
+        // ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
+        while(1){// || (std::abs(std::abs(iterator->pose.pose.position.y) - std::abs(curr_pose_msg.pose.position.y)) > 0.1)) {   // 0.1 because Rulah's length is 0.3
             ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
+            // ROS_INFO("%f", distance(iterator->pose.pose.position, curr_pose_msg.pose.position));
             if (first_time) goals_pub.publish(iterator->pose);
             ros::spinOnce();
             ros::Rate(9.0).sleep();
             if(first_time) {
                 first_time = false;
+            }
+            if (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) {
+                move_base_status_msg.status_list[0].status = PENDING;
+                break;
             }
         }
         iterator++;
