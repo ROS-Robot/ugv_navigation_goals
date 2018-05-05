@@ -292,13 +292,12 @@ int main(int argc, char *argv[]) {
     ROS_INFO("It's on");
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
-    terrain.goal.position.x = -0.5; terrain.goal.position.y = 1.0; terrain.goal.position.z = 0.0;// 6.9;
-    terrain.start.position.x = -5.3; terrain.start.position.y = 1.0; terrain.start.position.z = 0.0;// 0.3;
-    terrain.goal_left.position.x = -0.5; terrain.goal_left.position.y = 4.0; terrain.start_left.position.x = -5.3; terrain.start_left.position.y = 4.0;
-    terrain.goal_right.position.x = -0.5; terrain.goal_right.position.y = -2.0; terrain.start_right.position.x = -5.3; terrain.start_right.position.y = -2.0;
+    terrain.goal.position.x = 6.5; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;// 6.9;
+    terrain.start.position.x = 1.1; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;// 0.3;
+    terrain.goal_left.position.x = 6.5; terrain.goal_left.position.y = 2.0; terrain.start_left.position.x = 1.1; terrain.start_left.position.y = 2.0;
+    terrain.goal_right.position.x = 6.5; terrain.goal_right.position.y = -2.0; terrain.start_right.position.x = 1.1; terrain.start_right.position.y = -2.0;
     terrain.slope = 30.0;
 
-    first_time = true;
     num_of_waypoints = 0;
     // TODO: incorporate lethal obstacles
     // geometry_msgs::PoseStamped temp;
@@ -490,84 +489,43 @@ int main(int argc, char *argv[]) {
     std::vector<Waypoint>::iterator iterator = bezier_path.begin();
     ros::spinOnce();
     ros::Rate(9.0).sleep();
+    first_time = true;
     while (ros::ok() && iterator != bezier_path.end()) {
         if (iterator == bezier_path.begin()) iterator++;
-        // ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
-        while(1){// || (std::abs(std::abs(iterator->pose.pose.position.y) - std::abs(curr_pose_msg.pose.position.y)) > 0.1)) {   // 0.1 because Rulah's length is 0.3
-            ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
-            // ROS_INFO("%f", distance(iterator->pose.pose.position, curr_pose_msg.pose.position));
-            if (first_time) goals_pub.publish(iterator->pose);
+        goals_pub.publish(iterator->pose);
+        while (distance(iterator->pose.pose.position, curr_pose_msg.pose.position) > 0.3) {
+            ROS_INFO("(%f, %f, %f) vs (%f, %f, %f) -> %f", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z, distance(iterator->pose.pose.position, curr_pose_msg.pose.position));
             ros::spinOnce();
-            ros::Rate(9.0).sleep();
-            if(first_time) {
-                first_time = false;
-            }
-            if (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) {
-                move_base_status_msg.status_list[0].status = PENDING;
-                break;
-            }
+            ros::Rate(6.0).sleep();
         }
         iterator++;
-        first_time = true;
-        ros::spinOnce();
-        ros::Rate(9.0).sleep();
         ROS_INFO("Moving on...");
     }
     // while (ros::ok() && iterator != bezier_path.end()) {
-    //     // TODO: do I have to send the initial as well???
-    //     if (iterator == bezier_path.begin()) {
-    //         iterator++;
-    //         continue;
-    //     }
-    //
-    //     if (first_time) {
-    //         goals_pub.publish(iterator->pose);
-    //         first_time = false;
-    //     }
-    //     else if (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) {
-    //         iterator++;
-    //         first_time = true;
-    //     }
-    //     else
-    //         first_time = false;
-    //
-    //     ros::spinOnce();
-    //     loop_rate.sleep();
-    // }
-    // while (ros::ok() && iterator != bezier_path.end()) {
-    //     // TODO: do I have to send the initial as well???
     //     if (iterator == bezier_path.begin()) iterator++;
-    //
-    //     goals_pub.publish(iterator->pose);
-    //     if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) ) {
-    //         goals_pub.publish(iterator->pose);
-    //         first_time = false;
-    //         if (!first_time) {
-    //             iterator++;
-    //             first_time = true;
+    //     // ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
+    //     while (1) {
+    //         ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
+    //         // ROS_WARN("%f -- %ld", distance(it(ros::ok() && iterator != bezier_path.end())erator->pose.pose.position, curr_pose_msg.pose.position), move_base_status_msg.status_list.size());
+    //         // if (move_base_status_msg.status_list.size())
+    //         //     ROS_WARN("%d", move_base_status_msg.status_list[0].status);
+    //         if (first_time) goals_pub.publish(iterator->pose);
+    //         ros::spinOnce();
+    //         ros::Rate(6.0).sleep();
+    //         if (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) {
+    //             move_base_status_msg.status_list[0].status = PENDING;
+    //             break;
+    //         }
+    //         if (first_time) {
+    //             first_time = false;
     //         }
     //     }
+    //     iterator++;
+    //     first_time = true;
     //     ros::spinOnce();
-    //     ros::Rate(1.0).sleep();
-    // }
-    // while (ros::ok() && iterator != bezier_path.end()) {
-    //     // TODO: do I have to send the initial as well???
-    //     if (iterator == bezier_path.begin()) {
-    //         iterator++;
-    //         continue;
-    //     }
-    //
-    //     goals_pub.publish(iterator->pose);
-    //     if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
-    //         goals_pub.publish(iterator->pose);
-    //         first_time = false;
-    //         if (!first_time) {
-    //             iterator++;
-    //             first_time = true;
-    //         }
-    //     }
-    //     ros::spinOnce();
-    //     loop_rate.sleep();
+    //     ros::Rate(6.0).sleep();
+    //     move_base_status_msg.status_list[0].status = PENDING;
+    //     ROS_INFO("Moving on...");
     // }
 
     return 0;
