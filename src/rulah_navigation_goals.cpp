@@ -292,10 +292,10 @@ int main(int argc, char *argv[]) {
     ROS_INFO("It's on");
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
-    terrain.goal.position.x = 6.5; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;// 6.9;
-    terrain.start.position.x = 1.1; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;// 0.3;
-    terrain.goal_left.position.x = 6.5; terrain.goal_left.position.y = 2.0; terrain.start_left.position.x = 1.1; terrain.start_left.position.y = 2.0;
-    terrain.goal_right.position.x = 6.5; terrain.goal_right.position.y = -2.0; terrain.start_right.position.x = 1.1; terrain.start_right.position.y = -2.0;
+    terrain.goal.position.x = 5.4; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 5.4; terrain.goal_left.position.y = 2.0; terrain.start_left.position.x = 0.0; terrain.start_left.position.y = 2.0;
+    terrain.goal_right.position.x = 5.4; terrain.goal_right.position.y = -2.0; terrain.start_right.position.x = 0.0; terrain.start_right.position.y = -2.0;
     terrain.slope = 30.0;
 
     num_of_waypoints = 0;
