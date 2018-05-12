@@ -37,6 +37,12 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
     if (control_points.size() < 3)
         return;
     // ROS_WARN("createBezierPath in");
+
+    /* Tweak for the final approach to goal. If the distance between the two control points is
+        greater than the average distance between any control points plus the length of the vehicle, 
+        then we will increase the segments per curve just for this one curve */
+    double avg_distance = 0.0;
+
     for (int i = 0; i < control_points.size()-2; i += 2) {
         // ROS_INFO("a");
         geometry_msgs::Point p0 = control_points.at(i).pose.pose.position;
@@ -45,6 +51,13 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         // ROS_INFO("c");
         geometry_msgs::Point p2 = control_points.at(i+2).pose.pose.position;
         // ROS_INFO("d");
+
+        /* Tweak for the final approach to goal */
+        double dist = distance(p0, p1);
+        if (!avg_distance)
+            avg_distance = dist;
+        else
+            avg_distance = (avg_distance + dist) / 2;
 
         /* Only do this for the first endpoint. When i != 0, this coincides
             with the end point of the previous segment */
@@ -55,15 +68,17 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
             bezier_path.push_back(temp);
         }
 
+        int segments = SEGMENTS_PER_CURVE;
+        if (dist > avg_distance + ROBOT_BODY_LENGTH)
+            segments += segments * 0.6;     // 60% increase (determined experimentally)
+
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
-        for (int j = 1; j <= SEGMENTS_PER_CURVE; j++) {
-            float t = j / (float) SEGMENTS_PER_CURVE;
+        for (int j = 1; j <= segments; j++) {
+            float t = j / (float) segments;
             calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
             bezier_path.push_back(temp);
         }
-        // temp.pose.pose.position.x = p2.x; temp.pose.pose.position.y = p2.y;
-        // bezier_path.push_back(temp);
     }
     // ROS_WARN("createBezierPath out");
 }
@@ -71,9 +86,9 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 /* clean up a Bezier path from irrational sequences of waypoints that may have occured buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
     for (std::vector<Waypoint>::iterator it = bezier_path.begin(); it != bezier_path.end(); it++) {
-        // if (it != bezier_path.begin()) it->pose.pose.position.z -= 4.0;
-        if (it != bezier_path.begin() &&
-            (std::prev(it,1)->pose.pose.position.x >= it->pose.pose.position.x || std::prev(it,1)->pose.pose.position.y == it->pose.pose.position.y)) {
+        if ( it != bezier_path.begin() &&
+                (std::prev(it,1)->pose.pose.position.x >= it->pose.pose.position.x ||
+                 std::prev(it,1)->pose.pose.position.y == it->pose.pose.position.y)) {
             bezier_path.erase(it);
             it = std::prev(it,1);
         }
@@ -144,38 +159,38 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
             s_roll_pos = 0.0, s_arc = 0.0;
             /* TODO: trade-offs discussion at final text*/
     for (std::vector<Waypoint>::iterator it = control_points.begin(); it != control_points.end(); ++it) {
-            /* for debugging */
-            // ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
-            //             it->pose.pose.position.x, it->pose.pose.position.y, it->pose.pose.position.z,
-            //             it->pose.pose.orientation.x, it->pose.pose.orientation.y, it->pose.pose.orientation.z, it->pose.pose.orientation.w);
-            // ROS_INFO("deviation = %f, roll = %f, pitch = %f, yaw = %f, arc = %f, looking_right = %d", it->deviation, it->roll, it->pitch, it->yaw, it->arc, it->looking_right);
+        /* for debugging */
+        // ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
+        //             it->pose.pose.position.x, it->pose.pose.position.y, it->pose.pose.position.z,
+        //             it->pose.pose.orientation.x, it->pose.pose.orientation.y, it->pose.pose.orientation.z, it->pose.pose.orientation.w);
+        // ROS_INFO("deviation = %f, roll = %f, pitch = %f, yaw = %f, arc = %f, looking_right = %d", it->deviation, it->roll, it->pitch, it->yaw, it->arc, it->looking_right);
 
-            it->cost = 0;
-            // normalize deviation (between 0 and 1) and multiply by 100 to be like the angle values
-            s_norm_dev += it->deviation / distance(terrain.start_left.position, terrain.start.position); it->cost += 100*it->deviation / distance(terrain.start_left.position, terrain.start.position);
-            s_pitch += it->pitch; it->cost += 1.7*it->pitch;
-            s_yaw += it->yaw; it->cost -= 0.3*it->yaw;
-            /* TODO: fix roll, pitch, yaw signs */
-            if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
-                s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
-                it->cost -= 1.3*it->roll;
-            }
-            else {
-                s_roll_neg += it->roll;     // roll that negatively impacts the movement of the vehicle
-                it->cost += 1.3*it->roll;
-            }
-            s_arc += it->arc;
-            it->cost += 0.4*it->arc;
+        it->cost = 0;
+        // normalize deviation (between 0 and 1) and multiply by 100 to be like the angle values
+        s_norm_dev += it->deviation / distance(terrain.start_left.position, terrain.start.position); it->cost += 100*it->deviation / distance(terrain.start_left.position, terrain.start.position);
+        s_pitch += it->pitch; it->cost += 2.7*it->pitch;
+        s_yaw += it->yaw; it->cost -= 1.3*it->yaw;
+        /* TODO: fix roll, pitch, yaw signs */
+        if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
+            s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
+            it->cost -= 2.7*it->roll;
+        }
+        else {
+            s_roll_neg += it->roll;     // roll that negatively impacts the movement of the vehicle
+            it->cost += 2.7*it->roll;
+        }
+        s_arc += it->arc;
+        it->cost += 0.4*it->arc;
 
-            if (it->cost > terrain.worst_local_cost) {
-                terrain.worst_local_cost = it->cost;
-                has_worst_local_cost = true;
-            }
+        if (it->cost > terrain.worst_local_cost) {
+            terrain.worst_local_cost = it->cost;
+            has_worst_local_cost = true;
+        }
 
-            // ROS_WARN("waypoint %d cost = %f", it->id, it->cost);
+        // ROS_WARN("waypoint %d cost = %f", it->id, it->cost);
     }
 
-    cost = 100*s_norm_dev + 1.7*s_pitch - 0.3*s_yaw + 1.3*s_roll_neg - 1.3*s_roll_pos;// + 0.4*s_arc;
+    cost = (90/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) /*2.7*s_yaw + 1.3*s_roll_neg - 1.3*s_roll_pos*/ + (terrain.slope/10)*s_arc;
 
     if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
 

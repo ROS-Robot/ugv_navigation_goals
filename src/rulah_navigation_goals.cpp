@@ -292,11 +292,11 @@ int main(int argc, char *argv[]) {
     ROS_INFO("It's on");
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
-    terrain.goal.position.x = 5.4; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    terrain.start.position.x = 0.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 5.4; terrain.goal_left.position.y = 2.0; terrain.start_left.position.x = 0.0; terrain.start_left.position.y = 2.0;
-    terrain.goal_right.position.x = 5.4; terrain.goal_right.position.y = -2.0; terrain.start_right.position.x = 0.0; terrain.start_right.position.y = -2.0;
-    terrain.slope = 30.0;
+    terrain.goal.position.x = 6.4; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 6.4; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.4; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    terrain.slope = 45.0;
 
     num_of_waypoints = 0;
     // TODO: incorporate lethal obstacles
@@ -338,7 +338,6 @@ int main(int argc, char *argv[]) {
     control_points.push_back(p0);
     // take every two consecutive lines, with a fixed p0 from the previous line
     double path_cost = 0.0;
-    // for (int r = 0; r < rows-1; r += 2) {
     for (int r = rows-1; r >= 0; r -= 2) {
         double local_cost = 0.0, best_local_cost = std::numeric_limits<double>::max();
         bool has_worst_local_cost = false;
@@ -346,9 +345,9 @@ int main(int argc, char *argv[]) {
         std::vector<Waypoint> best_local_waypoints;
         for (int i = 0; i < cols; i++) {        // row 1 (lower)
             for (int j = 0; j < cols; j++) {    // row 2 (upper)
-                double  p1_x = terrain.goal.position.x - (up_down_border + r * SEARCH_STEP),
+                double  p1_x = terrain.goal.position.x - (up_down_border + (r+1) * SEARCH_STEP),
                         p1_y = terrain.goal_left.position.y - (left_right_border + i * SEARCH_STEP),
-                        p2_x = terrain.goal.position.x - (up_down_border + (r+1) * SEARCH_STEP),
+                        p2_x = terrain.goal.position.x - (up_down_border + (r) * SEARCH_STEP),
                         p2_y = terrain.goal_left.position.y - (left_right_border + j * SEARCH_STEP);
                         /* if we are in the last phase of our search make an effort to reach our goal instantly */
                         if (r == 0 || r == 1) {
@@ -356,7 +355,10 @@ int main(int argc, char *argv[]) {
                             p2_y = terrain.goal.position.y;
                         }
                 /* we don't want to go straight ahead, also take a chance to deal with equalities caused by grid resolution */
-                if (i == j || (p2_x == p0.pose.pose.position.x && p2_y == p0.pose.pose.position.y) || (p1_x == p0.pose.pose.position.x && p1_y == p0.pose.pose.position.y) || (p2_x == p1_x && p2_y == p1_y))
+                if ( i == j ||
+                    (p2_x == p0.pose.pose.position.x && p2_y == p0.pose.pose.position.y) ||
+                    (p1_x == p0.pose.pose.position.x && p1_y == p0.pose.pose.position.y) ||
+                    (p2_x == p1_x && p2_y == p1_y) )
                     continue;
                 std::vector<Waypoint> temp_control_points;
                 /* create temporary waypoint for i (p1) */
@@ -420,8 +422,6 @@ int main(int argc, char *argv[]) {
                     pitchAt(*iterator);
                     rollAt(*iterator);
                     yawAt(*iterator);
-                    // TODO: do I need height for the goals?
-                    // heightAt(*iterator);
                 }
                 /* evaluate the Bezier curve */
                 // ROS_INFO("p0 = (%f, %f), p1 = (%f, %f), p2 = (%f, %f)",
@@ -465,7 +465,7 @@ int main(int argc, char *argv[]) {
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
-        ROS_INFO("(%f, %f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y, bezier_path.at(i).pose.pose.position.z);
+        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
 
     /* Clean up the Bezier path from irrational sequences of waypoints that may have occured buring calculations */
     cleanUpBezierPath(bezier_path);
@@ -473,17 +473,7 @@ int main(int argc, char *argv[]) {
     /* Print Bezier path */
     ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
-        ROS_INFO("(%f, %f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y, bezier_path.at(i).pose.pose.position.z);
-
-    /* INTERPOLATE BEZIER PATH */
-    // TODO: why does it not work? is it really necessary?
-    // ROS_INFO("Interpolating Bezier path");
-    // interpolateBezierPath(bezier_path, INTERPOLATION_SCALE);
-    //
-    // /* Print Bezier path -- for debugging */
-    // ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
-    // for (int i = 0; i < bezier_path.size(); i++)
-    //     ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
 
     /* SEND BEZIER PATH TO move_base */
     std::vector<Waypoint>::iterator iterator = bezier_path.begin();
@@ -494,39 +484,13 @@ int main(int argc, char *argv[]) {
         if (iterator == bezier_path.begin()) iterator++;
         goals_pub.publish(iterator->pose);
         while (distance(iterator->pose.pose.position, curr_pose_msg.pose.position) > 0.3) {
-            ROS_INFO("(%f, %f, %f) vs (%f, %f, %f) -> %f", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z, distance(iterator->pose.pose.position, curr_pose_msg.pose.position));
+            // ROS_INFO("(%f, %f, %f) vs (%f, %f, %f) -> %f", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z, distance(iterator->pose.pose.position, curr_pose_msg.pose.position));
             ros::spinOnce();
             ros::Rate(6.0).sleep();
         }
         iterator++;
         ROS_INFO("Moving on...");
     }
-    // while (ros::ok() && iterator != bezier_path.end()) {
-    //     if (iterator == bezier_path.begin()) iterator++;
-    //     // ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
-    //     while (1) {
-    //         ROS_INFO("(%f, %f, %f) vs (%f, %f, %f)", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z);
-    //         // ROS_WARN("%f -- %ld", distance(it(ros::ok() && iterator != bezier_path.end())erator->pose.pose.position, curr_pose_msg.pose.position), move_base_status_msg.status_list.size());
-    //         // if (move_base_status_msg.status_list.size())
-    //         //     ROS_WARN("%d", move_base_status_msg.status_list[0].status);
-    //         if (first_time) goals_pub.publish(iterator->pose);
-    //         ros::spinOnce();
-    //         ros::Rate(6.0).sleep();
-    //         if (move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status == SUCCEEDED) {
-    //             move_base_status_msg.status_list[0].status = PENDING;
-    //             break;
-    //         }
-    //         if (first_time) {
-    //             first_time = false;
-    //         }
-    //     }
-    //     iterator++;
-    //     first_time = true;
-    //     ros::spinOnce();
-    //     ros::Rate(6.0).sleep();
-    //     move_base_status_msg.status_list[0].status = PENDING;
-    //     ROS_INFO("Moving on...");
-    // }
 
     return 0;
 }

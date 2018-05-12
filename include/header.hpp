@@ -43,10 +43,11 @@
 #define MIN_JUMP 0.2    // the minimum jump in space when looking for an alternative waypoint
 #define MAX_REPS_FOR_OPT 20 // maximum number of optimization repetitions
 // search problem related
-#define SEGMENTS_PER_CURVE 3
-#define SEARCH_STEP 1.0
+#define SEGMENTS_PER_CURVE 5
+#define SEARCH_STEP 1.5
 #define INTERPOLATION_SCALE 1
 #define ROBOT_BODY_FIX 0.15
+#define ROBOT_BODY_LENGTH 0.3
 
 /* our waypoint's structure */
 class Waypoint {
