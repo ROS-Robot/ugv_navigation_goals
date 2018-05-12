@@ -450,7 +450,7 @@ int main(int argc, char *argv[]) {
     while (ros::ok() && iterator != bezier_path.end()) {
         if (iterator == bezier_path.begin()) iterator++;
         goals_pub.publish(iterator->pose);
-        while (distance(iterator->pose.pose.position, curr_pose_msg.pose.position) > 0.3) {
+        while (distance(iterator->pose.pose.position, curr_pose_msg.pose.position) > 0.25) {
             // ROS_INFO("(%f, %f, %f) vs (%f, %f, %f) -> %f", iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z, curr_pose_msg.pose.position.x, curr_pose_msg.pose.position.y, curr_pose_msg.pose.position.z, distance(iterator->pose.pose.position, curr_pose_msg.pose.position));
             ros::spinOnce();
             ros::Rate(6.0).sleep();
