@@ -234,52 +234,6 @@ int main(int argc, char *argv[]) {
     double eval = evaluate(waypoints_list, has_worst_local_cost);
     ROS_WARN("Evaluation = %f\t(has_worst_local_cost = %d)", eval, has_worst_local_cost);
 
-    // /* FORM OPTIMAL PLAN */
-    // generateOptimalPlan();
-    //
-    // // recalculate angles
-    // for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
-    //     if (iterator == waypoints_list.begin()) iterator->arc = eulerAngleOf(iterator->pose, init, std::next(iterator,1)->pose);
-    //     else if (std::next(iterator,1) != waypoints_list.end()) iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
-    //     else iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, terrain.goal);
-    // }
-    // // recalculate costs
-    // for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator) {
-    //     if (iterator == waypoints_list.begin())
-    //         iterator->cost = iterator->deviation;
-    //     else
-    //         iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
-    // }
-    //
-    // ROS_INFO("We have the optimal goals:");
-    // for (std::list<Waypoint>::iterator iterator = waypoints_list.begin(); iterator != waypoints_list.end(); ++iterator)
-    //     ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
-    //                 iterator->pose.pose.position.x, iterator->pose.pose.position.y, iterator->pose.pose.position.z,
-    //                 iterator->pose.pose.orientation.x, iterator->pose.pose.orientation.y, iterator->pose.pose.orientation.z, iterator->pose.pose.orientation.w);
-
-    /* GRADUALLY SEND PLAN TO move_base */
-    // x = -3.0, y = 6.5, angle = 45.0;
-    // std::list<Waypoint>::iterator iterator = waypoints_list.begin();
-    // // ROS_INFO("Sending goals to move_base");
-    // // first_time = true;
-    // while (ros::ok() && iterator != waypoints_list.end()) {
-    //     goals_pub.publish(iterator->pose);
-    //     if (first_time || ( move_base_status_msg.status_list.size() > 0 && move_base_status_msg.status_list[0].status != PENDING && move_base_status_msg.status_list[0].status != ACTIVE && move_base_status_msg.status_list[0].status != PREEMPTING) ) {
-    //         // ROS_INFO("Publishing goal");
-    //         goals_pub.publish(iterator->pose);
-    //         first_time == false;
-    //         if (!first_time) {
-    //             // ROS_INFO("iterator++");
-    //             iterator++;
-    //             first_time = true;
-    //         }
-    //         // first_time = false;
-    //     }
-    //     // ROS_INFO("after if");
-    //     ros::spinOnce();
-    //     loop_rate.sleep();
-    // }
-
     return 0;
 }
 
@@ -291,11 +245,24 @@ int main(int argc, char *argv[]) {
     ros::NodeHandle nodeHandle("~");
     ROS_INFO("It's on");
 
+    /* GET SIMULATION'S CONFIGURATIONS */
+    std::string move_base_goals_topic, initial_pose_topic, move_base_status_topic, odom_topic, header_frame_id;
+    if (!nodeHandle.getParam("move_base_goals_topic", move_base_goals_topic))
+        ROS_ERROR("Could not find move_base_goals_topic parameter!");
+    if (!nodeHandle.getParam("initial_pose_topic", initial_pose_topic))
+        ROS_ERROR("Could not find initial_pose_topic parameter!");
+    if (!nodeHandle.getParam("move_base_status_topic", move_base_status_topic))
+        ROS_ERROR("Could not find move_base_status_topic parameter!");
+    if (!nodeHandle.getParam("odom_topic", odom_topic))
+        ROS_ERROR("Could not find odom_topic parameter!");
+    if (!nodeHandle.getParam("header_frame_id", header_frame_id))
+        ROS_ERROR("Could not find header_frame_id parameter!");
+
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
-    terrain.goal.position.x = 6.4; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 6.4; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 6.4; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
     terrain.slope = 45.0;
 
     num_of_waypoints = 0;
