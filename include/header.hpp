@@ -207,3 +207,7 @@ void cleanUpBezierPath(std::vector<Waypoint> & bezier_path);
 void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);
 /* evaluate a Bezier curve */
 double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_worst_local_cost);
+
+/* testing functions declarations -- for debugging */
+void bezier_test(int argc, char *argv[]);
+void calculations_test(int argc, char *argv[]);
