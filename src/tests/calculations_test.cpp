@@ -1,6 +1,7 @@
 #include "../../include/header.hpp"
 
-void calculations_test(int argc, char *argv[]) {
+/* Test calculations core functions */
+void calculationsTest(int argc, char *argv[]) {
     /* SET-UP */
     ros::init(argc, argv, "rulah_navigation_goals");
     ros::NodeHandle nodeHandle("~");
@@ -14,10 +15,10 @@ void calculations_test(int argc, char *argv[]) {
     terrain.goal_left.position.x = 1.5; terrain.goal_left.position.y = 7.0; terrain.start_left.position.x = -4.85; terrain.start_left.position.y = 7.0;
     terrain.goal_right.position.x = 1.5; terrain.goal_right.position.y = 5.0; terrain.start_right.position.x = -4.85; terrain.start_right.position.y = 5.0;
     terrain.slope = 40.0;
-    geometry_msgs::PoseStamped temp;
-    temp.pose.position.x = -3.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
-    temp.pose.position.x = -1.0; temp.pose.position.y = 5.5; terrain.lethal_obstacles.push_back(temp);
-    temp.pose.position.x = -1.5; temp.pose.position.y = 6.2; terrain.lethal_obstacles.push_back(temp);
+    geometry_msgs::Point temp;
+    temp.x = -3.0; temp.y = 5.5; terrain.lethal_obstacles.push_back(temp);
+    temp.x = -1.0; temp.y = 5.5; terrain.lethal_obstacles.push_back(temp);
+    temp.x = -1.5; temp.y = 6.2; terrain.lethal_obstacles.push_back(temp);
 
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
     ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);

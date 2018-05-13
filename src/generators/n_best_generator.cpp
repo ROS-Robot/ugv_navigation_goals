@@ -1,46 +1,7 @@
-#include "../include/header.hpp"
+#include "../../include/header.hpp"
 
-// #define TEST_BEZIER
-// #define TEST_CALCULATIONS
-// #define GENETIC_ALGORITHM_GENERATION
-// #define N_BEST_GENERATION
-
-#ifdef TEST_BEZIER
-/* Test Bezier curve's core functions */
-
-int main(int argc, char *argv[]) {
-    bezierTest(argc, argv);
-    return 0;
-}
-
-#elif defined( TEST_CALCULATIONS )
-/* Test calculations core functions */
-
-int main(int argc, char *argv[]) {
-    calculationsTest(argc, argv);
-    return 0;
-}
-
-#elif defined( GENETIC_ALGORITHM_GENERATION )
-/* A Genetic-algorithm based waypoint generation implementation */
-
-int main(int argc, char *argv[]) {
-    geneticAlgorithmGenerator(argc, argv);
-    return 0;
-}
-
-#elif defined( N_BEST_GENERATION )
 /* An N-best based waypoint generation implementation */
-
-int main(int argc, char *argv[]) {
-    nBestGenerator(argc, argv);
-    return 0;
-}
-
-#else
-/* A Hill-climbing based waypoint generation implementation */
-
-int main(int argc, char *argv[]) {
+void nBestGenerator(int argc, char *argv[]) {
     /* SET-UP */
     ros::init(argc, argv, "rulah_navigation_goals");
     ros::NodeHandle nodeHandle("~");
@@ -65,6 +26,12 @@ int main(int argc, char *argv[]) {
     terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
     terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
     terrain.slope = 45.0;
+
+    // incorporate lethal obstacles
+    geometry_msgs::Point temp;
+    temp.x = 1.16; temp.y = 1.0; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.6; temp.y = -0.67; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.75; temp.y = 0.99; terrain.lethal_obstacles.push_back(temp);
 
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
@@ -232,8 +199,4 @@ int main(int argc, char *argv[]) {
         iterator++;
         ROS_INFO("Moving on...");
     }
-
-    return 0;
 }
-
-#endif

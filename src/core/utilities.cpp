@@ -30,6 +30,13 @@ bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs:
 
     return ((y2-y1)/(x2-x_1)) == ((y3-y1)/(x3-x_1));
 }
+bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::Point & p_c) {
+    double x_1 = pose_a.pose.position.x, y1 = pose_a.pose.position.y,
+        x2 = pose_b.pose.position.x, y2 = pose_b.pose.position.y,
+        x3 = p_c.x, y3 = p_c.y;
+
+    return ((y2-y1)/(x2-x_1)) == ((y3-y1)/(x3-x_1));
+}
 
 /* returns the euler angle where pose_a is the vertex */
 double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c) {

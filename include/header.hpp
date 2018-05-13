@@ -108,12 +108,12 @@ public:
     double slope;
     double worst_local_cost;
     double worst_global_cost;
-    std::vector<geometry_msgs::PoseStamped>  lethal_obstacles;
+    std::vector<geometry_msgs::Point> lethal_obstacles;
 
     Terrain() :
         worst_local_cost(std::numeric_limits<double>::min()), worst_global_cost(std::numeric_limits<double>::min())
         {};
-    Terrain(std::vector<geometry_msgs::PoseStamped> lethal_obstacles) :
+    Terrain(std::vector<geometry_msgs::Point> lethal_obstacles) :
         lethal_obstacles(lethal_obstacles), worst_local_cost(std::numeric_limits<double>::min()), worst_global_cost(std::numeric_limits<double>::min())
         {};
     ~Terrain() {};
@@ -144,6 +144,7 @@ void odometryTopicCallback(const nav_msgs::Odometry::ConstPtr& od_msg);
 geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta);
 double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped pose);
 bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
+bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::Point & p_c);
 /* returns the euler angle where pose_a is the vertex */
 double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
 double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseWithCovarianceStamped& pose_b, const geometry_msgs::PoseStamped & pose_c);
@@ -208,6 +209,18 @@ void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);
 /* evaluate a Bezier curve */
 double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_worst_local_cost);
 
+/* our paths generators */
+
+/* A Hill-climbing based waypoint generation implementation */
+void hillClimbingGenerator(int argc, char *argv[]);
+/* An N-best based waypoint generation implementation */
+void nBestGenerator(int argc, char *argv[]);
+/* A Genetic-algorithm based waypoint generation implementation */
+void geneticAlgorithmGenerator(int argc, char *argv[]);
+
 /* testing functions declarations -- for debugging */
-void bezier_test(int argc, char *argv[]);
-void calculations_test(int argc, char *argv[]);
+
+/* Test Bezier curve's core functions */
+void bezierTest(int argc, char *argv[]);
+/* Test calculations core functions */
+void calculationsTest(int argc, char *argv[]);

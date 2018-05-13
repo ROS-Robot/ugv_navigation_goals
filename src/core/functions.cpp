@@ -67,7 +67,7 @@ void generateOptimalPlan() {
 /* is waypoint_a-->waypoint_b route going through a lethal obstacle? */
 bool throughLethalObstacle(const Waypoint & waypoint_a, const Waypoint & waypoint_b) {
     // ROS_INFO("throughLethalObstacle in");
-    for (std::vector<geometry_msgs::PoseStamped>::iterator iterator = terrain.lethal_obstacles.begin(); iterator != terrain.lethal_obstacles.end(); ++iterator)
+    for (std::vector<geometry_msgs::Point>::iterator iterator = terrain.lethal_obstacles.begin(); iterator != terrain.lethal_obstacles.end(); ++iterator)
         if (areCoLinear(waypoint_a.pose, waypoint_b.pose, *iterator))
             return true;
     // ROS_INFO("throughLethalObstacle out");

@@ -1,6 +1,7 @@
 #include "../../include/header.hpp"
 
-void bezier_test(int argc, char *argv[]) {
+/* Test Bezier curve's core functions */
+void bezierTest(int argc, char *argv[]) {
     /* SET-UP */
     ros::init(argc, argv, "rulah_navigation_goals");
     ros::NodeHandle nodeHandle("~");
