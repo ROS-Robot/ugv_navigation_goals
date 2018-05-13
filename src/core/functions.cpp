@@ -1,4 +1,4 @@
-#include "../include/header.hpp"
+#include "../../include/header.hpp"
 
 /* global variables */
 std::list<Waypoint> waypoints_list;

@@ -38,10 +38,10 @@ include_directories(
 
 add_executable(rulah_navigation_goals 
               src/rulah_navigation_goals.cpp
-              src/functions.cpp
-              src/bezier_curve.cpp
-              src/utilities.cpp
-              src/vehicle_dynamics.cpp
+              src/core/functions.cpp
+              src/core/bezier_curve.cpp
+              src/core/utilities.cpp
+              src/core/vehicle_dynamics.cpp
               src/tests/bezier_test.cpp
               src/tests/calculations_test.cpp
 )
