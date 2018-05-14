@@ -17,12 +17,16 @@
 #include <grid_map_msgs/GridMap.h>
 #include <grid_map_core/grid_map_core.hpp>
 /* C++ utility libraries */
+#include <utility>      /* std::pair */
 #include <list>
+#include <deque>
 #include <limits>       /* numeric_limits */
 #include <math.h>       /* acos */
-#include <assert.h>       /* for debugging */
+#include <assert.h>     /* for debugging */
 
 /* useful definitions */
+
+/* for all generators */
 #define PI 3.14159265
 // actionlib_msgs/GoalStatus Message : uint8 status
 #define PENDING 0
@@ -48,6 +52,9 @@
 #define INTERPOLATION_SCALE 1
 #define ROBOT_BODY_FIX 0.15
 #define ROBOT_BODY_LENGTH 0.3
+
+/* for N-best generator */
+#define N 4
 
 /* our waypoint's structure */
 class Waypoint {
@@ -192,7 +199,7 @@ double yawAt(const geometry_msgs::Point & p);
 double heightAt(Waypoint & w);
 double heightAt(geometry_msgs::Point & p);
 
-/* Bezier curves functions declarations */
+/* Bezier curve functions declarations */
 /* sources: http://devmag.org.za/2011/04/05/bzier-curves-a-tutorial/ ,
             http://devmag.org.za/2011/06/23/bzier-path-algorithms/ */
 

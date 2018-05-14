@@ -63,7 +63,7 @@ void nBestGenerator(int argc, char *argv[]) {
     Waypoint p0; p0.pose.pose.orientation.w = 1.0; p0.pose.header.frame_id = "odom";
     p0.pose.pose.position.x = terrain.start.position.x; p0.pose.pose.position.y = terrain.start.position.y;
     Waypoint last_p2 = p0;
-    // starting position will definitelly be a control point
+    // starting position will definitely be a control point
     control_points.push_back(p0);
     // take every two consecutive lines, with a fixed p0 from the previous line
     double path_cost = 0.0;
@@ -72,6 +72,7 @@ void nBestGenerator(int argc, char *argv[]) {
         bool has_worst_local_cost = false;
         // take every possible combination of quadratic Bezier curve control points p1 and p2 from these two lines
         std::vector<Waypoint> best_local_waypoints;
+        std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > > n_best_control_points;
         for (int i = 0; i < cols; i++) {        // row 1 (lower)
             for (int j = 0; j < cols; j++) {    // row 2 (upper)
                 double  p1_x = terrain.goal.position.x - (up_down_border + (r+1) * SEARCH_STEP),
@@ -90,17 +91,15 @@ void nBestGenerator(int argc, char *argv[]) {
                     (p2_x == p1_x && p2_y == p1_y) )
                     continue;
                 std::vector<Waypoint> temp_control_points;
-                /* create temporary waypoint for i (p1) */
-                Waypoint p1; p1.pose.pose.orientation.w = 1.0; p1.pose.header.frame_id = "odom";
                 // for debugging
                 assert(r >= 0);
-                // TODO: p1 coords
+                /* create temporary waypoint for i (p1) */
+                Waypoint p1; p1.pose.pose.orientation.w = 1.0; p1.pose.header.frame_id = "odom";
                 p1.pose.pose.position.x = p1_x;
                 p1.pose.pose.position.y = p1_y;
                 p1.deviation = distanceFromLine(p1.pose, terrain.start, terrain.goal);
                 /* create temporary waypoint for j (p2) */
                 Waypoint p2; p2.pose.pose.orientation.w = 1.0; p2.pose.header.frame_id = "odom";
-                // TODO: p2 coords
                 p2.pose.pose.position.x = p2_x;
                 p2.pose.pose.position.y = p2_y;
                 p2.deviation = distanceFromLine(p2.pose, terrain.start, terrain.goal);
@@ -143,16 +142,28 @@ void nBestGenerator(int argc, char *argv[]) {
                 }
                 /* evaluate the Bezier curve */
                 local_cost = evaluateBezierCurve(bezier_curve, has_worst_local_cost);
-                // TODO: is the following OK here??? Is is necessary???
-                // if the path that is currently may have the worst local cost, punish it with extra cost
-                // if (local_cost == terrain.worst_local_cost)
-                //     local_cost *= 2;
                 /* if curve may be locally optimal */
                 if (local_cost < best_local_cost) {
                     // temporarily save local curve's control points
                     while(best_local_waypoints.size()) best_local_waypoints.pop_back(); // pop the previous best waypoints
                     best_local_waypoints.push_back(p0); best_local_waypoints.push_back(p1); best_local_waypoints.push_back(p2);
                     best_local_cost = local_cost;
+
+                    std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
+                    std::pair< std::pair<Waypoint, Waypoint>, int > best = std::make_pair(p, best_local_cost);
+                    n_best_control_points.push_front(best);
+                    if (n_best_control_points.size() > N)
+                        n_best_control_points.pop_back();
+                }
+                /* else check if curve can be one of the N-best */
+                else {
+                    for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator it = n_best_control_points.begin(); it != n_best_control_points.end(); it++) {
+                        if (it->second > local_cost) {
+                            std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
+                            std::pair< std::pair<Waypoint, Waypoint>, int > good_enough = std::make_pair(p, best_local_cost);
+                            std::swap(*it, good_enough);
+                        }
+                    }
                 }
 
                 p0 = temp_control_points.at(2);
@@ -176,7 +187,7 @@ void nBestGenerator(int argc, char *argv[]) {
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
 
-    /* Clean up the Bezier path from irrational sequences of waypoints that may have occured buring calculations */
+    /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
     cleanUpBezierPath(bezier_path);
 
     /* Print Bezier path */

@@ -1,6 +1,6 @@
 #include "../../include/header.hpp"
 
-/* Bezier curves functions declarations */
+/* Bezier curve functions declarations */
 
 /* calculate Bezier point of a quadratic Bezier curve */
 void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, geometry_msgs::Point & p) {
