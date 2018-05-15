@@ -35,6 +35,15 @@ void odometryTopicCallback(const nav_msgs::Odometry::ConstPtr& od_msg) {
 
 /* problem's core functions definitions */
 
+/* determine proximity of waypoint to LETHAL_OBSTACLE */
+bool proximityToLethalObstacle(const Waypoint & waypoint) {
+    for (std::vector<geometry_msgs::Point>::iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
+        if (distance(waypoint.pose.pose.position, *it) <= PROXIMITY_TO_OBSTACLE)
+            return true;
+    
+    return false;
+}
+
 /* generate optimal plan based on an initial set of waypoints */
 void generateOptimalPlan() {
     // ROS_INFO("generateOptimalPlan in");

@@ -60,6 +60,7 @@ void nBestGenerator(int argc, char *argv[]) {
     // TODO: consider admissibility for trimming search???
     std::vector<Waypoint> control_points;
     std::deque< std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > > > all_n_best;
+    int loops = 0;  // count loops -- for debugging
     // initially p0 is start
     Waypoint p0; p0.pose.pose.orientation.w = 1.0; p0.pose.header.frame_id = "odom";
     p0.pose.pose.position.x = terrain.start.position.x; p0.pose.pose.position.y = terrain.start.position.y;
@@ -69,6 +70,7 @@ void nBestGenerator(int argc, char *argv[]) {
     // take every two consecutive lines, with a fixed p0 from the previous line
     double path_cost = 0.0;
     for (int r = rows-1; r >= 0; r -= 2) {
+        loops++;    // count loops -- for debugging
         double local_cost = 0.0, best_local_cost = std::numeric_limits<double>::max();
         bool has_worst_local_cost = false;
         // take every possible combination of quadratic Bezier curve control points p1 and p2 from these two lines
@@ -149,19 +151,24 @@ void nBestGenerator(int argc, char *argv[]) {
                     while(best_local_waypoints.size()) best_local_waypoints.pop_back(); // pop the previous best waypoints
                     best_local_waypoints.push_back(p0); best_local_waypoints.push_back(p1); best_local_waypoints.push_back(p2);
                     best_local_cost = local_cost;
-                    // local N-best bookeeping
+                    /* local N-best bookeeping */
+                    // if we can't fit in any other local best, then trow the worst (last) one away
+                    if (n_best_control_points.size() == N)
+                        n_best_control_points.pop_back();
                     std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
                     std::pair< std::pair<Waypoint, Waypoint>, int > best = std::make_pair(p, best_local_cost);
                     n_best_control_points.push_front(best);
-                    if (n_best_control_points.size() > N)
-                        n_best_control_points.pop_back();
                 }
                 /* else check if curve can be one of the N-best */
                 else {
                     // local N-best bookeeping
                     bool kept = false;
                     for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator it = n_best_control_points.begin(); it != n_best_control_points.end(); it++) {
-                        if (it->second > local_cost) {
+                        // if we have an equally best fallback option add it right after it if you can
+                        if (local_cost == it->second && it != std::prev(n_best_control_points.end(), 1))
+                            it++;
+                        // if we have a better fallback option
+                        if (local_cost < it->second) {
                             std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
                             std::pair< std::pair<Waypoint, Waypoint>, int > good_enough = std::make_pair(p, best_local_cost);
                             std::swap(*it, good_enough);
@@ -185,6 +192,13 @@ void nBestGenerator(int argc, char *argv[]) {
                 last_p2 = p0;
             }
         }
+
+        /* detect contact with lethal obstacle */
+        if (proximityToLethalObstacle(best_local_waypoints.at(1)) || proximityToLethalObstacle(best_local_waypoints.at(2))) {
+            // TODO: deal with the contact
+            ROS_WARN("Danger!!!");
+        }
+
         // add local curve's control points to the path
         if (best_local_waypoints.size()) {
             control_points.push_back(best_local_waypoints.at(1));
@@ -195,6 +209,7 @@ void nBestGenerator(int argc, char *argv[]) {
     }
 
     /* Print all N-best -- for debugging */
+    ROS_INFO("loops = %d", loops); // count loops -- for debugging
     for (std::deque< std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > > >::iterator i = all_n_best.begin(); i != all_n_best.end(); i++) {
         for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator j = i->begin(); j != i->end(); j++) {
             ROS_INFO("(%f, %f)", j->first.first.pose.pose.position.x, j->first.second.pose.pose.position.y);

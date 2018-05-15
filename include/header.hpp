@@ -56,6 +56,7 @@
 /* for N-best generator */
 #define N 4
 #define BACKTRACK_STEPS 1
+#define PROXIMITY_TO_OBSTACLE 0.15
 
 /* our waypoint's structure */
 class Waypoint {
@@ -170,6 +171,8 @@ double distance(const geometry_msgs::Point & p_a, const geometry_msgs::Point & p
 
 /* problem's core functions declarations */
 
+/* determine proximity of waypoint to LETHAL_OBSTACLE */
+bool proximityToLethalObstacle(const Waypoint & waypoint);
 /* generate optimal plan based on an initial set of waypoints */
 void generateOptimalPlan();
 /* is waypoint_a-->waypoint_b route going through a lethal obstacle? */
