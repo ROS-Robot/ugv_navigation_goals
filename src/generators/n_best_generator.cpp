@@ -59,6 +59,7 @@ void nBestGenerator(int argc, char *argv[]) {
     /* FIND THE CONTROL POINTS OF A "GOOD ENOUGH" BEZIER PATH */
     // TODO: consider admissibility for trimming search???
     std::vector<Waypoint> control_points;
+    std::deque< std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > > > all_n_best;
     // initially p0 is start
     Waypoint p0; p0.pose.pose.orientation.w = 1.0; p0.pose.header.frame_id = "odom";
     p0.pose.pose.position.x = terrain.start.position.x; p0.pose.pose.position.y = terrain.start.position.y;
@@ -148,7 +149,7 @@ void nBestGenerator(int argc, char *argv[]) {
                     while(best_local_waypoints.size()) best_local_waypoints.pop_back(); // pop the previous best waypoints
                     best_local_waypoints.push_back(p0); best_local_waypoints.push_back(p1); best_local_waypoints.push_back(p2);
                     best_local_cost = local_cost;
-
+                    // local N-best bookeeping
                     std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
                     std::pair< std::pair<Waypoint, Waypoint>, int > best = std::make_pair(p, best_local_cost);
                     n_best_control_points.push_front(best);
@@ -157,12 +158,26 @@ void nBestGenerator(int argc, char *argv[]) {
                 }
                 /* else check if curve can be one of the N-best */
                 else {
+                    // local N-best bookeeping
+                    bool kept = false;
                     for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator it = n_best_control_points.begin(); it != n_best_control_points.end(); it++) {
                         if (it->second > local_cost) {
                             std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
                             std::pair< std::pair<Waypoint, Waypoint>, int > good_enough = std::make_pair(p, best_local_cost);
                             std::swap(*it, good_enough);
+                            // shift the remaining N-best elements
+                            for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator j = it; j != n_best_control_points.end(); j++)
+                                std::swap(*j, good_enough);
+                            // we are done
+                            kept = true;
+                            break;
                         }
+                    }
+                    // if there is room in the end, keep it to the end
+                    if (!kept && n_best_control_points.size() < N) {
+                        std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
+                        std::pair< std::pair<Waypoint, Waypoint>, int > good_enough = std::make_pair(p, best_local_cost);
+                        n_best_control_points.push_back(good_enough);
                     }
                 }
 
@@ -175,6 +190,16 @@ void nBestGenerator(int argc, char *argv[]) {
             control_points.push_back(best_local_waypoints.at(1));
             control_points.push_back(best_local_waypoints.at(2));
         }
+        // add local n-best to all n-best
+        all_n_best.push_back(n_best_control_points);
+    }
+
+    /* Print all N-best -- for debugging */
+    for (std::deque< std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > > >::iterator i = all_n_best.begin(); i != all_n_best.end(); i++) {
+        for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator j = i->begin(); j != i->end(); j++) {
+            ROS_INFO("(%f, %f)", j->first.first.pose.pose.position.x, j->first.second.pose.pose.position.y);
+        }
+        ROS_INFO("--------------------------------------");
     }
 
     /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */

@@ -55,6 +55,7 @@
 
 /* for N-best generator */
 #define N 4
+#define BACKTRACK_STEPS 1
 
 /* our waypoint's structure */
 class Waypoint {
