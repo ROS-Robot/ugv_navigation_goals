@@ -69,7 +69,58 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         }
 
         int segments = SEGMENTS_PER_CURVE;
+        /* "override" for the last one, so we have an increase in the dynamically generated paths per request */
         if (dist > avg_distance + ROBOT_BODY_LENGTH)
+            segments += segments * 0.6;     // 60% increase (determined experimentally)
+
+        Waypoint temp;
+        temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
+        for (int j = 1; j <= segments; j++) {
+            float t = j / (float) segments;
+            calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
+            bezier_path.push_back(temp);
+        }
+    }
+    // ROS_WARN("createBezierPath out");
+}
+void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path, bool last_one) {
+    if (control_points.size() < 3)
+        return;
+    // ROS_WARN("createBezierPath in");
+
+    /* Tweak for the final approach to goal. If the distance between the two control points is
+        greater than the average distance between any control points plus the length of the vehicle, 
+        then we will increase the segments per curve just for this one curve */
+    double avg_distance = 0.0;
+
+    for (int i = 0; i < control_points.size()-2; i += 2) {
+        // ROS_INFO("a");
+        geometry_msgs::Point p0 = control_points.at(i).pose.pose.position;
+        // ROS_INFO("b");
+        geometry_msgs::Point p1 = control_points.at(i+1).pose.pose.position;
+        // ROS_INFO("c");
+        geometry_msgs::Point p2 = control_points.at(i+2).pose.pose.position;
+        // ROS_INFO("d");
+
+        /* Tweak for the final approach to goal */
+        double dist = distance(p0, p1);
+        if (!avg_distance)
+            avg_distance = dist;
+        else
+            avg_distance = (avg_distance + dist) / 2;
+
+        /* Only do this for the first endpoint. When i != 0, this coincides
+            with the end point of the previous segment */
+        if (i == 0) {
+            Waypoint temp;
+            temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
+            calculateBezierPoint(0, p0, p1, p2, temp.pose.pose.position);
+            bezier_path.push_back(temp);
+        }
+
+        int segments = SEGMENTS_PER_CURVE;
+        /* "override" for the last one, so we have an increase in the dynamically generated paths per request */
+        if (dist > avg_distance + ROBOT_BODY_LENGTH || last_one)
             segments += segments * 0.6;     // 60% increase (determined experimentally)
 
         Waypoint temp;

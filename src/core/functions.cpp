@@ -21,9 +21,7 @@ void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr& sta
         move_base_status_msg = *status_msg;
     }
 }
-// void moveBaseFeedbackCallback(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback_msg) {
-//     move_base_feedback_msg = *feedback_msg;
-// }
+
 void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& ps_msg) {
     pose_msg = *ps_msg;
 }
@@ -37,10 +35,11 @@ void odometryTopicCallback(const nav_msgs::Odometry::ConstPtr& od_msg) {
 
 /* determine proximity of waypoint to LETHAL_OBSTACLE */
 bool proximityToLethalObstacle(const Waypoint & waypoint) {
-    for (std::vector<geometry_msgs::Point>::iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
+    for (std::vector<geometry_msgs::Point>::iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++) {
+        ROS_INFO("lethal obstacle at (%f, %f) dist = %f", it->x, it->y, distance(waypoint.pose.pose.position, *it));
         if (distance(waypoint.pose.pose.position, *it) <= PROXIMITY_TO_OBSTACLE)
             return true;
-    
+    }
     return false;
 }
 

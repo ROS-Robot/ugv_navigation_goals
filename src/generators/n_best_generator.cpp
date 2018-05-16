@@ -1,7 +1,7 @@
 #include "../../include/header.hpp"
 
 /* An N-best based waypoint generation implementation */
-void nBestGenerator(int argc, char *argv[]) {
+int nBestGenerator(int argc, char *argv[]) {
     /* SET-UP */
     ros::init(argc, argv, "rulah_navigation_goals");
     ros::NodeHandle nodeHandle("~");
@@ -109,94 +109,127 @@ void nBestGenerator(int argc, char *argv[]) {
                 /* find the Bezier curve that p0, p1 and p2 create */
                 temp_control_points.push_back(p0); temp_control_points.push_back(p1); temp_control_points.push_back(p2);
                 std::vector<Waypoint> bezier_curve;
-                createBezierPath(temp_control_points, bezier_curve);
-                /* calculate points metrics */
-                // calculate angles, deviation and where the vehicle is looking at any waypoint
-                for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
-                    iterator->deviation = distanceFromLine(iterator->pose, terrain.start, terrain.goal);
+                createBezierPath(temp_control_points, bezier_curve, (r - 2 < 0));   // if r-2 < 0 then we are in the last loop
 
-                    if (iterator == bezier_curve.begin() && (iterator->pose.pose.position.x != last_p2.pose.pose.position.x) && (iterator->pose.pose.position.y != last_p2.pose.pose.position.y)) {
-                        iterator->arc = eulerAngleOf(iterator->pose, last_p2.pose, std::next(iterator,1)->pose);
+                /* detect contact with lethal obstacle */
+                bool danger = false;
+                for (std::vector<Waypoint>::iterator it = bezier_curve.begin(); it != bezier_curve.end(); it++) {
+                    ROS_INFO("(x, y) = (%f, %f)", it->pose.pose.position.x, it->pose.pose.position.y);
+                    if (proximityToLethalObstacle(*it)) {
+                        // deal with the contact
+                        danger = true;
+                        ROS_WARN("Danger at loop %d for (x, y) = (%f, %f) !!!", loops, it->pose.pose.position.x, it->pose.pose.position.y);
                     }
-                    else if (std::next(iterator,1) != bezier_curve.end() && (iterator->pose.pose.position.x != std::next(iterator,1)->pose.pose.position.x) && (iterator->pose.pose.position.y != std::next(iterator,1)->pose.pose.position.y)) {
-                        iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
+                }
 
-                        if (std::next(iterator,1)->pose.pose.position.y > iterator->pose.pose.position.y)
-                            iterator->looking_right = true;     // we haven't turned yet
-                        else
-                            iterator->looking_right = false;    // we haven't turned yet
-                    }
-                    else {
-                        iterator->arc = 0.0;
-                    }
-                }
-                // calculate costs
-                for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
-                    if (iterator == bezier_curve.begin())
-                        iterator->cost = iterator->deviation;
-                    else
-                        iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
-                }
-                // calculate roll, pitch, yaw and height
-                for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
-                    pitchAt(*iterator);
-                    rollAt(*iterator);
-                    yawAt(*iterator);
-                }
-                /* evaluate the Bezier curve */
-                local_cost = evaluateBezierCurve(bezier_curve, has_worst_local_cost);
-                /* if curve may be locally optimal */
-                if (local_cost < best_local_cost) {
-                    // temporarily save local curve's control points
-                    while(best_local_waypoints.size()) best_local_waypoints.pop_back(); // pop the previous best waypoints
-                    best_local_waypoints.push_back(p0); best_local_waypoints.push_back(p1); best_local_waypoints.push_back(p2);
-                    best_local_cost = local_cost;
-                    /* local N-best bookeeping */
-                    // if we can't fit in any other local best, then trow the worst (last) one away
-                    if (n_best_control_points.size() == N)
-                        n_best_control_points.pop_back();
-                    std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
-                    std::pair< std::pair<Waypoint, Waypoint>, int > best = std::make_pair(p, best_local_cost);
-                    n_best_control_points.push_front(best);
-                }
-                /* else check if curve can be one of the N-best */
-                else {
-                    // local N-best bookeeping
-                    bool kept = false;
-                    for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator it = n_best_control_points.begin(); it != n_best_control_points.end(); it++) {
-                        // if we have an equally best fallback option add it right after it if you can
-                        if (local_cost == it->second && it != std::prev(n_best_control_points.end(), 1))
-                            it++;
-                        // if we have a better fallback option
-                        if (local_cost < it->second) {
-                            std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
-                            std::pair< std::pair<Waypoint, Waypoint>, int > good_enough = std::make_pair(p, best_local_cost);
-                            std::swap(*it, good_enough);
-                            // shift the remaining N-best elements
-                            for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator j = it; j != n_best_control_points.end(); j++)
-                                std::swap(*j, good_enough);
-                            // we are done
-                            kept = true;
-                            break;
+                /* if projected Bezier path is safe then proceed */
+                if (!danger || danger) {
+                    /* calculate points metrics */
+                    // calculate angles, deviation and where the vehicle is looking at any waypoint
+                    for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
+                        iterator->deviation = distanceFromLine(iterator->pose, terrain.start, terrain.goal);
+
+                        if (iterator == bezier_curve.begin() && (iterator->pose.pose.position.x != last_p2.pose.pose.position.x) && (iterator->pose.pose.position.y != last_p2.pose.pose.position.y)) {
+                            iterator->arc = eulerAngleOf(iterator->pose, last_p2.pose, std::next(iterator,1)->pose);
+                        }
+                        else if (std::next(iterator,1) != bezier_curve.end() && (iterator->pose.pose.position.x != std::next(iterator,1)->pose.pose.position.x) && (iterator->pose.pose.position.y != std::next(iterator,1)->pose.pose.position.y)) {
+                            iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
+
+                            if (std::next(iterator,1)->pose.pose.position.y > iterator->pose.pose.position.y)
+                                iterator->looking_right = true;     // we haven't turned yet
+                            else
+                                iterator->looking_right = false;    // we haven't turned yet
+                        }
+                        else {
+                            iterator->arc = 0.0;
                         }
                     }
-                    // if there is room in the end, keep it to the end
-                    if (!kept && n_best_control_points.size() < N) {
+                    // calculate costs
+                    for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
+                        if (iterator == bezier_curve.begin())
+                            iterator->cost = iterator->deviation;
+                        else
+                            iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
+                    }
+                    // calculate roll, pitch, yaw and height
+                    for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
+                        pitchAt(*iterator);
+                        rollAt(*iterator);
+                        yawAt(*iterator);
+                    }
+                    /* evaluate the Bezier curve */
+                    local_cost = evaluateBezierCurve(bezier_curve, has_worst_local_cost);
+                    /* if curve may be locally optimal */
+                    if (local_cost < best_local_cost) {
+                        // temporarily save local curve's control points
+                        while(best_local_waypoints.size()) best_local_waypoints.pop_back(); // pop the previous best waypoints
+                        best_local_waypoints.push_back(p0); best_local_waypoints.push_back(p1); best_local_waypoints.push_back(p2);
+                        best_local_cost = local_cost;
+                        /* local N-best bookeeping */
+                        // if we can't fit in any other local best, then trow the worst (last) one away
+                        if (n_best_control_points.size() == N)
+                            n_best_control_points.pop_back();
                         std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
-                        std::pair< std::pair<Waypoint, Waypoint>, int > good_enough = std::make_pair(p, best_local_cost);
-                        n_best_control_points.push_back(good_enough);
+                        std::pair< std::pair<Waypoint, Waypoint>, int > best = std::make_pair(p, best_local_cost);
+                        n_best_control_points.push_front(best);
+                    }
+                    /* else check if curve can be one of the N-best */
+                    else {
+                        // local N-best bookeeping
+                        bool kept = false;
+                        for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator it = n_best_control_points.begin(); it != n_best_control_points.end(); it++) {
+                            // if we have an equally best fallback option add it right after it if you can
+                            if (local_cost == it->second && it != std::prev(n_best_control_points.end(), 1))
+                                it++;
+                            // if we have a better fallback option
+                            if (local_cost < it->second) {
+                                std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
+                                std::pair< std::pair<Waypoint, Waypoint>, int > good_enough = std::make_pair(p, best_local_cost);
+                                std::swap(*it, good_enough);
+                                // shift the remaining N-best elements
+                                for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator j = it; j != n_best_control_points.end(); j++)
+                                    std::swap(*j, good_enough);
+                                // we are done
+                                kept = true;
+                                break;
+                            }
+                        }
+                        // if there is room in the end, keep it to the end
+                        if (!kept && n_best_control_points.size() < N) {
+                            std::pair<Waypoint, Waypoint> p = std::make_pair(p1, p2);
+                            std::pair< std::pair<Waypoint, Waypoint>, int > good_enough = std::make_pair(p, best_local_cost);
+                            n_best_control_points.push_back(good_enough);
+                        }
+                    }
+
+                    p0 = temp_control_points.at(2);
+                    last_p2 = p0;
+                }
+                /* else, if we have reached the end of our local search "backtrack", otherwise just continue */
+                else {
+                    // if we have reached the end of our local search and we haven't found anything locally optimum
+                    if (p2_x == terrain.goal.position.x && p2_y == terrain.goal.position.y &&
+                        best_local_waypoints.size() == 0) {
+                        // "backtrack"
+                        // re-initialize inner loops variables
+                        local_cost = 0.0; best_local_cost = std::numeric_limits<double>::max(); has_worst_local_cost = false;
+                        // fallback to the next best choice from the previous local search
+                        all_n_best.at(all_n_best.size()-1).pop_front(); // pop the previously best option
+                        if (!all_n_best.at(all_n_best.size()-1).empty()) {
+                            p0 = last_p2;
+                            if (all_n_best.size() > 1)
+                                last_p2 = all_n_best.at(all_n_best.size()-2).at(0).first.second;
+                            else
+                                last_p2 = p0;
+                        }
+                        // as far as this implementation is concerned we have reached a dead-end
+                        else {
+                            ROS_ERROR("DEAD END");
+                            return -1;
+                        }
                     }
                 }
-
-                p0 = temp_control_points.at(2);
-                last_p2 = p0;
             }
-        }
-
-        /* detect contact with lethal obstacle */
-        if (proximityToLethalObstacle(best_local_waypoints.at(1)) || proximityToLethalObstacle(best_local_waypoints.at(2))) {
-            // TODO: deal with the contact
-            ROS_WARN("Danger!!!");
         }
 
         // add local curve's control points to the path
@@ -204,6 +237,7 @@ void nBestGenerator(int argc, char *argv[]) {
             control_points.push_back(best_local_waypoints.at(1));
             control_points.push_back(best_local_waypoints.at(2));
         }
+
         // add local n-best to all n-best
         all_n_best.push_back(n_best_control_points);
     }
@@ -211,9 +245,8 @@ void nBestGenerator(int argc, char *argv[]) {
     /* Print all N-best -- for debugging */
     ROS_INFO("loops = %d", loops); // count loops -- for debugging
     for (std::deque< std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > > >::iterator i = all_n_best.begin(); i != all_n_best.end(); i++) {
-        for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator j = i->begin(); j != i->end(); j++) {
+        for (std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > >::iterator j = i->begin(); j != i->end(); j++)
             ROS_INFO("(%f, %f)", j->first.first.pose.pose.position.x, j->first.second.pose.pose.position.y);
-        }
         ROS_INFO("--------------------------------------");
     }
 
@@ -250,4 +283,6 @@ void nBestGenerator(int argc, char *argv[]) {
         iterator++;
         ROS_INFO("Moving on...");
     }
+
+    return 0;
 }

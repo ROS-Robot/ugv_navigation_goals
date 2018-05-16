@@ -15,9 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   tf
   roscpp
-  grid_map_msgs
-  grid_map_ros
-  grid_map_core
 )
 
 catkin_package(

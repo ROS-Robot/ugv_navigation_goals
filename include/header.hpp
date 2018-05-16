@@ -10,12 +10,6 @@
 #include <move_base_msgs/MoveBaseActionFeedback.h>
 #include <nav_msgs/Odometry.h>
 #include "actionlib_msgs/GoalStatusArray.h"
-/* Grid Map */
-#include <grid_map_ros/grid_map_ros.hpp>
-#include <grid_map_msgs/GetGridMapInfo.h>
-#include <grid_map_msgs/GetGridMap.h>
-#include <grid_map_msgs/GridMap.h>
-#include <grid_map_core/grid_map_core.hpp>
 /* C++ utility libraries */
 #include <utility>      /* std::pair */
 #include <list>
@@ -144,7 +138,6 @@ extern unsigned num_of_waypoints;
 /* callback functions declarations */
 
 void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr& status_msg);
-// void moveBaseFeedbackCallback(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback_msg);
 void poseTopicCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& ps_msg);
 void odometryTopicCallback(const nav_msgs::Odometry::ConstPtr& od_msg);
 
@@ -213,6 +206,7 @@ void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, cons
 void formBezierCurve(const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, std::vector<Waypoint> & bezier_curve);
 /* create a Bezier path, by stiching many Bezier curves together */
 void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path);
+void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path, bool last_one);
 /* clean up a Bezier path from irrational sequences of waypoints that may have occured buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path);
 /* interpolate a Bezier path */
@@ -225,7 +219,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
 /* A Hill-climbing based waypoint generation implementation */
 void hillClimbingGenerator(int argc, char *argv[]);
 /* An N-best based waypoint generation implementation */
-void nBestGenerator(int argc, char *argv[]);
+int nBestGenerator(int argc, char *argv[]);
 /* A Genetic-algorithm based waypoint generation implementation */
 void geneticAlgorithmGenerator(int argc, char *argv[]);
 
