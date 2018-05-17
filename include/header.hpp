@@ -49,7 +49,6 @@
 
 /* for N-best generator */
 #define N 4
-#define BACKTRACK_STEPS 1
 #define PROXIMITY_TO_OBSTACLE 0.15
 
 /* our waypoint's structure */

@@ -1,6 +1,15 @@
 #include "../../include/header.hpp"
 
 /* An N-best based waypoint generation implementation */
+/*
+    Main idea:
+    In each search stage we keep a deque with the N-best choices that don't gp through lethal obstacles.
+    Then, we move on with the best viable local choice.
+    If in the next stage of the search we always run into lethal obstacles then we backtrack to the
+    previous step and we choose the next best viables choices.
+    If we run into lethal obstacles as many times as our N-best viable alternatives, then the problem
+    is rendered as "UNSOLVABLE" by the current implementation.
+*/
 int nBestGenerator(int argc, char *argv[]) {
     /* SET-UP */
     ros::init(argc, argv, "rulah_navigation_goals");
@@ -114,11 +123,11 @@ int nBestGenerator(int argc, char *argv[]) {
                 /* detect contact with lethal obstacle */
                 bool danger = false;
                 for (std::vector<Waypoint>::iterator it = bezier_curve.begin(); it != bezier_curve.end(); it++) {
-                    ROS_INFO("(x, y) = (%f, %f)", it->pose.pose.position.x, it->pose.pose.position.y);
+                    // ROS_INFO("(x, y) = (%f, %f)", it->pose.pose.position.x, it->pose.pose.position.y);
                     if (proximityToLethalObstacle(*it)) {
                         // deal with the contact
                         danger = true;
-                        ROS_WARN("Danger at loop %d for (x, y) = (%f, %f) !!!", loops, it->pose.pose.position.x, it->pose.pose.position.y);
+                        // ROS_WARN("Danger at loop %d for (x, y) = (%f, %f) !!!", loops, it->pose.pose.position.x, it->pose.pose.position.y);
                     }
                 }
 

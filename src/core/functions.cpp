@@ -36,7 +36,7 @@ void odometryTopicCallback(const nav_msgs::Odometry::ConstPtr& od_msg) {
 /* determine proximity of waypoint to LETHAL_OBSTACLE */
 bool proximityToLethalObstacle(const Waypoint & waypoint) {
     for (std::vector<geometry_msgs::Point>::iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++) {
-        ROS_INFO("lethal obstacle at (%f, %f) dist = %f", it->x, it->y, distance(waypoint.pose.pose.position, *it));
+        // ROS_INFO("lethal obstacle at (%f, %f) dist = %f", it->x, it->y, distance(waypoint.pose.pose.position, *it));
         if (distance(waypoint.pose.pose.position, *it) <= PROXIMITY_TO_OBSTACLE)
             return true;
     }
