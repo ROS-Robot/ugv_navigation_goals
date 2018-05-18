@@ -355,6 +355,26 @@ bool isAdmissible(Waypoint & w_c, const Waypoint & w_f){
     return true;    // we reached so far, we have an admissible waypoint
 }
 
+/* is a passage safe for path planning?
+ * w_a, w_b: the candidate-waypoints */
+bool isSafe(Waypoint & w_a, const Waypoint & w_b) {
+    /* in order of appearance, we want w_c:
+        not to be leading us at a lethal obstacle in order to reach w_f, to be on the right of the left border of the field,
+        to be on the left of the right border of the field to be below the finish line, to be above the start line */
+    if ( throughLethalObstacle(w_a, w_b) || !outerProduct(w_a.pose, terrain.goal_left, terrain.start_left) > 0 ||
+        !outerProduct(w_a.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(w_a.pose, terrain.goal_left, terrain.goal_right) > 0 ||
+        !outerProduct(w_a.pose, terrain.start_left, terrain.start_right) < 0 ) {
+        return false;
+    }
+
+    // TODO: Do I need this?
+    /* we also don't want the pitch at w_c to be greater than the pitch in terrain.start */
+    // if (pitchAt(w_a) > pitchAt(terrain.start.position) || rollAt(w_a) < rollAt(terrain.start.position))
+    //     return false;
+
+    return true;    // we reached so far, we have an admissible waypoint
+}
+
 /* evaluate a given plan (a vector of waypoints) as a possible solution */
 double evaluate(std::list<Waypoint> & plan, bool & has_worst_local_cost) {
     double cost = 0.0, s_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,

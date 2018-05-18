@@ -44,13 +44,9 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
     double avg_distance = 0.0;
 
     for (int i = 0; i < control_points.size()-2; i += 2) {
-        // ROS_INFO("a");
         geometry_msgs::Point p0 = control_points.at(i).pose.pose.position;
-        // ROS_INFO("b");
         geometry_msgs::Point p1 = control_points.at(i+1).pose.pose.position;
-        // ROS_INFO("c");
         geometry_msgs::Point p2 = control_points.at(i+2).pose.pose.position;
-        // ROS_INFO("d");
 
         /* Tweak for the final approach to goal */
         double dist = distance(p0, p1);
@@ -71,13 +67,35 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         int segments = SEGMENTS_PER_CURVE;
         /* "override" for the last one, so we have an increase in the dynamically generated paths per request */
         if (dist > avg_distance + ROBOT_BODY_LENGTH)
-            segments += segments * 0.6;     // 60% increase (determined experimentally)
+            segments += segments * 2*ROBOT_BODY_LENGTH;     // 60% increase (determined experimentally)
 
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
         for (int j = 1; j <= segments; j++) {
             float t = j / (float) segments;
             calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
+
+            /* Tweak to ensure that the is no way that the robot will try to move straight upwards.
+                Note, though, that this tweak takes us a bit off the "mathematical" Bezier path. */
+            if (bezier_path.size() > 1 && std::abs(temp.pose.pose.position.y - bezier_path.at(bezier_path.size()-1).pose.pose.position.y) < ROBOT_BODY_FIX) {
+                // try to fix the problem
+                bezier_path.at(bezier_path.size()-1).pose.pose.position.x -= ROBOT_BODY_LENGTH;
+                bezier_path.at(bezier_path.size()-1).pose.pose.position.y -= ROBOT_BODY_LENGTH;
+                // if this doesn't work, make another effort
+                if (!isSafe(bezier_path.at(bezier_path.size()-1), temp)) {
+                    // undo the previous fix
+                    bezier_path.at(bezier_path.size()-1).pose.pose.position.x += ROBOT_BODY_LENGTH;
+                    bezier_path.at(bezier_path.size()-1).pose.pose.position.y += ROBOT_BODY_LENGTH;
+                    // retry to fix the problem
+                    if (!isSafe(bezier_path.at(bezier_path.size()-1), temp)) {
+                        // undo the previous fix
+                        temp.pose.pose.position.x += ROBOT_BODY_LENGTH;
+                        temp.pose.pose.position.y += ROBOT_BODY_LENGTH;
+                        ROS_WARN("Dangerous passage between (%f, %f) and (%f, %f)", bezier_path.at(bezier_path.size()-1).pose.pose.position.x, bezier_path.at(bezier_path.size()-1).pose.pose.position.y, temp.pose.pose.position.x, temp.pose.pose.position.y);
+                    }
+                }
+            }
+
             bezier_path.push_back(temp);
         }
     }
@@ -94,13 +112,9 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
     double avg_distance = 0.0;
 
     for (int i = 0; i < control_points.size()-2; i += 2) {
-        // ROS_INFO("a");
         geometry_msgs::Point p0 = control_points.at(i).pose.pose.position;
-        // ROS_INFO("b");
         geometry_msgs::Point p1 = control_points.at(i+1).pose.pose.position;
-        // ROS_INFO("c");
         geometry_msgs::Point p2 = control_points.at(i+2).pose.pose.position;
-        // ROS_INFO("d");
 
         /* Tweak for the final approach to goal */
         double dist = distance(p0, p1);
@@ -121,7 +135,7 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         int segments = SEGMENTS_PER_CURVE;
         /* "override" for the last one, so we have an increase in the dynamically generated paths per request */
         if (dist > avg_distance + ROBOT_BODY_LENGTH || last_one)
-            segments += segments * 0.6;     // 60% increase (determined experimentally)
+            segments += segments * 2*ROBOT_BODY_LENGTH;     // 60% increase (determined experimentally)
 
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
