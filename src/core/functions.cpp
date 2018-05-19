@@ -341,7 +341,7 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
 bool isAdmissible(Waypoint & w_c, const Waypoint & w_f){
     /* in order of appearance, we want w_c:
         not to be leading us at a lethal obstacle in order to reach w_f, to be on the right of the left border of the field,
-        to be on the left of the right border of the field to be below the finish line, to be above the start line */
+        to be on the left of the right border of the field, to be below the finish line, to be above the start line */
     if ( throughLethalObstacle(w_c, w_f) || !outerProduct(w_c.pose, terrain.goal_left, terrain.start_left) > 0 ||
         !outerProduct(w_c.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(w_c.pose, terrain.goal_left, terrain.goal_right) > 0 ||
         !outerProduct(w_c.pose, terrain.start_left, terrain.start_right) < 0 ) {
@@ -358,9 +358,9 @@ bool isAdmissible(Waypoint & w_c, const Waypoint & w_f){
 /* is a passage safe for path planning?
  * w_a, w_b: the candidate-waypoints */
 bool isSafe(Waypoint & w_a, const Waypoint & w_b) {
-    /* in order of appearance, we want w_c:
+    /* in order of appearance, we want w_a:
         not to be leading us at a lethal obstacle in order to reach w_f, to be on the right of the left border of the field,
-        to be on the left of the right border of the field to be below the finish line, to be above the start line */
+        to be on the left of the right border of the field, to be below the finish line, to be above the start line */
     if ( throughLethalObstacle(w_a, w_b) || !outerProduct(w_a.pose, terrain.goal_left, terrain.start_left) > 0 ||
         !outerProduct(w_a.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(w_a.pose, terrain.goal_left, terrain.goal_right) > 0 ||
         !outerProduct(w_a.pose, terrain.start_left, terrain.start_right) < 0 ) {

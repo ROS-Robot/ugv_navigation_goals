@@ -5,7 +5,7 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     /* SET-UP */
     ros::init(argc, argv, "rulah_navigation_goals");
     ros::NodeHandle nodeHandle("~");
-    ROS_INFO("It's on");
+    ROS_INFO("It's on with HILL-CLIMBING");
 
     /* GET SIMULATION'S CONFIGURATIONS */
     std::string move_base_goals_topic, initial_pose_topic, move_base_status_topic, odom_topic, header_frame_id;

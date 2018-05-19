@@ -76,10 +76,40 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 
             /* Tweak to ensure that the is no way that the robot will try to move straight upwards.
                 Note, though, that this tweak takes us a bit off the "mathematical" Bezier path. */
+            double  x_diff = std::abs(temp.pose.pose.position.x - bezier_path.at(bezier_path.size()-1).pose.pose.position.x),
+                    y_diff = std::abs(temp.pose.pose.position.y - bezier_path.at(bezier_path.size()-1).pose.pose.position.y);
             if (bezier_path.size() > 1 &&       // at least one waypoint before, in order to have a comparison
                 temp.pose.pose.position.x != terrain.goal.position.x && temp.pose.pose.position.y != terrain.goal.position.y &&     // we don't want to mess with our goal
-                std::abs(temp.pose.pose.position.y - bezier_path.at(bezier_path.size()-1).pose.pose.position.y) < ROBOT_BODY_WIDTH) { // check if our problem exists
-                temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + ROBOT_BODY_WIDTH;
+                y_diff < ROBOT_BODY_WIDTH && x_diff > ROBOT_BODY_FIX) {
+                // is robot left or right of the middle line?
+                double  l_dist = distanceFromLine(temp.pose, terrain.start_left, terrain.goal_left),
+                        r_dist = distanceFromLine(temp.pose, terrain.start_right, terrain.goal_right);
+                // if it is left
+                if (l_dist < r_dist) {
+                    // try to change y of temp to something expectedly agreeable
+                    temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 3 : ROBOT_BODY_WIDTH / 2);
+                    // we want temp to be on the right of the left border of the field and to be on the left of the right border of the field
+                    if (!outerProduct(temp.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(temp.pose, terrain.goal_left, terrain.goal_right) > 0) {
+                        // undo and try the other way
+                        temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - 2 * (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 3 : ROBOT_BODY_WIDTH / 2);
+                        // if this doesn't work as well, then undo and do nothing
+                        if (!outerProduct(temp.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(temp.pose, terrain.goal_left, terrain.goal_right) > 0)
+                            temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 3 : ROBOT_BODY_WIDTH / 2);
+                    }
+                }
+                // else if it is right
+                else {
+                    // try to change y of temp to something expectedly agreeable
+                    temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 3 : ROBOT_BODY_WIDTH / 2);
+                    // we want temp to be on the right of the left border of the field and to be on the left of the right border of the field
+                    if (!outerProduct(temp.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(temp.pose, terrain.goal_left, terrain.goal_right) > 0) {
+                        // undo and try the other way
+                        temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + 2 * (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 3 : ROBOT_BODY_WIDTH / 2);
+                        // if this doesn't work as well, then undo and do nothing
+                        if (!outerProduct(temp.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(temp.pose, terrain.goal_left, terrain.goal_right) > 0)
+                            temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 3 : ROBOT_BODY_WIDTH / 2);
+                    }
+                }
             }
 
             bezier_path.push_back(temp);
