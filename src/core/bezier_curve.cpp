@@ -77,24 +77,36 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 
             /* Tweak to ensure that the is no way that the robot will try to move straight upwards.
                 Note, though, that this tweak takes us a bit off the "mathematical" Bezier path. */
-            if (bezier_path.size() > 1 && std::abs(temp.pose.pose.position.y - bezier_path.at(bezier_path.size()-1).pose.pose.position.y) < ROBOT_BODY_FIX) {
-                // try to fix the problem
-                bezier_path.at(bezier_path.size()-1).pose.pose.position.x -= ROBOT_BODY_LENGTH;
-                bezier_path.at(bezier_path.size()-1).pose.pose.position.y -= ROBOT_BODY_LENGTH;
-                // if this doesn't work, make another effort
-                if (!isSafe(bezier_path.at(bezier_path.size()-1), temp)) {
-                    // undo the previous fix
-                    bezier_path.at(bezier_path.size()-1).pose.pose.position.x += ROBOT_BODY_LENGTH;
-                    bezier_path.at(bezier_path.size()-1).pose.pose.position.y += ROBOT_BODY_LENGTH;
-                    // retry to fix the problem
-                    if (!isSafe(bezier_path.at(bezier_path.size()-1), temp)) {
-                        // undo the previous fix
-                        temp.pose.pose.position.x += ROBOT_BODY_LENGTH;
-                        temp.pose.pose.position.y += ROBOT_BODY_LENGTH;
-                        ROS_WARN("Dangerous passage between (%f, %f) and (%f, %f)", bezier_path.at(bezier_path.size()-1).pose.pose.position.x, bezier_path.at(bezier_path.size()-1).pose.pose.position.y, temp.pose.pose.position.x, temp.pose.pose.position.y);
-                    }
-                }
-            }
+            // if (bezier_path.size() > 1 &&
+            //     temp.pose.pose.position.x != terrain.goal.position.x && temp.pose.pose.position.y != terrain.goal.position.y &&
+            //     std::abs(temp.pose.pose.position.y - bezier_path.at(bezier_path.size()-1).pose.pose.position.y) < ROBOT_BODY_FIX) {
+            //     // try to fix the problem
+            //     bezier_path.at(bezier_path.size()-1).pose.pose.position.x -= ROBOT_BODY_FIX;
+            //     bezier_path.at(bezier_path.size()-1).pose.pose.position.y -= ROBOT_BODY_FIX;
+            //     temp.pose.pose.position.x += ROBOT_BODY_FIX;
+            //     temp.pose.pose.position.y += ROBOT_BODY_FIX;
+            //     // if this doesn't work, make another effort
+            //     if (!isSafe(bezier_path.at(bezier_path.size()-1), temp)) {
+            //         // undo the previous fix
+            //         bezier_path.at(bezier_path.size()-1).pose.pose.position.x += ROBOT_BODY_FIX;
+            //         bezier_path.at(bezier_path.size()-1).pose.pose.position.y += ROBOT_BODY_FIX;
+            //         temp.pose.pose.position.x -= ROBOT_BODY_FIX;
+            //         temp.pose.pose.position.y -= ROBOT_BODY_FIX;
+            //         // retry to fix the problem
+            //         bezier_path.at(bezier_path.size()-1).pose.pose.position.x += ROBOT_BODY_FIX;
+            //         bezier_path.at(bezier_path.size()-1).pose.pose.position.y += ROBOT_BODY_FIX;
+            //         temp.pose.pose.position.x -= ROBOT_BODY_FIX;
+            //         temp.pose.pose.position.y -= ROBOT_BODY_FIX;
+            //         if (!isSafe(bezier_path.at(bezier_path.size()-1), temp)) {
+            //             // undo the previous fix
+            //             bezier_path.at(bezier_path.size()-1).pose.pose.position.x -= ROBOT_BODY_FIX;
+            //             bezier_path.at(bezier_path.size()-1).pose.pose.position.y -= ROBOT_BODY_FIX;
+            //             temp.pose.pose.position.x += ROBOT_BODY_LENGTH;
+            //             temp.pose.pose.position.y += ROBOT_BODY_LENGTH;
+            //             ROS_WARN("Dangerous passage between (%f, %f) and (%f, %f)", bezier_path.at(bezier_path.size()-1).pose.pose.position.x, bezier_path.at(bezier_path.size()-1).pose.pose.position.y, temp.pose.pose.position.x, temp.pose.pose.position.y);
+            //         }
+            //     }
+            // }
 
             bezier_path.push_back(temp);
         }
@@ -222,7 +234,9 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
     // ROS_WARN("evaluateBezierCurve in");
     double cost = 0.0, s_norm_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
             s_roll_pos = 0.0, s_arc = 0.0;
-            /* TODO: trade-offs discussion at final text*/
+    /* for debugging, since we are working with quadratic Bezier curves */
+    assert(control_points.size() >= 3);
+    /* TODO: trade-offs discussion at final text*/
     for (std::vector<Waypoint>::iterator it = control_points.begin(); it != control_points.end(); ++it) {
         /* for debugging */
         // ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
@@ -233,16 +247,22 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
         it->cost = 0;
         // normalize deviation (between 0 and 1) and multiply by 100 to be like the angle values
         s_norm_dev += it->deviation / distance(terrain.start_left.position, terrain.start.position); it->cost += 100*it->deviation / distance(terrain.start_left.position, terrain.start.position);
-        s_pitch += it->pitch; it->cost += 2.7*it->pitch;
+        s_pitch += it->pitch; it->cost += 10.0*it->pitch;
+        
+        /* Tweak to ensure that the robot will avoid going straight up */
+        // if (it != control_points.begin() && std::abs(it->pose.pose.position.y - std::prev(it, 1)->pose.pose.position.y) < ROBOT_BODY_FIX) {
+        //     s_pitch += 9.0*it->pitch; it->cost += 20.0*it->pitch;   // add again, to make local score worse
+        // }
+
         s_yaw += it->yaw; it->cost -= 1.3*it->yaw;
         /* TODO: fix roll, pitch, yaw signs */
         if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
             s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
-            it->cost -= 2.7*it->roll;
+            it->cost -= 10.0*it->roll;
         }
         else {
             s_roll_neg += it->roll;     // roll that negatively impacts the movement of the vehicle
-            it->cost += 2.7*it->roll;
+            it->cost += 10.0*it->roll;
         }
         s_arc += it->arc;
         it->cost += 0.4*it->arc;
