@@ -46,6 +46,7 @@
 #define INTERPOLATION_SCALE 1
 #define ROBOT_BODY_FIX 0.15
 #define ROBOT_BODY_LENGTH 0.3
+#define ROBOT_BODY_WIDTH 0.275
 
 /* for N-best generator */
 #define N 4

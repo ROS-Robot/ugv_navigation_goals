@@ -7,7 +7,6 @@ void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, cons
     double one_minus_t = 1-t;
     p.x = one_minus_t*one_minus_t*p0.x + 2*one_minus_t*t*p1.x + t*t*p2.x;
     p.y = one_minus_t*one_minus_t*p0.y + 2*one_minus_t*t*p1.y + t*t*p2.y;
-    // p.z = heightAt(p) + 4.22;
 }
 
 /* calculate segmentation points of a Bezier curve, in order to "form" it */
@@ -67,7 +66,7 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         int segments = SEGMENTS_PER_CURVE;
         /* "override" for the last one, so we have an increase in the dynamically generated paths per request */
         if (dist > avg_distance + ROBOT_BODY_LENGTH)
-            segments += segments * 2*ROBOT_BODY_LENGTH;     // 60% increase (determined experimentally)
+            segments += segments * 2*ROBOT_BODY_LENGTH;     // a 60% increase in Husky's/Jaguar's case (determined experimentally)
 
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
@@ -77,36 +76,11 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 
             /* Tweak to ensure that the is no way that the robot will try to move straight upwards.
                 Note, though, that this tweak takes us a bit off the "mathematical" Bezier path. */
-            // if (bezier_path.size() > 1 &&
-            //     temp.pose.pose.position.x != terrain.goal.position.x && temp.pose.pose.position.y != terrain.goal.position.y &&
-            //     std::abs(temp.pose.pose.position.y - bezier_path.at(bezier_path.size()-1).pose.pose.position.y) < ROBOT_BODY_FIX) {
-            //     // try to fix the problem
-            //     bezier_path.at(bezier_path.size()-1).pose.pose.position.x -= ROBOT_BODY_FIX;
-            //     bezier_path.at(bezier_path.size()-1).pose.pose.position.y -= ROBOT_BODY_FIX;
-            //     temp.pose.pose.position.x += ROBOT_BODY_FIX;
-            //     temp.pose.pose.position.y += ROBOT_BODY_FIX;
-            //     // if this doesn't work, make another effort
-            //     if (!isSafe(bezier_path.at(bezier_path.size()-1), temp)) {
-            //         // undo the previous fix
-            //         bezier_path.at(bezier_path.size()-1).pose.pose.position.x += ROBOT_BODY_FIX;
-            //         bezier_path.at(bezier_path.size()-1).pose.pose.position.y += ROBOT_BODY_FIX;
-            //         temp.pose.pose.position.x -= ROBOT_BODY_FIX;
-            //         temp.pose.pose.position.y -= ROBOT_BODY_FIX;
-            //         // retry to fix the problem
-            //         bezier_path.at(bezier_path.size()-1).pose.pose.position.x += ROBOT_BODY_FIX;
-            //         bezier_path.at(bezier_path.size()-1).pose.pose.position.y += ROBOT_BODY_FIX;
-            //         temp.pose.pose.position.x -= ROBOT_BODY_FIX;
-            //         temp.pose.pose.position.y -= ROBOT_BODY_FIX;
-            //         if (!isSafe(bezier_path.at(bezier_path.size()-1), temp)) {
-            //             // undo the previous fix
-            //             bezier_path.at(bezier_path.size()-1).pose.pose.position.x -= ROBOT_BODY_FIX;
-            //             bezier_path.at(bezier_path.size()-1).pose.pose.position.y -= ROBOT_BODY_FIX;
-            //             temp.pose.pose.position.x += ROBOT_BODY_LENGTH;
-            //             temp.pose.pose.position.y += ROBOT_BODY_LENGTH;
-            //             ROS_WARN("Dangerous passage between (%f, %f) and (%f, %f)", bezier_path.at(bezier_path.size()-1).pose.pose.position.x, bezier_path.at(bezier_path.size()-1).pose.pose.position.y, temp.pose.pose.position.x, temp.pose.pose.position.y);
-            //         }
-            //     }
-            // }
+            if (bezier_path.size() > 1 &&       // at least one waypoint before, in order to have a comparison
+                temp.pose.pose.position.x != terrain.goal.position.x && temp.pose.pose.position.y != terrain.goal.position.y &&     // we don't want to mess with our goal
+                std::abs(temp.pose.pose.position.y - bezier_path.at(bezier_path.size()-1).pose.pose.position.y) < ROBOT_BODY_WIDTH) { // check if our problem exists
+                temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + ROBOT_BODY_WIDTH;
+            }
 
             bezier_path.push_back(temp);
         }
@@ -116,7 +90,6 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
 void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path, bool last_one) {
     if (control_points.size() < 3)
         return;
-    // ROS_WARN("createBezierPath in");
 
     /* Tweak for the final approach to goal. If the distance between the two control points is
         greater than the average distance between any control points plus the length of the vehicle, 
@@ -147,7 +120,7 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         int segments = SEGMENTS_PER_CURVE;
         /* "override" for the last one, so we have an increase in the dynamically generated paths per request */
         if (dist > avg_distance + ROBOT_BODY_LENGTH || last_one)
-            segments += segments * 2*ROBOT_BODY_LENGTH;     // 60% increase (determined experimentally)
+            segments += segments * 2*ROBOT_BODY_LENGTH;     // a 60% increase in Husky's/Jaguar's case (determined experimentally)
 
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
@@ -157,7 +130,6 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
             bezier_path.push_back(temp);
         }
     }
-    // ROS_WARN("createBezierPath out");
 }
 
 /* clean up a Bezier path from irrational sequences of waypoints that may have occured buring calculations */
@@ -176,8 +148,6 @@ void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
 void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
     if (segments.size() <= 2)
         return;
-
-    // ROS_WARN("interpolateBezierPath in");
 
     for (int i = 0; i < segments.size()-1; i++) {
         /* is first */
@@ -226,7 +196,6 @@ void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
             segments.at(i+1).pose.pose.position.x = q1.x; segments.at(i+1).pose.pose.position.y = q1.y;
         }
     }
-    // ROS_WARN("interpolateBezierPath out");
 }
 
 /* evaluate a Bezier curve */
