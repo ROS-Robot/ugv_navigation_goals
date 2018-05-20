@@ -179,27 +179,27 @@ void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, st
                 // if it is left
                 if (l_dist < r_dist) {
                     // try to change y of temp to something expectedly agreeable
-                    temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4 : ROBOT_BODY_WIDTH / 2);
+                    temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4.25 : ROBOT_BODY_WIDTH / 1.75);
                     // we want temp to be on the right of the left border of the field and to be on the left of the right border of the field
                     if (!outerProduct(temp.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(temp.pose, terrain.goal_left, terrain.goal_right) > 0) {
                         // undo and try the other way
-                        temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - 2 * (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4 : ROBOT_BODY_WIDTH / 2);
+                        temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - 2 * (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4.25 : ROBOT_BODY_WIDTH / 1.75);
                         // if this doesn't work as well, then undo and do nothing
                         if (!outerProduct(temp.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(temp.pose, terrain.goal_left, terrain.goal_right) > 0)
-                            temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4 : ROBOT_BODY_WIDTH / 2);
+                            temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4.25 : ROBOT_BODY_WIDTH / 1.75);
                     }
                 }
-                // else if it is right
+                // else, if it is right
                 else {
                     // try to change y of temp to something expectedly agreeable
-                    temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4 : ROBOT_BODY_WIDTH / 2);
+                    temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4.25 : ROBOT_BODY_WIDTH / 1.75);
                     // we want temp to be on the right of the left border of the field and to be on the left of the right border of the field
                     if (!outerProduct(temp.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(temp.pose, terrain.goal_left, terrain.goal_right) > 0) {
                         // undo and try the other way
-                        temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + 2 * (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4 : ROBOT_BODY_WIDTH / 2);
+                        temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y + 2 * (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4.25 : ROBOT_BODY_WIDTH / 1.75);
                         // if this doesn't work as well, then undo and do nothing
                         if (!outerProduct(temp.pose, terrain.goal_right, terrain.start_right) < 0 || !outerProduct(temp.pose, terrain.goal_left, terrain.goal_right) > 0)
-                            temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4 : ROBOT_BODY_WIDTH / 2);
+                            temp.pose.pose.position.y = bezier_path.at(bezier_path.size()-1).pose.pose.position.y - (l_dist < ROBOT_BODY_WIDTH / 2 ? ROBOT_BODY_WIDTH / 4.25 : ROBOT_BODY_WIDTH / 1.75);
                     }
                 }
             }
