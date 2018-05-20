@@ -121,7 +121,7 @@ int nBestGenerator(int argc, char *argv[]) {
                 /* find the Bezier curve that p0, p1 and p2 create */
                 temp_control_points.push_back(p0); temp_control_points.push_back(p1); temp_control_points.push_back(p2);
                 std::vector<Waypoint> bezier_curve;
-                createBezierPath(temp_control_points, bezier_curve, (r-2 < 0));   // if r-2 < 0 then we are in the last loop
+                createSuboptimalBezierPath(temp_control_points, bezier_curve, (r-2 < 0));   // if r-2 < 0 then we are in the last loop
 
                 /* detect contact with lethal obstacle */
                 bool danger = false;
@@ -271,7 +271,7 @@ int nBestGenerator(int argc, char *argv[]) {
     /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
     ROS_INFO("Creating Bezier path");
     std::vector<Waypoint> bezier_path;
-    createBezierPath(control_points, bezier_path);
+    createSuboptimalBezierPath(control_points, bezier_path);
 
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());

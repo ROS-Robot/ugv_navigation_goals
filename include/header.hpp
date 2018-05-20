@@ -207,10 +207,13 @@ double heightAt(geometry_msgs::Point & p);
 void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, geometry_msgs::Point & p);
 /* calculate segmentation points of a Bezier curve, in order to "form" it */
 void formBezierCurve(const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, std::vector<Waypoint> & bezier_curve);
-/* create a Bezier path, by stiching many Bezier curves together */
+/* create a Bezier path, by stitching many Bezier curves together */
 void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path);
 void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path, bool last_one);
-/* clean up a Bezier path from irrational sequences of waypoints that may have occured buring calculations */
+/* create an expectedly suboptimal Bezier path, by stitching many Bezier curves together */
+void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path);
+void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path, bool last_one);
+/* clean up a Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path);
 /* interpolate a Bezier path */
 void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);
