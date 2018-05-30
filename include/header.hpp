@@ -236,8 +236,6 @@ void bezierTest(int argc, char *argv[]);
 /* Test calculations core functions */
 void calculationsTest(int argc, char *argv[]);
 
-#ifdef EVOLUTIONARY_ALGORITHM_GENERATION
+/* for Evolutionary Algorithm generator */
 
 #include "./evolutionary_include/evolutionary.hpp"
-
-#endif

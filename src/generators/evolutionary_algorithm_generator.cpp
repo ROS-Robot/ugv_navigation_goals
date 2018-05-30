@@ -61,11 +61,15 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
     /* TODO: Path generator's main loop */
 
-        /* TODO: Evalutate and sort all paths */
+        /* TODO: Evaluate fitness and sort all paths */
+
+        /* TODO: Use the best-fit paths for reproduction */
 
         /* TODO: Use crossover operator to create new paths */
 
         /* TODO: Use mutator to modify paths */
+
+        /* TODO: Remove the less-fit paths (those that weren't selected for reproduction in this loop) */
 
         /* TODO: Check termination criteria fulfillment */
 
