@@ -366,7 +366,12 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
         // ROS_WARN("waypoint %d cost = %f", it->id, it->cost);
     }
 
+    /* initial (perfect friction) */
     cost = (90.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
+
+    /* modified (realistic friction) */
+    // cost = (45.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
+
 
     if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
 

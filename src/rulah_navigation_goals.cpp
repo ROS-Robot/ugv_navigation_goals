@@ -1,9 +1,9 @@
-#include "../include/header.hpp"
-
 // #define TEST_BEZIER
 // #define TEST_CALCULATIONS
-// #define GENETIC_ALGORITHM_GENERATION
-#define N_BEST_GENERATION
+#define EVOLUTIONARY_ALGORITHM_GENERATION
+// #define N_BEST_GENERATION
+
+#include "../include/header.hpp"
 
 #ifdef TEST_BEZIER
 /* Test Bezier curve's core functions */
@@ -21,11 +21,11 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-#elif defined( GENETIC_ALGORITHM_GENERATION )
-/* A Genetic-algorithm based waypoint generation implementation */
+#elif defined( EVOLUTIONARY_ALGORITHM_GENERATION )
+/* An Evolutionary-algorithm based waypoint generation implementation */
 
 int main(int argc, char *argv[]) {
-    geneticAlgorithmGenerator(argc, argv);
+    evolutionaryAlgorithmGenerator(argc, argv);
     return 0;
 }
 

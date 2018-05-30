@@ -39,9 +39,10 @@ add_executable(rulah_navigation_goals
               src/core/bezier_curve.cpp
               src/core/utilities.cpp
               src/core/vehicle_dynamics.cpp
+              src/core/evolutionary_core/evolutionary_tree.cpp
               src/tests/bezier_test.cpp
               src/tests/calculations_test.cpp
-              src/generators/genetic_algorithm_generator.cpp
+              src/generators/evolutionary_algorithm_generator.cpp
               src/generators/hill_climbing_generator.cpp
               src/generators/n_best_generator.cpp
 )

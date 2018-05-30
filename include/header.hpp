@@ -226,8 +226,8 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
 void hillClimbingGenerator(int argc, char *argv[]);
 /* An N-best based waypoint generation implementation */
 int nBestGenerator(int argc, char *argv[]);
-/* A Genetic-algorithm based waypoint generation implementation */
-void geneticAlgorithmGenerator(int argc, char *argv[]);
+/* An Evolutionary-algorithm based waypoint generation implementation */
+void evolutionaryAlgorithmGenerator(int argc, char *argv[]);
 
 /* testing functions declarations -- for debugging */
 
@@ -235,3 +235,9 @@ void geneticAlgorithmGenerator(int argc, char *argv[]);
 void bezierTest(int argc, char *argv[]);
 /* Test calculations core functions */
 void calculationsTest(int argc, char *argv[]);
+
+#ifdef EVOLUTIONARY_ALGORITHM_GENERATION
+
+#include "./evolutionary_include/evolutionary.hpp"
+
+#endif
