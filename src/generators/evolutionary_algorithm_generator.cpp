@@ -167,26 +167,70 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         ROS_INFO("Fitness: %f", fitness);
     }
     
-    /* TODO: Sort paths based on fitness */
+    /* Sort paths based on fitness */
+    for (int i = 0; i < individuals_fitness.size()-1; i++) {
+        for (int j = 0; j < individuals_fitness.size()-i-1; j++) {
+            if (individuals_fitness.at(j) < individuals_fitness.at(j+1)) {
+                double temp = individuals_fitness.at(j);
+                individuals_fitness.at(j) = individuals_fitness.at(j+1);
+                individuals_fitness.at(j+1) = temp;
 
-    /* TODO: Path generator's main loop */
+                std::vector<Waypoint> tempVec = individuals.at(j);
+                individuals.at(j) = individuals.at(j+1);
+                individuals.at(j+1) = tempVec;
+            }
+        }
+    }
+
+    /* Path generator's main loop */
     int curr_generation = 1;
     std::deque<double> best_generations;
     do {
+        /* Select the best-fit paths for reproduction (reproduction loop) */
+        std::vector< std::vector<Waypoint> > next_gen_individuals;
+        for (int i = 0; i < NUM_OF_BEST_FIT; i++) {
+            /* TODO: Use crossover operator to create new paths */
 
-        /* TODO: Select the best-fit paths for reproduction */
+            /* TODO: Use mutator to modify paths */
 
-        /* TODO: Use crossover operator to create new paths */
+        }
 
-        /* TODO: Use mutator to modify paths */
+        /* Evaluate fitness of new paths */
+        std::vector<double> next_gen_individuals_fitness;
+        for (std::vector< std::vector<Waypoint> >::iterator it = next_gen_individuals.begin(); it != next_gen_individuals.end(); it++) {
+            bool has_worst_local_cost = false;
+            double fitness = evaluateBezierCurve(*it, has_worst_local_cost);
+            next_gen_individuals_fitness.push_back(fitness);
+            /* Print fitness -- for debugging */
+            ROS_INFO("Fitness: %f", fitness);
+        }
 
-        /* TODO: Evaluate fitness of new paths */
+        /* Remove the less-fit paths (those that weren't selected for reproduction in this loop) */
+        for (int i = 1; i <= individuals.size()-NUM_OF_BEST_FIT; i++) {
+            individuals.pop_back();
+            individuals_fitness.pop_back();
+        }
 
-        /* TODO: Remove the less-fit paths (those that weren't selected for reproduction in this loop) */
+        /* Keep the best-fit new paths for the next loop */
+        for (int i = 0; i < NUM_OF_BEST_FIT; i++) {
+            individuals.push_back(next_gen_individuals.at(i));
+            individuals_fitness.push_back(next_gen_individuals_fitness.at(i));
+        }
 
-        /* TODO: Keep the best-fit new paths for the next loop */
+        /* Sort paths based on fitness */
+        for (int i = 0; i < individuals_fitness.size()-1; i++) {
+            for (int j = 0; j < individuals_fitness.size()-i-1; j++) {
+                if (individuals_fitness.at(j) < individuals_fitness.at(j+1)) {
+                    double temp = individuals_fitness.at(j);
+                    individuals_fitness.at(j) = individuals_fitness.at(j+1);
+                    individuals_fitness.at(j+1) = temp;
 
-        /* TODO: Sort paths based on fitness */
+                    std::vector<Waypoint> tempVec = individuals.at(j);
+                    individuals.at(j) = individuals.at(j+1);
+                    individuals.at(j+1) = tempVec;
+                }
+            }
+        }
 
         /* do the necessary bookeeping */
         curr_generation++;
