@@ -166,10 +166,13 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         /* Print fitness -- for debugging */
         ROS_INFO("Fitness: %f", fitness);
     }
+    
+    /* TODO: Sort paths based on fitness */
 
     /* TODO: Path generator's main loop */
-        
-        /* TODO: Sort paths based on fitness */
+    int curr_generation = 1;
+    std::deque<double> best_generations;
+    do {
 
         /* TODO: Select the best-fit paths for reproduction */
 
@@ -183,7 +186,14 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
         /* TODO: Keep the best-fit new paths for the next loop */
 
-        /* TODO: Check termination criteria fulfillment */
+        /* TODO: Sort paths based on fitness */
+
+        /* do the necessary bookeeping */
+        curr_generation++;
+        if (best_generations.size() > MAX_STAGNATED_GENS)
+            best_generations.pop_front();
+        best_generations.push_back(individuals_fitness.at(0));
+    } while (!terminationCriteriaMet(individuals, individuals_fitness, best_generations, curr_generation));
 
     /* proceed with the best solution */
     ROS_INFO("Keeping best path");
