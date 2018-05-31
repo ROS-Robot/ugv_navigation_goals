@@ -1,10 +1,14 @@
 #pragma once
 
 #include <stack>
+#include <time.h>
+#include <stdlib.h>
 
 /* useful definitions */
 
+#define GENERATION_SIZE 4
 #define NUM_OF_BEST_FIT 2
+#define MAX_GENERATIONS 10  // maximum number of generations of individuals to examine
 
 /* Our path's (binary) tree node structure */
 class TreeNode {
