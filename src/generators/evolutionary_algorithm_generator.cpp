@@ -66,7 +66,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     // initialize pseudorandom numbers generator
     srand(time(NULL));
     // take every two consecutive lines, with a fixed p0 from the previous line
-    for (int i = 0; i < GENERATION_SIZE; i++) {
+    for (int i = 0; i < INIT_GENERATION_SIZE; i++) {
         /* create a random path from start to finish */
         std::vector<Waypoint> path;
         // initially p0 is start
@@ -167,7 +167,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         ROS_INFO("Fitness: %f", fitness);
     }
     
-    /* Sort paths based on fitness */
+    /* Sort individuals based on fitness */
     for (int i = 0; i < individuals_fitness.size()-1; i++) {
         for (int j = 0; j < individuals_fitness.size()-i-1; j++) {
             if (individuals_fitness.at(j) < individuals_fitness.at(j+1)) {
@@ -186,38 +186,47 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     int curr_generation = 1;
     std::deque<double> best_generations;
     do {
-        /* Select the best-fit paths for reproduction (reproduction loop) */
-        std::vector< std::vector<Waypoint> > next_gen_individuals;
+        /* Select the best-fit individuals for reproduction (reproduction loops) */
+        std::vector< std::vector<Waypoint> > offsprings;
         for (int i = 0; i < NUM_OF_BEST_FIT; i++) {
-            /* TODO: Use crossover operator to create new paths */
+            for (int j = 0; j < NUM_OF_BEST_FIT; j++) {
+                if (i != j) {
+                    /* Use crossover operator to create new individuals */
+                    std::vector<Waypoint> offspring_a, offspring_b;
+                    /* make sure to crossover each two best-fit individuals */
+                    crossover(individuals.at(i), individuals.at(j), offspring_a, offspring_b);
+                    offsprings.push_back(offspring_a);
+                    offsprings.push_back(offspring_b);
+                }
+            }
 
-            /* TODO: Use mutator to modify paths */
-
+            /* Use mutator to modify individuals */
+            mutation(offsprings);
         }
 
         /* Evaluate fitness of new paths */
-        std::vector<double> next_gen_individuals_fitness;
-        for (std::vector< std::vector<Waypoint> >::iterator it = next_gen_individuals.begin(); it != next_gen_individuals.end(); it++) {
+        std::vector<double> offsprings_fitness;
+        for (std::vector< std::vector<Waypoint> >::iterator it = offsprings.begin(); it != offsprings.end(); it++) {
             bool has_worst_local_cost = false;
             double fitness = evaluateBezierCurve(*it, has_worst_local_cost);
-            next_gen_individuals_fitness.push_back(fitness);
+            offsprings_fitness.push_back(fitness);
             /* Print fitness -- for debugging */
             ROS_INFO("Fitness: %f", fitness);
         }
 
-        /* Remove the less-fit paths (those that weren't selected for reproduction in this loop) */
+        /* Remove the less-fit individuals (those that weren't selected for reproduction in this loop) */
         for (int i = 1; i <= individuals.size()-NUM_OF_BEST_FIT; i++) {
             individuals.pop_back();
             individuals_fitness.pop_back();
         }
 
-        /* Keep the best-fit new paths for the next loop */
+        /* Keep the best-fit new individuals for the next loop */
         for (int i = 0; i < NUM_OF_BEST_FIT; i++) {
-            individuals.push_back(next_gen_individuals.at(i));
-            individuals_fitness.push_back(next_gen_individuals_fitness.at(i));
+            individuals.push_back(offsprings.at(i));
+            individuals_fitness.push_back(offsprings_fitness.at(i));
         }
 
-        /* Sort paths based on fitness */
+        /* Sort individuals based on fitness */
         for (int i = 0; i < individuals_fitness.size()-1; i++) {
             for (int j = 0; j < individuals_fitness.size()-i-1; j++) {
                 if (individuals_fitness.at(j) < individuals_fitness.at(j+1)) {

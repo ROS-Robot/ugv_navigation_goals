@@ -44,3 +44,52 @@ bool goalAchieved(std::vector< std::vector<Waypoint> > & individuals) {
     
     return false;
 }
+
+/* Apply the (2-point) crossover operator between two individuals-paths */
+void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, std::vector<Waypoint> & offspring_a, std::vector<Waypoint> & offspring_b) {
+    /* for debugging */
+    assert(path_a.size() == path_b.size());
+    /* initialize pseudorandom numbers generator */
+    srand(time(NULL));
+    int first = rand() % path_a.size(), second = rand() % path_a.size();
+    /* make sure that the crossover points are in a proper order */
+    if (first > second) {
+        int temp = second;
+        second = first;
+        first = temp;
+    }
+    /* do the crossover */
+    for (int i = 0; i < path_a.size(); i++) {
+        if (i < first || i > second) {
+            offspring_a.push_back(path_a.at(i));
+            offspring_b.push_back(path_b.at(i));
+        }
+        else {
+            offspring_a.push_back(path_b.at(i));
+            offspring_b.push_back(path_a.at(i));
+        }
+    }
+}
+
+/* Apply mutation to some individuals-paths */
+void mutation(std::vector< std::vector<Waypoint> > & offsprings) {
+    /* initialize pseudorandom number generator */
+    srand(time(NULL));
+    /* we don't want to mutate the same individual twice, as this may limit the bio-diversity of the next generation */
+    std::set<int> visited;
+    for (int i = 0; i < NUM_OF_MUTATIONS; i++) {
+        /* select a random individual-path */
+        int path;
+        do {
+            path = rand() % offsprings.size();
+        } while (visited.find(path) != visited.end());
+        visited.insert(path);
+        /* select a random chromosome-waypoint of the selected individual-path */
+        int chromosome = rand() % offsprings.at(path).size();
+        /* do the mutation, essentially alter it's y coordinate randomly */
+        /* we can't have a float-type pseudorandom, so we will first "slice" our y values boundary in a random position */
+        int slice = rand() % (int) std::abs(terrain.goal_left.position.y - terrain.goal_right.position.y);
+        int new_y = terrain.goal_right.position.y + slice;
+        offsprings.at(path).at(chromosome).pose.pose.position.y = new_y;
+    }
+}
