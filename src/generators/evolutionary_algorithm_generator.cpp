@@ -26,10 +26,10 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
     /* 35 degrees */
-    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.goal.position.x = 6.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
+    terrain.goal_left.position.x = 6.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
     terrain.slope = 35.0;
     /* 45 degrees */
     // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
@@ -150,22 +150,11 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     }
 
     /* Print initial random generation -- for debugging */
-    for (std::vector< std::vector<Waypoint> >::const_iterator i = individuals.begin(); i != individuals.end(); i++) {
-        ROS_INFO("\tIndividuals:");
-        for (std::vector<Waypoint>::const_iterator j = i->begin(); j != i->end(); j++)
-            ROS_INFO("(x, y) = (%f, %f)", j->pose.pose.position.x, j->pose.pose.position.y);
-        ROS_INFO("-------------\n\n");
-    }
+    printGeneration(individuals);
 
     /* Evaluate fitness of the initial individuals */
     std::vector<double> individuals_fitness;
-    for (std::vector< std::vector<Waypoint> >::iterator it = individuals.begin(); it != individuals.end(); it++) {
-        bool has_worst_local_cost = false;
-        double fitness = evaluateBezierCurve(*it, has_worst_local_cost);
-        individuals_fitness.push_back(fitness);
-        /* Print fitness -- for debugging */
-        ROS_INFO("Fitness: %f", fitness);
-    }
+    evaluateFitness(individuals, individuals_fitness);
     
     /* Sort individuals based on fitness */
     for (int i = 0; i < individuals_fitness.size()-1; i++) {
@@ -208,13 +197,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
         /* Evaluate fitness of new paths */
         std::vector<double> offsprings_fitness;
-        for (std::vector< std::vector<Waypoint> >::iterator it = offsprings.begin(); it != offsprings.end(); it++) {
-            bool has_worst_local_cost = false;
-            double fitness = evaluateBezierCurve(*it, has_worst_local_cost);
-            offsprings_fitness.push_back(fitness);
-            /* Print fitness -- for debugging */
-            ROS_INFO("Fitness: %f", fitness);
-        }
+        evaluateFitness(offsprings, offsprings_fitness);
 
         /* Remove the less-fit individuals (those that weren't selected for reproduction in this loop) */
         for (int i = 1; i <= individuals.size()-NUM_OF_BEST_FIT; i++) {

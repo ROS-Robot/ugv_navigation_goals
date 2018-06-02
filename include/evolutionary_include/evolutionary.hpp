@@ -24,3 +24,7 @@ bool goalAchieved(std::vector< std::vector<Waypoint> > & individuals);
 void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, std::vector<Waypoint> & offspring_a, std::vector<Waypoint> & offspring_b);
 /* Apply mutation to some individuals-paths */
 void mutation(std::vector< std::vector<Waypoint> > & offsprings);
+/* Evaluate fitness of individuals */
+void evaluateFitness(std::vector< std::vector<Waypoint> > & individuals, std::vector<double> & individuals_fitness);
+/* Print a generation of individuals -- for debugging */
+void printGeneration(const std::vector< std::vector<Waypoint> > & individuals);

@@ -3,8 +3,10 @@
 /* Check if termination criteria have been met */
 bool terminationCriteriaMet(std::vector< std::vector<Waypoint> > & individuals, std::vector<double> & individuals_fitness, std::deque<double> & best_generations, double curr_generation) {
     /* if maximum number of generations have been reached, then it is over */
-    if (curr_generation >= MAX_GENERATIONS)
+    if (curr_generation >= MAX_GENERATIONS) {
+        ROS_WARN("Max generations reached... Terminating!");
         return true;
+    }
 
     /* if performance is stagnating then it is not over */
     double diff = -1, prev_diff = -1;
@@ -21,8 +23,10 @@ bool terminationCriteriaMet(std::vector< std::vector<Waypoint> > & individuals, 
                 diff = std::abs(best_generations.at(i) - best_generations.at(i+1));
                 if (std::abs(prev_diff - diff) <= diff*STAGNATION_RATE) {
                     stagnated_gens++;
-                    if (stagnated_gens == MAX_STAGNATED_GENS)
+                    if (stagnated_gens == MAX_STAGNATED_GENS) {
+                        ROS_WARN("Max stagnated gens reached... Terminating!");
                         return true;    // threshold reached                    
+                    }
                 }
             }
         }
@@ -30,7 +34,8 @@ bool terminationCriteriaMet(std::vector< std::vector<Waypoint> > & individuals, 
     
     /* if we reached this far,
         then termination is up to whether we achieved our goal of surviving the obstacles or not */
-    return goalAchieved(individuals);
+    // return goalAchieved(individuals);
+    return false;
 }
 
 /* Check if our goal has been achieved */
@@ -47,17 +52,25 @@ bool goalAchieved(std::vector< std::vector<Waypoint> > & individuals) {
 
 /* Apply the (2-point) crossover operator between two individuals-paths */
 void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, std::vector<Waypoint> & offspring_a, std::vector<Waypoint> & offspring_b) {
+    ROS_INFO("crossover in");
+    
     /* for debugging */
     assert(path_a.size() == path_b.size());
     /* initialize pseudorandom numbers generator */
-    srand(time(NULL));
-    int first = rand() % path_a.size(), second = rand() % path_a.size();
+    // srand(time(NULL));
+    int first, second;
+    first = rand() % path_a.size();
+    do {
+        second = rand() % path_a.size();
+    } while (first == second);
     /* make sure that the crossover points are in a proper order */
     if (first > second) {
         int temp = second;
         second = first;
         first = temp;
     }
+    /* for debugging */
+    ROS_INFO("crossover between %d and %d positions", first, second);
     /* do the crossover */
     for (int i = 0; i < path_a.size(); i++) {
         if (i < first || i > second) {
@@ -69,27 +82,60 @@ void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, s
             offspring_b.push_back(path_a.at(i));
         }
     }
+
+    ROS_INFO("crossover out");
 }
 
 /* Apply mutation to some individuals-paths */
 void mutation(std::vector< std::vector<Waypoint> > & offsprings) {
+    ROS_INFO("mutation in");
+
     /* initialize pseudorandom number generator */
-    srand(time(NULL));
+    // srand(time(NULL));
     /* we don't want to mutate the same individual twice, as this may limit the bio-diversity of the next generation */
     std::set<int> visited;
     for (int i = 0; i < NUM_OF_MUTATIONS; i++) {
         /* select a random individual-path */
-        int path;
+        int individual;
         do {
-            path = rand() % offsprings.size();
-        } while (visited.find(path) != visited.end());
-        visited.insert(path);
+            individual = rand() % offsprings.size();
+        } while (visited.find(individual) != visited.end());
+        visited.insert(individual);
         /* select a random chromosome-waypoint of the selected individual-path */
-        int chromosome = rand() % offsprings.at(path).size();
+        int chromosome;
+        /* we don't want to mutate our goal */
+        do {
+            chromosome = rand() % offsprings.at(individual).size();
+        } while (offsprings.at(individual).at(chromosome).pose.pose.position.x == terrain.goal.position.x && offsprings.at(individual).at(chromosome).pose.pose.position.y == terrain.goal.position.y);
         /* do the mutation, essentially alter it's y coordinate randomly */
         /* we can't have a float-type pseudorandom, so we will first "slice" our y values boundary in a random position */
         int slice = rand() % (int) std::abs(terrain.goal_left.position.y - terrain.goal_right.position.y);
-        int new_y = terrain.goal_right.position.y + slice;
-        offsprings.at(path).at(chromosome).pose.pose.position.y = new_y;
+        double new_y = terrain.goal_right.position.y + slice / std::abs(terrain.goal_left.position.y - terrain.goal_right.position.y);
+        /* for debugging */
+        ROS_INFO("mutation path: %d, position: %d from %f to %f", individual, chromosome, offsprings.at(individual).at(chromosome).pose.pose.position.y, new_y);
+        offsprings.at(individual).at(chromosome).pose.pose.position.y = new_y;
+    }
+
+    ROS_INFO("mutation out");
+}
+
+/* Evaluate fitness of individuals */
+void evaluateFitness(std::vector< std::vector<Waypoint> > & individuals, std::vector<double> & individuals_fitness) {
+    for (std::vector< std::vector<Waypoint> >::iterator it = individuals.begin(); it != individuals.end(); it++) {
+        bool has_worst_local_cost = false;
+        double fitness = evaluateBezierCurve(*it, has_worst_local_cost);
+        individuals_fitness.push_back(fitness);
+        /* Print fitness -- for debugging */
+        ROS_INFO("Fitness: %f", fitness);
+    }
+}
+
+/* Print a generation of individuals -- for debugging */
+void printGeneration(const std::vector< std::vector<Waypoint> > & individuals) {
+    for (std::vector< std::vector<Waypoint> >::const_iterator i = individuals.begin(); i != individuals.end(); i++) {
+        ROS_INFO("\tIndividuals:");
+        for (std::vector<Waypoint>::const_iterator j = i->begin(); j != i->end(); j++)
+            ROS_INFO("(x, y) = (%f, %f)", j->pose.pose.position.x, j->pose.pose.position.y);
+        ROS_INFO("-------------\n\n");
     }
 }
