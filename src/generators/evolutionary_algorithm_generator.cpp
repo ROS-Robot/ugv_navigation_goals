@@ -159,7 +159,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     /* Sort individuals based on fitness */
     for (int i = 0; i < individuals_fitness.size()-1; i++) {
         for (int j = 0; j < individuals_fitness.size()-i-1; j++) {
-            if (individuals_fitness.at(j) < individuals_fitness.at(j+1)) {
+            if (individuals_fitness.at(j) > individuals_fitness.at(j+1)) {
                 double temp = individuals_fitness.at(j);
                 individuals_fitness.at(j) = individuals_fitness.at(j+1);
                 individuals_fitness.at(j+1) = temp;
@@ -214,7 +214,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         /* Sort individuals based on fitness */
         for (int i = 0; i < individuals_fitness.size()-1; i++) {
             for (int j = 0; j < individuals_fitness.size()-i-1; j++) {
-                if (individuals_fitness.at(j) < individuals_fitness.at(j+1)) {
+                if (individuals_fitness.at(j) > individuals_fitness.at(j+1)) {
                     double temp = individuals_fitness.at(j);
                     individuals_fitness.at(j) = individuals_fitness.at(j+1);
                     individuals_fitness.at(j+1) = temp;

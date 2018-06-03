@@ -263,6 +263,15 @@ void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
             bezier_path.erase(it);
             it = std::prev(it,1);
         }
+        /* optimize path's safety */
+        if (it != std::prev(bezier_path.end(), 1) &&
+            ((it->pose.pose.position.y * terrain.goal_left.position.y > 0 && std::abs(it->pose.pose.position.y - terrain.goal_left.position.y) < ROBOT_BODY_FIX / 2) ||
+             (it->pose.pose.position.y * terrain.goal_right.position.y > 0 && std::abs(it->pose.pose.position.y - terrain.goal_right.position.y) < ROBOT_BODY_FIX / 2))) {
+            if (it->pose.pose.position.y >= 0)
+                it->pose.pose.position.y -= ROBOT_BODY_FIX;
+            else
+                it->pose.pose.position.y += ROBOT_BODY_FIX;
+        }
     }
 }
 
@@ -371,7 +380,6 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
 
     /* modified (realistic friction) */
     // cost = 3.5*(45.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
-
 
     if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
 

@@ -116,7 +116,7 @@ void mutation(std::vector< std::vector<Waypoint> > & offsprings) {
         /* do the mutation, essentially alter it's y coordinate randomly */
         /* we can't have a float-type pseudorandom, so we will first "slice" our y values boundary in a random position */
         int slice = rand() % (int) std::abs(terrain.goal_left.position.y - terrain.goal_right.position.y);
-        double new_y = terrain.goal_right.position.y + slice / std::abs(terrain.goal_left.position.y - terrain.goal_right.position.y);
+        double new_y = terrain.goal_right.position.y + std::abs(terrain.goal_left.position.y - terrain.goal_right.position.y) / slice;
         /* for debugging */
         ROS_INFO("mutation path: %d, position: %d from %f to %f", individual, chromosome, offsprings.at(individual).at(chromosome).pose.pose.position.y, new_y);
         offsprings.at(individual).at(chromosome).pose.pose.position.y = new_y;
