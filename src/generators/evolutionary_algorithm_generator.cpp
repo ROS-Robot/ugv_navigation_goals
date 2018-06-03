@@ -26,17 +26,17 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
     /* 35 degrees */
-    terrain.goal.position.x = 6.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 6.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 6.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
-    terrain.slope = 35.0;
+    // terrain.goal.position.x = 6.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    // terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    // terrain.goal_left.position.x = 6.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
+    // terrain.goal_right.position.x = 6.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
+    // terrain.slope = 35.0;
     /* 45 degrees */
-    // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    // terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
-    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
-    // terrain.slope = 45.0;
+    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    terrain.slope = 45.0;
 
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
@@ -104,7 +104,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
             /* find the Bezier curve that p0, p1 and p2 create */
             temp_control_points.push_back(p0); temp_control_points.push_back(p1); temp_control_points.push_back(p2);
             std::vector<Waypoint> bezier_curve;
-            createBezierPath(temp_control_points, bezier_curve);
+            createSuboptimalBezierPath(temp_control_points, bezier_curve);
             /* calculate points metrics */
             // calculate angles, deviation and where the vehicle is looking at any waypoint
             for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
@@ -378,7 +378,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
                 /* find the Bezier curve that p0, p1 and p2 create */
                 temp_control_points.push_back(p0); temp_control_points.push_back(p1); temp_control_points.push_back(p2);
                 std::vector<Waypoint> bezier_curve;
-                createBezierPath(temp_control_points, bezier_curve);
+                createSuboptimalBezierPath(temp_control_points, bezier_curve);
                 /* calculate points metrics */
                 // calculate angles, deviation and where the vehicle is looking at any waypoint
                 for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
@@ -440,7 +440,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
     ROS_INFO("Creating Bezier path");
     std::vector<Waypoint> bezier_path;
-    createBezierPath(control_points, bezier_path);
+    createSuboptimalBezierPath(control_points, bezier_path);
 
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());

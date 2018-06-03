@@ -28,6 +28,8 @@ bool terminationCriteriaMet(std::vector< std::vector<Waypoint> > & individuals, 
                         return true;    // threshold reached                    
                     }
                 }
+                else
+                    stagnated_gens = 0; // start counting from the beginning, we want consecutive stagnated gens
             }
         }
     }
@@ -70,7 +72,7 @@ void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, s
         first = temp;
     }
     /* for debugging */
-    ROS_INFO("crossover between %d and %d positions", first, second);
+    ROS_INFO("crossover between positions %d and %d", first, second);
     /* do the crossover */
     for (int i = 0; i < path_a.size(); i++) {
         if (i < first || i > second) {
@@ -82,6 +84,10 @@ void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, s
             offspring_b.push_back(path_a.at(i));
         }
     }
+
+    /* calculate offspring metrics */
+    calculateBezierCurveMetrics(offspring_a);
+    calculateBezierCurveMetrics(offspring_b);
 
     ROS_INFO("crossover out");
 }
@@ -114,6 +120,9 @@ void mutation(std::vector< std::vector<Waypoint> > & offsprings) {
         /* for debugging */
         ROS_INFO("mutation path: %d, position: %d from %f to %f", individual, chromosome, offsprings.at(individual).at(chromosome).pose.pose.position.y, new_y);
         offsprings.at(individual).at(chromosome).pose.pose.position.y = new_y;
+
+        /* calculate new offspring metrics */
+        calculateBezierCurveMetrics(offsprings.at(individual));
     }
 
     ROS_INFO("mutation out");

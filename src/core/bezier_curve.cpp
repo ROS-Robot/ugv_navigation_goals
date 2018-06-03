@@ -370,7 +370,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
     cost = (90.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
 
     /* modified (realistic friction) */
-    // cost = (45.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
+    // cost = 3.5*(45.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
 
 
     if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
@@ -378,4 +378,37 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
     // ROS_WARN("evaluateBezierCurve out");
 
     return cost;
+}
+
+/* calculate Bezier curve's points metrics */
+void calculateBezierCurveMetrics(std::vector<Waypoint> & bezier_curve) {
+    // calculate angles, deviation and where the vehicle is looking at any waypoint
+    for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
+        iterator->deviation = distanceFromLine(iterator->pose, terrain.start, terrain.goal);
+
+        if (std::next(iterator,1) != bezier_curve.end() && (iterator->pose.pose.position.x != std::next(iterator,1)->pose.pose.position.x) && (iterator->pose.pose.position.y != std::next(iterator,1)->pose.pose.position.y)) {
+            iterator->arc = eulerAngleOf(iterator->pose, std::prev(iterator,1)->pose, std::next(iterator,1)->pose);
+
+            if (std::next(iterator,1)->pose.pose.position.y > iterator->pose.pose.position.y)
+                iterator->looking_right = true;     // we haven't turned yet
+            else
+                iterator->looking_right = false;    // we haven't turned yet
+            }
+        else {
+            iterator->arc = 0.0;
+        }
+    }
+    // calculate costs
+    for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
+        if (iterator == bezier_curve.begin())
+            iterator->cost = iterator->deviation;
+        else
+            iterator->cost = std::prev(iterator, 1)->cost + iterator->deviation;
+    }
+    // calculate roll, pitch, yaw and height
+    for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
+        pitchAt(*iterator);
+        rollAt(*iterator);
+        yawAt(*iterator);
+    }
 }
