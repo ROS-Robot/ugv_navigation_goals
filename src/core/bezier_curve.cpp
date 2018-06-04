@@ -264,14 +264,14 @@ void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
             it = std::prev(it,1);
         }
         /* optimize path's safety */
-        if (it != std::prev(bezier_path.end(), 1) &&
-            ((it->pose.pose.position.y * terrain.goal_left.position.y > 0 && std::abs(it->pose.pose.position.y - terrain.goal_left.position.y) < ROBOT_BODY_FIX / 2) ||
-             (it->pose.pose.position.y * terrain.goal_right.position.y > 0 && std::abs(it->pose.pose.position.y - terrain.goal_right.position.y) < ROBOT_BODY_FIX / 2))) {
-            if (it->pose.pose.position.y >= 0)
-                it->pose.pose.position.y -= ROBOT_BODY_FIX;
-            else
-                it->pose.pose.position.y += ROBOT_BODY_FIX;
-        }
+        // if (it != std::prev(bezier_path.end(), 1) &&
+        //     ((it->pose.pose.position.y * terrain.goal_left.position.y > 0 && std::abs(it->pose.pose.position.y - terrain.goal_left.position.y) < ROBOT_BODY_FIX / 2) ||
+        //      (it->pose.pose.position.y * terrain.goal_right.position.y > 0 && std::abs(it->pose.pose.position.y - terrain.goal_right.position.y) < ROBOT_BODY_FIX / 2))) {
+        //     if (it->pose.pose.position.y >= 0)
+        //         it->pose.pose.position.y -= ROBOT_BODY_FIX;
+        //     else
+        //         it->pose.pose.position.y += ROBOT_BODY_FIX;
+        // }
     }
 }
 
@@ -330,14 +330,14 @@ void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
 }
 
 /* evaluate a Bezier curve */
-double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_worst_local_cost) {
+double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_worst_local_cost) {
     // ROS_WARN("evaluateBezierCurve in");
     double cost = 0.0, s_norm_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
             s_roll_pos = 0.0, s_arc = 0.0;
     /* for debugging, since we are working with quadratic Bezier curves */
-    assert(control_points.size() >= 3);
+    assert(bezier_curve.size() >= 3);
     /* TODO: trade-offs discussion at final text*/
-    for (std::vector<Waypoint>::iterator it = control_points.begin(); it != control_points.end(); ++it) {
+    for (std::vector<Waypoint>::iterator it = bezier_curve.begin(); it != bezier_curve.end(); ++it) {
         /* for debugging */
         // ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
         //             it->pose.pose.position.x, it->pose.pose.position.y, it->pose.pose.position.z,
@@ -350,7 +350,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
         s_pitch += it->pitch; it->cost += 10.0*it->pitch;
         
         /* Tweak to ensure that the robot will avoid going straight up */
-        // if (it != control_points.begin() && std::abs(it->pose.pose.position.y - std::prev(it, 1)->pose.pose.position.y) < ROBOT_BODY_FIX) {
+        // if (it != bezier_curve.begin() && std::abs(it->pose.pose.position.y - std::prev(it, 1)->pose.pose.position.y) < ROBOT_BODY_FIX) {
         //     s_pitch += 9.0*it->pitch; it->cost += 20.0*it->pitch;   // add again, to make local score worse
         // }
 
@@ -387,6 +387,23 @@ double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_wo
 
     return cost;
 }
+
+/* evaluate a Bezier curve's potential control points */
+double evaluateBezierCurveControlPoints(std::vector<Waypoint> & control_points) {
+    /* for debugging -- we need at least 3 control points to have a curve */
+    assert (control_points.size() > 2);
+    /* create a temporary Bezier path from the given control points */
+    std::vector<Waypoint> temp_bezier_path;
+    createSuboptimalBezierPath(control_points, temp_bezier_path);
+    /* calculate temporary path's metrics */
+    calculateBezierCurveMetrics(temp_bezier_path);
+    /* evaluate temporary path */
+    bool has_worst_local_cost = false;
+    double eval = evaluateBezierCurve(temp_bezier_path, has_worst_local_cost);
+
+    return eval;
+}
+
 
 /* calculate Bezier curve's points metrics */
 void calculateBezierCurveMetrics(std::vector<Waypoint> & bezier_curve) {

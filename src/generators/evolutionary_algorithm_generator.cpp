@@ -104,7 +104,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
             /* find the Bezier curve that p0, p1 and p2 create */
             temp_control_points.push_back(p0); temp_control_points.push_back(p1); temp_control_points.push_back(p2);
             std::vector<Waypoint> bezier_curve;
-            createSuboptimalBezierPath(temp_control_points, bezier_curve);
+            createSuboptimalBezierPath(temp_control_points, bezier_curve, (r-2 < 0));
             /* calculate points metrics */
             // calculate angles, deviation and where the vehicle is looking at any waypoint
             for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
@@ -143,7 +143,8 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
             last_p2 = p0;
 
             // insert to path, we don't want p0 since it is either the start position or the previous p2
-            path.insert(path.end(), std::next(bezier_curve.begin(), 1), bezier_curve.end());                
+            path.insert(path.end(), std::next(bezier_curve.begin(), 1), bezier_curve.end());
+            // path.insert(path.end(), std::next(temp_control_points.begin(), 1), temp_control_points.end());                
         }
 
         individuals.push_back(path);
@@ -192,7 +193,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
             }
 
             /* Use mutator to modify individuals */
-            mutation(offsprings);
+            // mutation(offsprings);
         }
 
         /* Evaluate fitness of new paths */
@@ -235,10 +236,17 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
     /* proceed with the best solution */
     ROS_INFO("Keeping best path");
+    // ROS_INFO("Keeping best control points");
     /* for debugging */
     assert(individuals.size() > 0);
     std::vector<Waypoint> bezier_path = individuals.at(0);
+    // std::vector<Waypoint> control_points = individuals.at(0);
     
+    /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
+    // ROS_INFO("Creating Bezier path");
+    // std::vector<Waypoint> bezier_path;
+    // createSuboptimalBezierPath(control_points, bezier_path);
+
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)

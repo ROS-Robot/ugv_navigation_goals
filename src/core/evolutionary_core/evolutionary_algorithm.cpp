@@ -8,6 +8,10 @@ bool terminationCriteriaMet(std::vector< std::vector<Waypoint> > & individuals, 
         return true;
     }
 
+    /* check whether we achieved our goal of surviving the obstacles or not */
+    if (!goalAchieved(individuals))
+        return false;
+
     /* if performance is stagnating then it is not over */
     double diff = -1, prev_diff = -1;
     int stagnated_gens = 0;
@@ -34,9 +38,7 @@ bool terminationCriteriaMet(std::vector< std::vector<Waypoint> > & individuals, 
         }
     }
     
-    /* if we reached this far,
-        then termination is up to whether we achieved our goal of surviving the obstacles or not */
-    // return goalAchieved(individuals);
+    /* if we reached this far, then it is not over */
     return false;
 }
 
@@ -133,6 +135,7 @@ void evaluateFitness(std::vector< std::vector<Waypoint> > & individuals, std::ve
     for (std::vector< std::vector<Waypoint> >::iterator it = individuals.begin(); it != individuals.end(); it++) {
         bool has_worst_local_cost = false;
         double fitness = evaluateBezierCurve(*it, has_worst_local_cost);
+        // double fitness = evaluateBezierCurveControlPoints(*it);
         individuals_fitness.push_back(fitness);
         /* Print fitness -- for debugging */
         ROS_INFO("Fitness: %f", fitness);

@@ -218,7 +218,9 @@ void cleanUpBezierPath(std::vector<Waypoint> & bezier_path);
 /* interpolate a Bezier path */
 void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);
 /* evaluate a Bezier curve */
-double evaluateBezierCurve(std::vector<Waypoint> & control_points, bool & has_worst_local_cost);
+double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_worst_local_cost);
+/* evaluate a Bezier curve's potential control points */
+double evaluateBezierCurveControlPoints(std::vector<Waypoint> & control_points);
 /* calculate Bezier curve's points metrics */
 void calculateBezierCurveMetrics(std::vector<Waypoint> & bezier_curve);
 
