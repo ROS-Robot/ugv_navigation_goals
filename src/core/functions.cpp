@@ -355,6 +355,27 @@ bool isAdmissible(Waypoint & w_c, const Waypoint & w_f){
     return true;    // we reached so far, we have an admissible waypoint
 }
 
+
+/* is a path admissible? can we follow it and survive? */
+bool isAdmissible(const std::vector<Waypoint> & path) {
+    /* iterate the best individual (path) */
+    for (std::vector<Waypoint>::const_iterator it = path.begin(); it != std::prev(path.end(), 1); it++) {
+        if (throughLethalObstacle(*it, *(std::next(it, 1))))
+            return false;
+        if (proximityToLethalObstacle(*it))
+            return false;
+        if (it != path.begin() && 
+            std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::prev(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX &&
+            std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::next(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX)
+            return false;
+        if (distanceFromLine(it->pose, terrain.start, terrain.goal) &&
+            std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::next(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX)
+            return false;
+    }
+    
+    return true;
+}
+
 /* is a passage safe for path planning?
  * w_a, w_b: the candidate-waypoints */
 bool isSafe(Waypoint & w_a, const Waypoint & w_b) {

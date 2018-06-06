@@ -49,6 +49,8 @@ bool goalAchieved(std::vector< std::vector<Waypoint> > & individuals) {
     ROS_INFO("individuals.at(0).size() = %ld", individuals.at(0).size());
     /* iterate the best individual (path) */
     for (std::vector<Waypoint>::iterator it = individuals.at(0).begin(); it != std::prev(individuals.at(0).end(), 1); it++) {
+        /* for debugging */
+        ROS_INFO("goalAchieved: (x, y) = (%f, %f)", it->pose.pose.position.x, it->pose.pose.position.y);
         if (throughLethalObstacle(*it, *(std::next(it, 1))))
             return false;
         if (proximityToLethalObstacle(*it))

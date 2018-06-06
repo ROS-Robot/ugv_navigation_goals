@@ -52,7 +52,20 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 2.3; temp.y = 0.32; terrain.lethal_obstacles.push_back(temp);
     temp.x = 2.3; temp.y = 0.33; terrain.lethal_obstacles.push_back(temp);
     // second lethal obstacles formation
-
+    temp.x = 4.302500; temp.y = 1.368750; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.2; temp.y = 1.3; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.2; temp.y = 1.35; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.3; temp.y = 1.34; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.1; temp.y = 1.368750; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.2; temp.y = 1.368750; terrain.lethal_obstacles.push_back(temp);
+    // third lethal obstacles formation
+    temp.x = 5.218125; temp.y = 0.829688; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 5.2; temp.y = 0.9; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 5.1; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 5.1; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 5.2; temp.y = 0.829688; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 531; temp.y = 0.83; terrain.lethal_obstacles.push_back(temp);
+    
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
     ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);

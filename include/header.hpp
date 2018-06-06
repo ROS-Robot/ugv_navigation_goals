@@ -178,6 +178,8 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
 /* is a waypoint admissible for path planning?
  * w_c: the candidate-waypoint, w_f: it's previous, currently fixed, waypoint */
 bool isAdmissible(Waypoint & w_c, const Waypoint & w_f);
+/* is a path admissible? can we follow it and survive? */
+bool isAdmissible(const std::vector<Waypoint> & path);
 /* is a passage safe for path planning?
  * w_a, w_b: the candidate-waypoints */
 bool isSafe(Waypoint & w_a, const Waypoint & w_b);

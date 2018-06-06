@@ -383,6 +383,13 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
 
     if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
 
+/* it's still experimental */
+#ifdef EVOLUTIONARY_ALGORITHM_GENERATION
+    /* if we can't survive while following this path, make sure that we are not going to choose it */
+    if (!isAdmissible(bezier_curve))
+        cost = std::numeric_limits<double>::max();
+#endif
+
     // ROS_WARN("evaluateBezierCurve out");
 
     return cost;
