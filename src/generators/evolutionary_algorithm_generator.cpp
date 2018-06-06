@@ -38,6 +38,21 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
     terrain.slope = 45.0;
 
+    /* incorporate lethal obstacles */
+    geometry_msgs::Point temp;
+    temp.x = 1.16; temp.y = 1.0; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.6; temp.y = -0.67; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.75; temp.y = 0.99; terrain.lethal_obstacles.push_back(temp);
+    /* make lethal obstacles more complex */
+    // first lethal obstacles formation
+    temp.x = 2.102800; temp.y = 0.312000; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.2; temp.y = 0.31; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.2; temp.y = 0.32; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.3; temp.y = 0.31; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.3; temp.y = 0.32; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.3; temp.y = 0.33; terrain.lethal_obstacles.push_back(temp);
+    // second lethal obstacles formation
+
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
     ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);
@@ -180,6 +195,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         ROS_WARN("Current generation: %d", curr_generation);
         /* Select the best-fit individuals for reproduction (reproduction loops) */
         std::vector< std::vector<Waypoint> > offsprings;
+        /* TODO: is crossover operation counterfeit?  */
         for (int i = 0; i < NUM_OF_BEST_FIT; i++) {
             for (int j = 0; j < NUM_OF_BEST_FIT; j++) {
                 if (i != j) {
@@ -196,7 +212,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
             // mutation(offsprings);
         }
 
-        /* Evaluate fitness of new paths */
+        /* Evaluate fitness of new individuals */
         std::vector<double> offsprings_fitness;
         evaluateFitness(offsprings, offsprings_fitness);
 
