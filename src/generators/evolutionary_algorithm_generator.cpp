@@ -65,6 +65,10 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 5.1; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
     temp.x = 5.2; temp.y = 0.829688; terrain.lethal_obstacles.push_back(temp);
     temp.x = 531; temp.y = 0.83; terrain.lethal_obstacles.push_back(temp);
+
+    /* Print lethal obstacles -- for documentation */
+    for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
+        ROS_INFO("Lethal obstacle at (x, y) = (%f, %f)", it->x, it->y);
     
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
@@ -93,6 +97,8 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     std::vector< std::vector<Waypoint> > individuals;
     // initialize pseudorandom numbers generator
     srand(time(NULL));
+    /* Count visited states -- for documentation */
+    int visited_states = 0;
     // take every two consecutive lines, with a fixed p0 from the previous line
     for (int i = 0; i < INIT_GENERATION_SIZE; i++) {
         /* create a random path from start to finish */
@@ -116,6 +122,9 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
                             p2_x = terrain.goal.position.x;
                             p2_y = terrain.goal.position.y;
                         }
+            /* we have one new visited state, count it -- for documentation */
+            visited_states++;
+            // local control points
             std::vector<Waypoint> temp_control_points;
             // for debugging
             assert(r >= 0);
@@ -263,6 +272,10 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         best_generations.push_back(individuals_fitness.at(0));
     } while (!terminationCriteriaMet(individuals, individuals_fitness, best_generations, curr_generation));
 
+    /* Print visited states -- for documentation */
+    visited_states += curr_generation;
+    ROS_INFO("Path generator visited %d states during search", visited_states);
+
     /* proceed with the best solution */
     ROS_INFO("Keeping best path");
     // ROS_INFO("Keeping best control points");
@@ -280,6 +293,11 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+        
+    /* Print Bezier path's cost and length -- for documentation */
+    // print path's details -- for debugging
+    // printBezierPathDetails(bezier_path);    
+    ROS_INFO("Bezier path cost = %f, length = %f meters", individuals_fitness.at(0), bezierPathLength(bezier_path));
 
     /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
     cleanUpBezierPath(bezier_path);

@@ -225,6 +225,10 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
 double evaluateBezierCurveControlPoints(std::vector<Waypoint> & control_points);
 /* calculate Bezier curve's points metrics */
 void calculateBezierCurveMetrics(std::vector<Waypoint> & bezier_curve);
+/* calculate Bezier path length */
+double bezierPathLength(const std::vector<Waypoint> & bezier_path);
+/* detailed printing of a Bezier path's waypoints -- for debugging */
+void printBezierPathDetails(const std::vector<Waypoint> & bezier_path);
 
 /* our paths generators */
 

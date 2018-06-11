@@ -31,23 +31,27 @@ int nBestGenerator(int argc, char *argv[]) {
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
     /* 35 degrees */
-    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
-    terrain.slope = 35.0;
-    /* 45 degrees */
     // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    // terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
-    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
-    // terrain.slope = 45.0;
+    // terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
+    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
+    // terrain.slope = 35.0;
+    /* 45 degrees */
+    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    terrain.slope = 45.0;
 
     // incorporate lethal obstacles
     geometry_msgs::Point temp;
     temp.x = 1.16; temp.y = 1.0; terrain.lethal_obstacles.push_back(temp);
     temp.x = 2.6; temp.y = -0.67; terrain.lethal_obstacles.push_back(temp);
     temp.x = 4.75; temp.y = 0.99; terrain.lethal_obstacles.push_back(temp);
+
+    /* Print lethal obstacles -- for documentation */
+    for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
+        ROS_INFO("Lethal obstacle at (x, y) = (%f, %f)", it->x, it->y);
 
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
@@ -85,6 +89,8 @@ int nBestGenerator(int argc, char *argv[]) {
     control_points.push_back(p0);
     // take every two consecutive lines, with a fixed p0 from the previous line
     double path_cost = 0.0;
+    /* Count visited states -- for documentation */
+    int visited_states = 0;
     for (int r = rows-1; r >= 0; r -= 2) {
         loops++;    // count loops -- for debugging
         double local_cost = 0.0, best_local_cost = std::numeric_limits<double>::max();
@@ -109,6 +115,9 @@ int nBestGenerator(int argc, char *argv[]) {
                     (p1_x == p0.pose.pose.position.x && p1_y == p0.pose.pose.position.y) ||
                     (p2_x == p1_x && p2_y == p1_y) )
                     continue;
+                /* we have one new visited state, count it -- for documentation */
+                visited_states++;
+                // local control points
                 std::vector<Waypoint> temp_control_points;
                 // for debugging
                 assert(r >= 0);
@@ -275,6 +284,9 @@ int nBestGenerator(int argc, char *argv[]) {
         ROS_INFO("--------------------------------------");
     }
 
+    /* Print visited states -- for documentation */
+    ROS_INFO("Path generator visited %d states during search", visited_states);
+
     /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
     ROS_INFO("Creating Bezier path");
     std::vector<Waypoint> bezier_path;
@@ -284,6 +296,13 @@ int nBestGenerator(int argc, char *argv[]) {
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
+    /* Print Bezier path's cost and length -- for documentation */
+    calculateBezierCurveMetrics(bezier_path);   // we need metrics for cost calculation
+    // print path's details -- for debugging
+    // printBezierPathDetails(bezier_path);    
+    bool has_worst_local_cost = false;
+    ROS_INFO("Bezier path cost = %f, length = %f meters", evaluateBezierCurve(bezier_path, has_worst_local_cost), bezierPathLength(bezier_path));
 
     /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
     cleanUpBezierPath(bezier_path);

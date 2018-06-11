@@ -411,7 +411,6 @@ double evaluateBezierCurveControlPoints(std::vector<Waypoint> & control_points) 
     return eval;
 }
 
-
 /* calculate Bezier curve's points metrics */
 void calculateBezierCurveMetrics(std::vector<Waypoint> & bezier_curve) {
     // calculate angles, deviation and where the vehicle is looking at any waypoint
@@ -443,4 +442,19 @@ void calculateBezierCurveMetrics(std::vector<Waypoint> & bezier_curve) {
         rollAt(*iterator);
         yawAt(*iterator);
     }
+}
+
+/* calculate Bezier path length */
+double bezierPathLength(const std::vector<Waypoint> & bezier_path) {
+    double length = 0.0;
+    for (std::vector<Waypoint>::const_iterator it = bezier_path.begin(); it != std::prev(bezier_path.end(), 1); it++)
+        length += distance(it->pose.pose.position, std::next(it, 1)->pose.pose.position);
+
+    return length;
+}
+
+/* detailed printing of a Bezier path's waypoints -- for debugging */
+void printBezierPathDetails(const std::vector<Waypoint> & bezier_path) {
+    for (std::vector<Waypoint>::const_iterator it = bezier_path.begin(); it != std::prev(bezier_path.end(), 1); it++)
+        ROS_INFO("(x, y) = (%f, %f), arc = %f, deviation = %f, roll = %f, pitch = %f, yaw = %f, looking_right = %d", it->pose.pose.position.x, it->pose.pose.position.y, it->arc, it->deviation, it->roll, it->pitch, it->yaw, it->looking_right);
 }
