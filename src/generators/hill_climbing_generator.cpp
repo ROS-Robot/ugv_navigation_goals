@@ -33,11 +33,11 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
     // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
     // terrain.slope = 45.0;
-    /* 43 degrees - 30 meters (84.15 * -8 0 0.09 0) */
-    terrain.goal.position.x = 40.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    /* 43 degrees - 30 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
+    terrain.goal.position.x = 50.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 40.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 40.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
+    terrain.goal_left.position.x = 50.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 50.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
     terrain.slope = 45.0;
 
     // incorporate no obstacles
