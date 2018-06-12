@@ -376,10 +376,10 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
     }
 
     /* initial (perfect friction) */
-    cost = (90.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
+    // cost = (90.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
 
     /* modified (realistic friction) */
-    // cost = 3.5*(45.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
+    cost = 3.5*(45.0/terrain.slope)*s_norm_dev + 10.0*s_pitch - 10.0*(s_roll_neg+s_roll_pos) + (terrain.slope/10.0)*s_arc;
 
     if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
 

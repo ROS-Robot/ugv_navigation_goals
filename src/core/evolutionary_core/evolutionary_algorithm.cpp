@@ -104,10 +104,7 @@ void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, s
 
 /* Apply mutation to some individuals-paths */
 void mutation(std::vector< std::vector<Waypoint> > & offsprings) {
-    ROS_INFO("mutation in");
-
-    /* initialize pseudorandom number generator */
-    // srand(time(NULL));
+    // ROS_INFO("mutation in");
     /* we don't want to mutate the same individual twice, as this may limit the bio-diversity of the next generation */
     std::set<int> visited;
     for (int i = 0; i < NUM_OF_MUTATIONS; i++) {
@@ -128,14 +125,13 @@ void mutation(std::vector< std::vector<Waypoint> > & offsprings) {
         int slice = rand() % (int) std::abs(terrain.goal_left.position.y - terrain.goal_right.position.y);
         double new_y = terrain.goal_right.position.y + std::abs(terrain.goal_left.position.y - terrain.goal_right.position.y) / slice;
         /* for debugging */
-        ROS_INFO("mutation path: %d, position: %d from %f to %f", individual, chromosome, offsprings.at(individual).at(chromosome).pose.pose.position.y, new_y);
+        // ROS_INFO("mutation path: %d, position: %d from %f to %f", individual, chromosome, offsprings.at(individual).at(chromosome).pose.pose.position.y, new_y);
         offsprings.at(individual).at(chromosome).pose.pose.position.y = new_y;
 
         /* calculate new offspring metrics */
         calculateBezierCurveMetrics(offsprings.at(individual));
     }
-
-    ROS_INFO("mutation out");
+    // ROS_INFO("mutation out");
 }
 
 /* Evaluate fitness of individuals */

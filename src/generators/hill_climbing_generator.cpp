@@ -28,10 +28,16 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
     // terrain.slope = 35.0;
     /* 45 degrees */
-    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    // terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
+    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    // terrain.slope = 45.0;
+    /* 43 degrees - 30 meters (84.15 * -8 0 0.09 0) */
+    terrain.goal.position.x = 40.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 40.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 40.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
     terrain.slope = 45.0;
 
     // incorporate no obstacles
@@ -104,16 +110,19 @@ void hillClimbingGenerator(int argc, char *argv[]) {
                 std::vector<Waypoint> temp_control_points;
                 // for debugging
                 assert(r >= 0);
+                ROS_INFO("p0 = (%f, %f)", p0.pose.pose.position.x, p0.pose.pose.position.y);
                 /* create temporary waypoint for i (p1) */
                 Waypoint p1; p1.pose.pose.orientation.w = 1.0; p1.pose.header.frame_id = "odom";
                 p1.pose.pose.position.x = p1_x;
                 p1.pose.pose.position.y = p1_y;
                 p1.deviation = distanceFromLine(p1.pose, terrain.start, terrain.goal);
+                ROS_INFO("p1 = (%f, %f)", p1.pose.pose.position.x, p1.pose.pose.position.y);
                 /* create temporary waypoint for j (p2) */
                 Waypoint p2; p2.pose.pose.orientation.w = 1.0; p2.pose.header.frame_id = "odom";
                 p2.pose.pose.position.x = p2_x;
                 p2.pose.pose.position.y = p2_y;
                 p2.deviation = distanceFromLine(p2.pose, terrain.start, terrain.goal);
+                ROS_INFO("p2 = (%f, %f)", p2.pose.pose.position.x, p2.pose.pose.position.y);
                 /* find the Bezier curve that p0, p1 and p2 create */
                 temp_control_points.push_back(p0); temp_control_points.push_back(p1); temp_control_points.push_back(p2);
                 std::vector<Waypoint> bezier_curve;
@@ -153,6 +162,7 @@ void hillClimbingGenerator(int argc, char *argv[]) {
                 }
                 /* evaluate the Bezier curve */
                 local_cost = evaluateBezierCurve(bezier_curve, has_worst_local_cost);
+                ROS_WARN("local_cost = %f", local_cost);
                 // TODO: is the following OK here??? Is is necessary???
                 // if the path that is currently may have the worst local cost, punish it with extra cost
                 // if (local_cost == terrain.worst_local_cost)
@@ -182,7 +192,7 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
     ROS_INFO("Creating Bezier path");
     std::vector<Waypoint> bezier_path;
-    createBezierPath(control_points, bezier_path);
+    createSuboptimalBezierPath(control_points, bezier_path);
 
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());

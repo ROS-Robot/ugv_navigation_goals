@@ -32,11 +32,17 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     // terrain.goal_right.position.x = 6.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
     // terrain.slope = 35.0;
     /* 45 degrees */
-    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
-    terrain.slope = 45.0;
+    // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    // terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
+    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    // terrain.slope = 45.0;
+    /* 43 degrees - 30 meters */
+    terrain.goal.position.x = 40.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.89; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 40.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.89; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 40.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.89; terrain.start_right.position.y = -3.0;
+    terrain.slope = 43.0;
 
     /* incorporate lethal obstacles */
     geometry_msgs::Point temp;
@@ -188,7 +194,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     }
 
     /* Print initial random generation -- for debugging */
-    printGeneration(individuals);
+    // printGeneration(individuals);
 
     /* Evaluate fitness of the initial individuals */
     std::vector<double> individuals_fitness;
@@ -278,21 +284,14 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
     /* proceed with the best solution */
     ROS_INFO("Keeping best path");
-    // ROS_INFO("Keeping best control points");
     /* for debugging */
     assert(individuals.size() > 0);
     std::vector<Waypoint> bezier_path = individuals.at(0);
-    // std::vector<Waypoint> control_points = individuals.at(0);
     
-    /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
-    // ROS_INFO("Creating Bezier path");
-    // std::vector<Waypoint> bezier_path;
-    // createSuboptimalBezierPath(control_points, bezier_path);
-
-    /* Print Bezier path -- for debugging */
-    ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
-    for (int i = 0; i < bezier_path.size(); i++)
-        ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+    // /* Print Bezier path -- for debugging */
+    // ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
+    // for (int i = 0; i < bezier_path.size(); i++)
+    //     ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
         
     /* Print Bezier path's cost and length -- for documentation */
     // print path's details -- for debugging
