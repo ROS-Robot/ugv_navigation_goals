@@ -64,7 +64,7 @@ bool goalAchieved(std::vector< std::vector<Waypoint> > & individuals) {
 
 /* Apply the (2-point) crossover operator between two individuals-paths */
 void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, std::vector<Waypoint> & offspring_a, std::vector<Waypoint> & offspring_b) {
-    ROS_INFO("crossover in");
+    // ROS_INFO("crossover in");
     
     /* for debugging */
     assert(path_a.size() == path_b.size());
@@ -99,7 +99,7 @@ void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, s
     calculateBezierCurveMetrics(offspring_a);
     calculateBezierCurveMetrics(offspring_b);
 
-    ROS_INFO("crossover out");
+    // ROS_INFO("crossover out");
 }
 
 /* Apply mutation to some individuals-paths */

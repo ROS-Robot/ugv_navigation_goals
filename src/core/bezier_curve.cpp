@@ -346,15 +346,23 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
 
         it->cost = 0;
         // normalize deviation (between 0 and 1) and multiply by 100 to be like the angle values
-        s_norm_dev += it->deviation / distance(terrain.start_left.position, terrain.start.position); it->cost += 100*it->deviation / distance(terrain.start_left.position, terrain.start.position);
-        s_pitch += it->pitch; it->cost += 10.0*it->pitch;
+        if (distance(terrain.start_left.position, terrain.start.position) != 0) {
+            s_norm_dev += it->deviation / distance(terrain.start_left.position, terrain.start.position); 
+            it->cost += 3.5*(45.0/terrain.slope)*(it->deviation / distance(terrain.start_left.position, terrain.start.position));
+        }
+        else {
+            s_norm_dev += 1; 
+            it->cost += 3.5*(45.0/terrain.slope)*1; // so "0"
+        }
+        s_pitch += it->pitch; 
+        it->cost += 10.0*it->pitch;
         
         /* Tweak to ensure that the robot will avoid going straight up */
         // if (it != bezier_curve.begin() && std::abs(it->pose.pose.position.y - std::prev(it, 1)->pose.pose.position.y) < ROBOT_BODY_FIX) {
         //     s_pitch += 9.0*it->pitch; it->cost += 20.0*it->pitch;   // add again, to make local score worse
         // }
 
-        s_yaw += it->yaw; it->cost -= 1.3*it->yaw;
+        // s_yaw += it->yaw; it->cost -= 1.3*it->yaw;
         /* TODO: fix roll, pitch, yaw signs */
         if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
             s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
@@ -362,17 +370,17 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
         }
         else {
             s_roll_neg += it->roll;     // roll that negatively impacts the movement of the vehicle
-            it->cost += 10.0*it->roll;
+            it->cost -= 10.0*it->roll;
         }
         s_arc += it->arc;
-        it->cost += 0.4*it->arc;
+        it->cost += (terrain.slope/10.0)*it->arc;
 
         if (it->cost > terrain.worst_local_cost) {
             terrain.worst_local_cost = it->cost;
             has_worst_local_cost = true;
         }
 
-        // ROS_WARN("waypoint %d cost = %f", it->id, it->cost);
+        // ROS_WARN("waypoint (%f, %f) cost = %f", it->pose.pose.position.x, it->pose.pose.position.y, it->cost);
     }
 
     /* initial (perfect friction) */
@@ -390,7 +398,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
         cost = std::numeric_limits<double>::max();
 #endif
 
-    // ROS_WARN("evaluateBezierCurve out");
+    // ROS_WARN("evaluateBezierCurve cost = %f", cost);
 
     return cost;
 }

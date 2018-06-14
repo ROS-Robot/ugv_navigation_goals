@@ -47,6 +47,8 @@ double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_ms
     if (!(2*p_ab*p_ac))
         return 0.0;
     double res = std::acos((p_ab*p_ab+p_ac*p_ac-p_bc*p_bc)/(2*p_ab*p_ac));
+    if (std::isnan(res))
+        res = 0.0;
     return res * 180.0 / PI;
 }
 double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseWithCovarianceStamped& pose_b, const geometry_msgs::PoseStamped & pose_c) {
@@ -55,6 +57,8 @@ double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_ms
         p_ac = std::sqrt((pose_a.pose.position.x-pose_c.pose.position.x)*(pose_a.pose.position.x-pose_c.pose.position.x) + (pose_a.pose.position.y-pose_c.pose.position.y)*(pose_a.pose.position.y-pose_c.pose.position.y));
     assert((2*p_ab*p_ac));
     double res = std::acos((p_ab*p_ab+p_ac*p_ac-p_bc*p_bc)/(2*p_ab*p_ac));
+    if (std::isnan(res))
+        res = 0.0;
     return res * 180.0 / PI;
 }
 double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::Pose & pose_c) {
@@ -63,6 +67,8 @@ double eulerAngleOf(const geometry_msgs::PoseStamped & pose_a, const geometry_ms
         p_ac = std::sqrt((pose_a.pose.position.x-pose_c.position.x)*(pose_a.pose.position.x-pose_c.position.x) + (pose_a.pose.position.y-pose_c.position.y)*(pose_a.pose.position.y-pose_c.position.y));
     assert((2*p_ab*p_ac));
     double res = std::acos((p_ab*p_ab+p_ac*p_ac-p_bc*p_bc)/(2*p_ab*p_ac));
+    if (std::isnan(res))
+        res = 0.0;
     return res * 180.0 / PI;
 }
 
