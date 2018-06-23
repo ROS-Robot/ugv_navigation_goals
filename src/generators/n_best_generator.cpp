@@ -51,12 +51,12 @@ int nBestGenerator(int argc, char *argv[]) {
 
     // incorporate lethal obstacles
     geometry_msgs::Point temp;
-    temp.x = 1.16; temp.y = 1.0; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 2.6; temp.y = -0.67; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 4.75; temp.y = 0.99; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 20.825000; temp.y = -0.675000; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 28.325000; temp.y = -0.675000; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 38.825000; temp.y = -0.675000; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 1.6; temp.y = -0.027; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.6; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.3; temp.y = 1.6; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 20.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.825; temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.82; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
 
     /* Print lethal obstacles -- for documentation */
     for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)

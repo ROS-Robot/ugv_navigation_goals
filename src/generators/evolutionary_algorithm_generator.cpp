@@ -26,10 +26,10 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
     /* 35 degrees */
-    // terrain.goal.position.x = 6.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     // terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    // terrain.goal_left.position.x = 6.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
-    // terrain.goal_right.position.x = 6.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
+    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
+    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
     // terrain.slope = 35.0;
     /* 45 degrees */
     // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
@@ -46,9 +46,9 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
     /* incorporate lethal obstacles */
     geometry_msgs::Point temp;
-    temp.x = 1.16; temp.y = 1.0; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 2.6; temp.y = -0.67; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 4.75; temp.y = 0.99; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 1.6; temp.y = -0.027; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.6; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.3; temp.y = 1.6; terrain.lethal_obstacles.push_back(temp);
     /* make lethal obstacles more complex */
     // first lethal obstacles formation
     temp.x = 2.102800; temp.y = 0.312000; terrain.lethal_obstacles.push_back(temp);
@@ -72,26 +72,26 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 5.2; temp.y = 0.829688; terrain.lethal_obstacles.push_back(temp);
     temp.x = 531; temp.y = 0.83; terrain.lethal_obstacles.push_back(temp);
     // fourth lethal obstacles formation
-    temp.x = 21.425001; temp.y = 1.305000; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 21.3; temp.y = 1.3; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 21.4; temp.y = 1.2; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 21.35; temp.y = 1.4; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 21.42; temp.y = 1.4; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 21.5; temp.y = 1.305; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 20.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 21.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 19.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 21.1; temp.y = 0.95; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 20.5; temp.y = 0.75; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 20.8; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
     // fifth lethal obstacles formation
-    temp.x = 34.625000; temp.y = 0.765000; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 34.6; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 34.62; temp.y = 0.76; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 35.0; temp.y = 0.765; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 34.5; temp.y = 0.7; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 34.525; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.825; temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.9; temp.y = -0.67; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.7; temp.y = -0.6; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 30.0; temp.y = -0.7; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 30.1; temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.725; temp.y = -0.775; terrain.lethal_obstacles.push_back(temp);
     // sixth lethal obstacles formation
-    temp.x = 42.202734; temp.y = -0.664453; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 42.2; temp.y = -0.7; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 42.1; temp.y = -0.66; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 42.3; temp.y = -0.6644; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 42.3027; temp.y = -0.6; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 42.202734; temp.y = -0.764453; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.82; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.9; temp.y = 0.9; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.72; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.92; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.8; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.75; temp.y = 0.75; terrain.lethal_obstacles.push_back(temp);
 
     /* Print lethal obstacles -- for documentation */
     for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
@@ -317,7 +317,8 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     /* Print Bezier path's cost and length -- for documentation */
     // print path's details -- for debugging
     // printBezierPathDetails(bezier_path);    
-    ROS_INFO("Bezier path cost = %f, length = %f meters", individuals_fitness.at(0), bezierPathLength(bezier_path));
+    bool has_worst_local_cost = false;
+    ROS_INFO("Bezier path cost = %f, length = %f meters", evaluateBezierCurve(individuals.at(0), has_worst_local_cost), bezierPathLength(bezier_path));
 
     /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
     cleanUpBezierPath(bezier_path);

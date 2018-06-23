@@ -3,7 +3,7 @@
 /* Bezier curve functions declarations */
 
 /* calculate Bezier point of a quadratic Bezier curve */
-void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, geometry_msgs::Point & p) {
+void calculateBezierPoint(const double & t, const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, geometry_msgs::Point & p) {
     double one_minus_t = 1-t;
     p.x = one_minus_t*one_minus_t*p0.x + 2*one_minus_t*t*p1.x + t*t*p2.x;
     p.y = one_minus_t*one_minus_t*p0.y + 2*one_minus_t*t*p1.y + t*t*p2.y;
@@ -16,9 +16,9 @@ void formBezierCurve(const geometry_msgs::Point & p0, const geometry_msgs::Point
     first.pose.pose.position.x = p0.x;
     first.pose.pose.position.y = p0.y;
     bezier_curve.push_back(first);
-    float t;
+    double t;
     for (int i = 1; i <= SEGMENTS_PER_CURVE; i++) {
-        t = i / (float) SEGMENTS_PER_CURVE;
+        t = i / (double) SEGMENTS_PER_CURVE;
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
         calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
@@ -71,7 +71,7 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
         for (int j = 1; j <= segments; j++) {
-            float t = j / (float) segments;
+            double t = j / (double) segments;
             calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
             bezier_path.push_back(temp);
         }
@@ -116,7 +116,7 @@ void createBezierPath(const std::vector<Waypoint> & control_points, std::vector<
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
         for (int j = 1; j <= segments; j++) {
-            float t = j / (float) segments;
+            double t = j / (double) segments;
             calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
             bezier_path.push_back(temp);
         }
@@ -163,7 +163,7 @@ void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, st
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
         for (int j = 1; j <= segments; j++) {
-            float t = j / (float) segments;
+            double t = j / (double) segments;
             calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
 
             /* Tweak to ensure that the is no way that the robot will try to move straight upwards.
@@ -247,7 +247,7 @@ void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, st
         Waypoint temp;
         temp.pose.pose.orientation.w = 1.0; temp.pose.header.frame_id = "odom";
         for (int j = 1; j <= segments; j++) {
-            float t = j / (float) segments;
+            double t = j / (double) segments;
             calculateBezierPoint(t, p0, p1, p2, temp.pose.pose.position);
             bezier_path.push_back(temp);
         }
@@ -276,7 +276,7 @@ void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
 }
 
 /* interpolate a Bezier path */
-void interpolateBezierPath(std::vector<Waypoint> & segments, float scale) {
+void interpolateBezierPath(std::vector<Waypoint> & segments, double scale) {
     if (segments.size() <= 2)
         return;
 
@@ -398,7 +398,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
         cost = std::numeric_limits<double>::max();
 #endif
 
-    // ROS_WARN("evaluateBezierCurve cost = %f", cost);
+    ROS_WARN("evaluateBezierCurve cost = %f, s_norm_dev = %f, s_pitch = %f, s_roll = %f, s_arc = %f", cost, s_norm_dev, s_pitch, s_roll_neg+s_roll_pos, s_arc);
 
     return cost;
 }

@@ -206,7 +206,7 @@ double heightAt(geometry_msgs::Point & p);
             http://devmag.org.za/2011/06/23/bzier-path-algorithms/ */
 
 /* calculate Bezier point of a quadratic Bezier curve */
-void calculateBezierPoint(const float & t, const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, geometry_msgs::Point & p);
+void calculateBezierPoint(const double & t, const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, geometry_msgs::Point & p);
 /* calculate segmentation points of a Bezier curve, in order to "form" it */
 void formBezierCurve(const geometry_msgs::Point & p0, const geometry_msgs::Point & p1, const geometry_msgs::Point & p2, std::vector<Waypoint> & bezier_curve);
 /* create a Bezier path, by stitching many Bezier curves together */
@@ -218,7 +218,7 @@ void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, st
 /* clean up a Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path);
 /* interpolate a Bezier path */
-void interpolateBezierPath(std::vector<Waypoint> & segments, float scale);
+void interpolateBezierPath(std::vector<Waypoint> & segments, double scale);
 /* evaluate a Bezier curve */
 double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_worst_local_cost);
 /* evaluate a Bezier curve's potential control points */
