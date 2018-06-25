@@ -64,7 +64,7 @@ int nBestGenerator(int argc, char *argv[]) {
 
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
-    ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("initialpose", 1);
+    ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/initialpose", 1);
     ros::Subscriber move_base_status_sub = nodeHandle.subscribe("/move_base/status", 1, &moveBaseStatusCallback);
     ros::Subscriber odom_sub = nodeHandle.subscribe("/odometry/filtered", 1, &odometryTopicCallback);
     ros::Rate loop_rate(9.0);
@@ -293,9 +293,6 @@ int nBestGenerator(int argc, char *argv[]) {
         ROS_INFO("--------------------------------------");
     }
 
-    /* Print visited states -- for documentation */
-    ROS_INFO("Path generator visited %d states during search", visited_states);
-
     /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
     ROS_INFO("Creating Bezier path");
     std::vector<Waypoint> bezier_path;
@@ -305,6 +302,9 @@ int nBestGenerator(int argc, char *argv[]) {
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
+    /* Print visited states -- for documentation */
+    ROS_INFO("Path generator visited %d states during search", visited_states);
 
     /* Print Bezier path's cost and length -- for documentation */
     calculateBezierCurveMetrics(bezier_path);   // we need metrics for cost calculation
