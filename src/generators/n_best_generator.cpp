@@ -29,6 +29,9 @@ int nBestGenerator(int argc, char *argv[]) {
     if (!nodeHandle.getParam("header_frame_id", header_frame_id))
         ROS_ERROR("Could not find header_frame_id parameter!");
 
+    /* for time measurement */
+    ros::WallTime start, end;
+
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
     /* 35 degrees */
     // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
@@ -42,7 +45,7 @@ int nBestGenerator(int argc, char *argv[]) {
     // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
     // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
     // terrain.slope = 45.0;
-    /* 43 degrees - 30 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
+    /* 43 degrees - 45 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
     terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
     terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
@@ -84,6 +87,9 @@ int nBestGenerator(int argc, char *argv[]) {
     double left_right_border = std::fmod((distance(terrain.goal_left.position, terrain.goal_right.position) - ROBOT_BODY_FIX), SEARCH_STEP) / 2;
     double up_down_border = std::fmod((distance(terrain.goal_left.position, terrain.start_left.position) - ROBOT_BODY_FIX), SEARCH_STEP) / 2;
     ROS_INFO("cols = %d, rows = %d, left_right_border = %f, up_down_border = %f", cols, rows, left_right_border, up_down_border);
+
+    /* start measuring time */
+    start = ros::WallTime::now();
 
     /* FIND THE CONTROL POINTS OF A "GOOD ENOUGH" BEZIER PATH */
     // TODO: consider admissibility for trimming search???
@@ -285,6 +291,14 @@ int nBestGenerator(int argc, char *argv[]) {
         }
     }
 
+    /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
+    ROS_INFO("Creating Bezier path");
+    std::vector<Waypoint> bezier_path;
+    createSuboptimalBezierPath(control_points, bezier_path);
+
+    /* stop measuring time */
+    end = ros::WallTime::now();
+
     /* Print all N-best -- for debugging */
     ROS_INFO("loops = %d", loops); // count loops -- for debugging
     for (std::deque< std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > > >::iterator i = all_n_best.begin(); i != all_n_best.end(); i++) {
@@ -292,11 +306,6 @@ int nBestGenerator(int argc, char *argv[]) {
             ROS_INFO("(%f, %f)", j->first.first.pose.pose.position.x, j->first.second.pose.pose.position.y);
         ROS_INFO("--------------------------------------");
     }
-
-    /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
-    ROS_INFO("Creating Bezier path");
-    std::vector<Waypoint> bezier_path;
-    createSuboptimalBezierPath(control_points, bezier_path);
 
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
@@ -320,6 +329,10 @@ int nBestGenerator(int argc, char *argv[]) {
     ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
+    /* report path's creation time */
+    double execution_time = (end - start).toNSec() * 1e-6;
+    ROS_INFO("Path creation time (ms): %f ", execution_time);
 
     /* SEND BEZIER PATH TO move_base */
     std::vector<Waypoint>::iterator iterator = bezier_path.begin();

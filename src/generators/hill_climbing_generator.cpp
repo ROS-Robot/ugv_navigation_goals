@@ -20,6 +20,9 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     if (!nodeHandle.getParam("header_frame_id", header_frame_id))
         ROS_ERROR("Could not find header_frame_id parameter!");
 
+    /* for time measurement */
+    ros::WallTime start, end;
+
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
     /* 35 degrees */
     // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
@@ -33,7 +36,7 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
     // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
     // terrain.slope = 45.0;
-    /* 43 degrees - 30 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
+    /* 43 degrees - 45 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
     terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
     terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
@@ -59,6 +62,9 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     init.pose.position.x = terrain.start.position.x; init.pose.position.y = terrain.start.position.y; init.pose.position.z = terrain.start.position.z;
     init.pose.orientation.x = 0.0; init.pose.orientation.y = 0.0; init.pose.orientation.z = 0.0; init.pose.orientation.w = 1.0;
     init_pose_pub.publish(init);
+
+    /* start measuring time */
+    start = ros::WallTime::now();
 
     /* CREATE GRAPH'S GRID */
     // cols = distance of goal_left from goal_right and possibly some border
@@ -186,13 +192,16 @@ void hillClimbingGenerator(int argc, char *argv[]) {
         }
     }
 
-    /* Print visited states -- for documentation */
-    ROS_INFO("Path generator visited %d states during search", visited_states);
-
     /* STITCH AND POPULATE BEZIER CURVES DESCRIBED BY THE ABOVE CONTROL POINTS TO FORM BEZIER PATH */
     ROS_INFO("Creating Bezier path");
     std::vector<Waypoint> bezier_path;
     createSuboptimalBezierPath(control_points, bezier_path);
+
+    /* stop measuring time */
+    end = ros::WallTime::now();
+
+    /* Print visited states -- for documentation */
+    ROS_INFO("Path generator visited %d states during search", visited_states);
 
     /* Print Bezier path -- for debugging */
     ROS_INFO("Bezier path (size = %ld):", bezier_path.size());
@@ -213,6 +222,10 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
+    /* report path's creation time */
+    double execution_time = (end - start).toNSec() * 1e-6;
+    ROS_INFO("Path creation time (ms): %f ", execution_time);
 
     /* SEND BEZIER PATH TO move_base */
     std::vector<Waypoint>::iterator iterator = bezier_path.begin();

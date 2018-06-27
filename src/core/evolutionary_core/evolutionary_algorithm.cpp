@@ -46,17 +46,17 @@ bool terminationCriteriaMet(std::vector< std::vector<Waypoint> > & individuals, 
 bool goalAchieved(std::vector< std::vector<Waypoint> > & individuals) {
     /* for debugging */
     assert(individuals.at(0).size() > 1);
-    ROS_INFO("individuals.at(0).size() = %ld", individuals.at(0).size());
+    // ROS_INFO("individuals.at(0).size() = %ld", individuals.at(0).size());
     /* iterate the best individual (path) */
     for (std::vector<Waypoint>::iterator it = individuals.at(0).begin(); it != std::prev(individuals.at(0).end(), 1); it++) {
         /* for debugging */
-        ROS_INFO("goalAchieved: (x, y) = (%f, %f)", it->pose.pose.position.x, it->pose.pose.position.y);
+        // ROS_INFO("goalAchieved: (x, y) = (%f, %f)", it->pose.pose.position.x, it->pose.pose.position.y);
         if (throughLethalObstacle(*it, *(std::next(it, 1))))
             return false;
         if (proximityToLethalObstacle(*it))
             return false;
         /* for debugging */
-        ROS_WARN("goalAchieved: (x, y) = (%f, %f)", it->pose.pose.position.x, it->pose.pose.position.y);
+        // ROS_WARN("goalAchieved: (x, y) = (%f, %f)", it->pose.pose.position.x, it->pose.pose.position.y);
     }
     
     return true;
@@ -82,7 +82,7 @@ void crossover(std::vector<Waypoint> & path_a, std::vector<Waypoint> & path_b, s
         first = temp;
     }
     /* for debugging */
-    ROS_INFO("crossover between positions %d and %d", first, second);
+    // ROS_INFO("crossover between positions %d and %d", first, second);
     /* do the crossover */
     for (int i = 0; i < path_a.size(); i++) {
         if (i < first || i > second) {
@@ -142,7 +142,7 @@ void evaluateFitness(std::vector< std::vector<Waypoint> > & individuals, std::ve
         // double fitness = evaluateBezierCurveControlPoints(*it);
         individuals_fitness.push_back(fitness);
         /* Print fitness -- for debugging */
-        ROS_INFO("Fitness: %f", fitness);
+        // ROS_INFO("Fitness: %f", fitness);
     }
 }
 
