@@ -37,17 +37,17 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
     // terrain.slope = 35.0;
     /* 45 degrees */
-    // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    // terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
-    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
-    // terrain.slope = 45.0;
+    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    terrain.slope = 45.0;
     /* 43 degrees - 45 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
-    terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
-    terrain.slope = 43.0;
+    // terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    // terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    // terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
+    // terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
+    // terrain.slope = 43.0;
     /* real life demonstration at 35 degrees */
     // terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     // terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
@@ -60,6 +60,10 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 1.6; temp.y = -0.027; terrain.lethal_obstacles.push_back(temp);
     temp.x = 2.6; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
     temp.x = 4.3; temp.y = 1.6; terrain.lethal_obstacles.push_back(temp);
+    // /* added for some comparative metrics */
+    // temp.x = 20.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    // temp.x = 29.825; temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
+    // temp.x = 38.82; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
     /* make lethal obstacles more complex */
     // first lethal obstacles formation
     temp.x = 2.102800; temp.y = 0.312000; terrain.lethal_obstacles.push_back(temp);
