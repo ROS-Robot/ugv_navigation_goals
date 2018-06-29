@@ -92,7 +92,6 @@ int nBestGenerator(int argc, char *argv[]) {
     start = ros::WallTime::now();
 
     /* FIND THE CONTROL POINTS OF A "GOOD ENOUGH" BEZIER PATH */
-    // TODO: consider admissibility for trimming search???
     std::vector<Waypoint> control_points;
     std::deque< std::deque< std::pair< std::pair<Waypoint, Waypoint>, int > > > all_n_best;
     int loops = 0;  // count loops -- for debugging

@@ -125,8 +125,6 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
-        // tempw.traversability = 0;        // TODO LATER
-        // tempw.traversability_slope = 0;  // TODO LATER
 
         /* in order of appearance, we want our new waypoint:
             not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
@@ -151,8 +149,6 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
-        // tempw.traversability = 0;        // TODO LATER
-        // tempw.traversability_slope = 0;  // TODO LATER
 
         /* in order of appearance, we want our new waypoint:
             not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
@@ -177,8 +173,6 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
-        // tempw.traversability = 0;        // TODO LATER
-        // tempw.traversability_slope = 0;  // TODO LATER
 
         /* in order of appearance, we want our new waypoint:
             not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
@@ -203,8 +197,6 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
-        // tempw.traversability = 0;        // TODO LATER
-        // tempw.traversability_slope = 0;  // TODO LATER
 
         /* in order of appearance, we want our new waypoint:
             not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
@@ -229,8 +221,6 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
-        // tempw.traversability = 0;        // TODO LATER
-        // tempw.traversability_slope = 0;  // TODO LATER
 
         /* in order of appearance, we want our new waypoint:
             not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
@@ -255,8 +245,6 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
-        // tempw.traversability = 0;        // TODO LATER
-        // tempw.traversability_slope = 0;  // TODO LATER
 
         /* in order of appearance, we want our new waypoint:
             not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
@@ -281,8 +269,6 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
-        // tempw.traversability = 0;        // TODO LATER
-        // tempw.traversability_slope = 0;  // TODO LATER
 
         /* in order of appearance, we want our new waypoint:
             not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
@@ -307,8 +293,6 @@ Waypoint closestBetterAlternative(const Waypoint & waypoint_a, const Waypoint & 
         // distance from the straight line that connects the start with the goal (finish)
         tempw.deviation = distanceFromLine(goal, terrain.start, terrain.goal);
         tempw.cost = waypoint_a.cost-waypoint_a.deviation+tempw.deviation;
-        // tempw.traversability = 0;        // TODO LATER
-        // tempw.traversability_slope = 0;  // TODO LATER
 
         /* in order of appearance, we want our new waypoint:
             not to be leading us at a lethal obstacle, to be on the right of the left border of the field, to be on the left of the right border of the field
@@ -388,11 +372,6 @@ bool isSafe(Waypoint & w_a, const Waypoint & w_b) {
         return false;
     }
 
-    // TODO: Do I need this?
-    /* we also don't want the pitch at w_c to be greater than the pitch in terrain.start */
-    // if (pitchAt(w_a) > pitchAt(terrain.start.position) || rollAt(w_a) < rollAt(terrain.start.position))
-    //     return false;
-
     return true;    // we reached so far, we have an admissible waypoint
 }
 
@@ -400,7 +379,7 @@ bool isSafe(Waypoint & w_a, const Waypoint & w_b) {
 double evaluate(std::list<Waypoint> & plan, bool & has_worst_local_cost) {
     double cost = 0.0, s_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
             s_roll_pos = 0.0, s_arc = 0.0;
-            /* TODO: trade-offs discussion at final text*/
+            
     for (std::list<Waypoint>::iterator it = plan.begin(); it != plan.end(); ++it) {
             /* for debugging */
             ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
@@ -412,7 +391,7 @@ double evaluate(std::list<Waypoint> & plan, bool & has_worst_local_cost) {
             s_dev += it->deviation; it->cost += it->deviation/(it->deviation/(100*it->deviation));
             s_pitch += it->pitch; it->cost += 1.5*it->pitch;
             s_yaw += it->yaw; it->cost -= 0.5*it->yaw;
-            /* TODO: fix roll, pitch, yaw signs */
+            
             if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
                 s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
                 it->cost -= 1.3*it->roll;

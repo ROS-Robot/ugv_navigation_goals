@@ -62,7 +62,7 @@ public:
     double deviation;
     double roll;
     double pitch;
-    double yaw;                     // TODO: fix
+    double yaw;                     
     bool looking_right;
 
     Waypoint() :
@@ -107,7 +107,7 @@ public:
     geometry_msgs::Pose goal_right;
     geometry_msgs::Pose start_left;
     geometry_msgs::Pose start_right;
-    double goal_altitude;                   // TODO, you calculate it anyways, add it here or remove it from here
+    double goal_altitude;                   
     double slope;
     double worst_local_cost;
     double worst_global_cost;

@@ -336,7 +336,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
             s_roll_pos = 0.0, s_arc = 0.0;
     /* for debugging, since we are working with quadratic Bezier curves */
     assert(bezier_curve.size() >= 3);
-    /* TODO: trade-offs discussion at final text*/
+    
     for (std::vector<Waypoint>::iterator it = bezier_curve.begin(); it != bezier_curve.end(); ++it) {
         /* for debugging */
         // ROS_INFO("(p.x = %f, p.y = %f, p.z = %f), (o.x = %f, o.y = %f, o.z = %f, o.w = %f)",
@@ -363,7 +363,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
         // }
 
         // s_yaw += it->yaw; it->cost -= 1.3*it->yaw;
-        /* TODO: fix roll, pitch, yaw signs */
+        
         if ((it->looking_right && it->roll < 0) || (it->looking_right && it->roll > 0)) { // ((it->roll < 0 && it->yaw > 0) || (it->roll > 0 && it->yaw < 0))
             s_roll_pos += it->roll;     // roll that positively impacts the movement of the vehicle
             it->cost -= 10.0*it->roll;

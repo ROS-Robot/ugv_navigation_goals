@@ -262,7 +262,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         ROS_WARN("Current generation: %d", curr_generation);
         /* Select the best-fit individuals for reproduction (reproduction loops) */
         std::vector< std::vector<Waypoint> > offsprings;
-        /* TODO: is crossover operation counterfeit?  */
+        
         for (int i = 0; i < NUM_OF_BEST_FIT; i++) {
             for (int j = 0; j < NUM_OF_BEST_FIT; j++) {
                 if (i != j) {
@@ -618,7 +618,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         ROS_WARN("Current generation: %d", curr_generation);
         /* Select the best-fit individuals for reproduction (reproduction loops) */
         std::vector< std::vector<Waypoint> > offsprings;
-        /* TODO: is crossover operation counterfeit?  */
+        
         for (int i = 0; i < NUM_OF_BEST_FIT; i++) {
             for (int j = 0; j < NUM_OF_BEST_FIT; j++) {
                 if (i != j) {
@@ -783,7 +783,6 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     ROS_INFO("cols = %d, rows = %d, left_right_border = %f, up_down_border = %f", cols, rows, left_right_border, up_down_border);
 
     /* FIND THE CONTROL POINTS OF A "GOOD ENOUGH" BEZIER PATH */
-    // TODO: consider admissibility for trimming search???
     std::vector<Waypoint> control_points;
     // initially p0 is start
     Waypoint p0; p0.pose.pose.orientation.w = 1.0; p0.pose.header.frame_id = "odom";
@@ -867,10 +866,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
                 }
                 /* evaluate the Bezier curve */
                 local_cost = evaluateBezierCurve(bezier_curve, has_worst_local_cost);
-                // TODO: is the following OK here??? Is is necessary???
-                // if the path that is currently may have the worst local cost, punish it with extra cost
-                // if (local_cost == terrain.worst_local_cost)
-                //     local_cost *= 2;
+                
                 /* if curve may be locally optimal */
                 if (local_cost < best_local_cost) {
                     // temporarily save local curve's control points

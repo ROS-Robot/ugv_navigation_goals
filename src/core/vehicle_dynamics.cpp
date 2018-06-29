@@ -237,9 +237,7 @@ double yawAt(Waypoint & w) {
 
     cosTheta0 = sinThetaP / sinTheta;
     theta0 = std::acos(cosTheta0)*180.0/PI;
-    /*
-        TODO: calculate yaw
-    */
+    
     w.yaw = theta0;
 
     return yaw;
@@ -269,9 +267,6 @@ double yawAt(const geometry_msgs::Point & p) {
 
     cosTheta0 = sinThetaP / sinTheta;
     theta0 = std::acos(cosTheta0)*180.0/PI;
-    /*
-        TODO: calculate yaw
-    */
 
     return theta0;
 }
