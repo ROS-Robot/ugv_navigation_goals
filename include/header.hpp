@@ -1,15 +1,24 @@
 #pragma once
 
+/* computer & execution parameters -- in this file and not header file for faster compilation */
+// #define DEG_35
+#define DEG_45
+// #define DEG_43_LEN_45
+
 /* C++ ROS libraries */
 #include <ros/ros.h>
 #include <ros/time.h>       // to calculate time between two messages at any platform
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point.h>    // for documentation of local path choices
+#include <std_msgs/ColorRGBA.h>     // for documentation of local path choices
 #include <tf/tf.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <move_base_msgs/MoveBaseActionFeedback.h>
 #include <nav_msgs/Odometry.h>
 #include "actionlib_msgs/GoalStatusArray.h"
+#include <visualization_msgs/Marker.h>
+
 /* C++ utility libraries */
 #include <utility>      /* std::pair */
 #include <list>
@@ -143,6 +152,7 @@ void odometryTopicCallback(const nav_msgs::Odometry::ConstPtr& od_msg);
 
 /* utility functions declarations */
 
+bool waitForSubscribers(ros::Publisher & pub, ros::Duration timeout);
 geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta);
 double turnQuaternionToEulerAngle(geometry_msgs::PoseStamped pose);
 bool areCoLinear(const geometry_msgs::PoseStamped & pose_a, const geometry_msgs::PoseStamped & pose_b, const geometry_msgs::PoseStamped & pose_c);
@@ -161,6 +171,9 @@ double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometr
 double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometry_msgs::Pose & pose_a, const geometry_msgs::Pose & pose_b);
 /* returns the distance between two points */
 double distance(const geometry_msgs::Point & p_a, const geometry_msgs::Point & p_b);
+/* rotate point about y-axis by certain angle */
+/* source: https://en.wikipedia.org/wiki/Rotation_matrix */
+void rotatePointAboutYAxis(geometry_msgs::Point & point, const double angle);
 
 /* problem's core functions declarations */
 

@@ -1,6 +1,7 @@
+/* computer & execution parameters -- in this file and not header file for faster compilation */
 // #define TEST_BEZIER
 // #define TEST_CALCULATIONS
-#define EVOLUTIONARY_ALGORITHM_GENERATION
+// #define EVOLUTIONARY_ALGORITHM_GENERATION
 // #define N_BEST_GENERATION
 
 #include "../include/header.hpp"

@@ -2,6 +2,22 @@
 
 /* utility functions definitions */
 
+bool waitForSubscribers(ros::Publisher & pub, ros::Duration timeout) {
+    if(pub.getNumSubscribers() > 0)
+        return true;
+
+    ros::Time start = ros::Time::now();
+    ros::Rate waitTime(0.5);
+    
+    while(ros::Time::now() - start < timeout) {
+        waitTime.sleep();
+        if(pub.getNumSubscribers() > 0)
+            break;
+    }
+
+    return pub.getNumSubscribers() > 0;
+}
+
 geometry_msgs::Quaternion turnEulerAngleToQuaternion(double theta) {
     // double theta = 90.0;
     double radians = theta * (M_PI/180);
@@ -105,4 +121,13 @@ double distanceFromLine(const geometry_msgs::PoseStamped & pose_p, const geometr
 double distance(const geometry_msgs::Point & p_a, const geometry_msgs::Point & p_b) {
     double d = std::sqrt((p_a.x-p_b.x)*(p_a.x-p_b.x)+(p_a.y-p_b.y)*(p_a.y-p_b.y));
     return d;
+}
+
+/* rotate point about y-axis by certain angle */
+/* source: https://en.wikipedia.org/wiki/Rotation_matrix */
+void rotatePointAboutYAxis(geometry_msgs::Point & point, const double angle) {
+    /* if f is our angle, (x, y, z) becomes (xcosf+zsinf, y, -xsinf+zcosf) */
+    point.x = point.x*std::cos(angle) + point.z*std::sin(angle);
+    point.y = point.y;
+    point.z = -point.x*std::sin(angle) + point.z*std::cos(angle);
 }

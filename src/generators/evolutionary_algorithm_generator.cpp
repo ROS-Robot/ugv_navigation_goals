@@ -30,30 +30,35 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     ros::WallTime start, end;
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
+    #ifdef DEG_35
     /* 35 degrees */
-    // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    // terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
-    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
-    // terrain.slope = 35.0;
+    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
+    terrain.slope = 35.0;
+    #elif defined( DEG_45 )
     /* 45 degrees */
     terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
     terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
     terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
     terrain.slope = 45.0;
+    #elif defined( DEG_43_LEN_45 )
     /* 43 degrees - 45 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
-    // terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    // terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    // terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
-    // terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
-    // terrain.slope = 43.0;
+    terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
+    terrain.slope = 43.0;
+    #else
     /* real life demonstration at 35 degrees */
-    // terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    // terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    // terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
-    // terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
-    // terrain.slope = 30.0;
+    terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
+    terrain.slope = 30.0;
+    #endif
 
     /* incorporate lethal obstacles */
     geometry_msgs::Point temp;
@@ -85,7 +90,8 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 5.1; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
     temp.x = 5.1; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
     temp.x = 5.2; temp.y = 0.829688; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 531; temp.y = 0.83; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 5.31; temp.y = 0.83; terrain.lethal_obstacles.push_back(temp);
+    #ifdef DEG_43_LEN_45
     // fourth lethal obstacles formation
     temp.x = 20.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
     temp.x = 21.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
@@ -107,17 +113,34 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 38.92; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
     temp.x = 38.8; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
     temp.x = 38.75; temp.y = 0.75; terrain.lethal_obstacles.push_back(temp);
+    #endif
 
     /* Print lethal obstacles -- for documentation */
     for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
         ROS_INFO("Lethal obstacle at (x, y) = (%f, %f)", it->x, it->y);
-    
+
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
     ros::Publisher init_pose_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/initialpose", 1);
     ros::Subscriber move_base_status_sub = nodeHandle.subscribe("/move_base/status", 1, &moveBaseStatusCallback);
     ros::Subscriber odom_sub = nodeHandle.subscribe("/odometry/filtered", 1, &odometryTopicCallback);
     ros::Rate loop_rate(9.0);
+
+    /* create publisher for local path choices and lethal obstacles visualization -- for documentation */
+    ros::Publisher marker_pub = nodeHandle.advertise<visualization_msgs::Marker>("visualization_marker", 100);
+
+    int marker_id = 0;
+    /* create a basic marker -- for documentation */
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "odom"; marker.header.stamp = ros::Time::now();
+    marker.ns = "markers_namespace"; marker.id = marker_id;
+    marker.type = visualization_msgs::Marker::LINE_STRIP; marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = 0.0; marker.pose.position.y = 0.0; marker.pose.position.z = 0.0;
+    marker.pose.orientation.x = 0.0; marker.pose.orientation.y = 0.0; marker.pose.orientation.z = 0.0; marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.05; marker.scale.y = 0.05; marker.scale.z = 1.0;
+    marker.color.a = 1.0; // Don't forget to set the alpha!
+    marker.color.r = 0.0f; marker.color.g = 1.0f; marker.color.b = 0.0f;
+    marker.lifetime = ros::Duration();  // ros::Duration() means never to auto-delete
 
     /* publish initial pose */
     geometry_msgs::PoseStamped init;
@@ -220,6 +243,28 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
                 rollAt(*iterator);
                 yawAt(*iterator);
             }
+
+            /* Visualize local path choices -- for documentation */
+            /* populate line-strip */
+            for (std::vector<Waypoint>::iterator iterator = bezier_curve.begin(); iterator != bezier_curve.end(); ++iterator) {
+                marker_id++;
+                /* create a temporary point and add it to the marker's points array */
+                geometry_msgs::Point temp_point;
+                std_msgs::ColorRGBA temp_color;
+                temp_point.x = iterator->pose.pose.position.x; temp_point.y = iterator->pose.pose.position.y; temp_point.z = iterator->pose.pose.position.z;
+                temp_color.r = marker.color.r + ((float) marker_id * 10); temp_color.g = marker.color.g + ((float) marker_id * 3); temp_color.b = marker.color.b + ((float) marker_id * 5); temp_color.a = marker.color.a;
+                marker.id = marker_id;
+                marker.points.push_back(temp_point);
+                marker.colors.push_back(temp_color);
+            }
+            /* Publish the marker */
+            while (marker_pub.getNumSubscribers() < 1) {
+                if (!ros::ok())
+                    return;
+                ROS_WARN_ONCE("Please create a subscriber to the marker");
+                   sleep(1);
+            }
+            marker_pub.publish(marker);
 
             p0 = temp_control_points.at(2);
             last_p2 = p0;
@@ -351,7 +396,36 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
 
     /* report path's creation time */
     double execution_time = (end - start).toNSec() * 1e-6;
-    ROS_INFO("Path creation time (ms): %f ", execution_time);
+    ROS_WARN("Path creation time (ms): %f ", execution_time);
+    
+    /* create a basic obstacle marker */
+    marker.header.frame_id = "odom"; marker.header.stamp = ros::Time::now();
+    marker.ns = "markers_namespace";
+    marker.id = marker_id; // Assign different ID
+    marker.type = visualization_msgs::Marker::CYLINDER; marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = 1.0; marker.pose.position.y = 1.0; marker.pose.position.z = 0.5;
+    marker.pose.orientation.x = 0.0; marker.pose.orientation.y = 0.0; marker.pose.orientation.z = 0.0; marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.05; marker.scale.y = 0.05; marker.scale.z = 1.0;
+    marker.color.a = 1.0; // Don't forget to set the alpha!
+    marker.color.r = 1.0f; marker.color.g = 0.0f; marker.color.b = 0.0f;
+    marker.lifetime = ros::Duration();  // ros::Duration() means never to auto-delete
+
+    /* create and publish a visual marker for each lethal obstacle */
+    for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++) {
+        marker_id++;
+        /* fill-in markers details */
+        marker.id = marker_id;
+        marker.pose.position.x = it->x; marker.pose.position.y = it->y;
+
+        /* Publish the marker */
+        while (marker_pub.getNumSubscribers() < 1) {
+            if (!ros::ok())
+                return;
+            ROS_WARN_ONCE("Please create a subscriber to the marker");
+            sleep(1);
+        }
+        marker_pub.publish(marker);
+    }
 
     /* SEND BEZIER PATH TO move_base */
     std::vector<Waypoint>::iterator iterator = bezier_path.begin();
@@ -396,24 +470,35 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
         ROS_ERROR("Could not find header_frame_id parameter!");
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
+    #ifdef DEG_35
     /* 35 degrees */
+    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
+    terrain.slope = 35.0;
+    #elif defined( DEG_45 )
+    /* 45 degrees */
+    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    terrain.slope = 45.0;
+    #elif defined( DEG_43_LEN_45 )
+    /* 43 degrees - 45 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
+    terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
+    terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
+    terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
+    terrain.slope = 43.0;
+    #else
+    /* real life demonstration at 35 degrees */
     terrain.goal.position.x = 12.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
     terrain.goal_left.position.x = 12.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
     terrain.goal_right.position.x = 12.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
     terrain.slope = 35.0;
-    /* 45 degrees */
-    // terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    // terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    // terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
-    // terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
-    // terrain.slope = 45.0;
-    /* 43 degrees - 30 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
-//    terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-  //  terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    //terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
-   // terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
-    //terrain.slope = 43.0;
+    #endif
 
     /* incorporate lethal obstacles */
     geometry_msgs::Point temp;
