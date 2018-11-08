@@ -28,33 +28,46 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     /* 35 degrees */
     terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.goal_left.position.z = 0.0;
+    terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0; terrain.start_left.position.z = 0.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.goal_right.position.z = 0.0; 
+    terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0; terrain.start_right.position.z = 0.0;
     terrain.slope = 35.0;
     #elif defined( DEG_45 )
     /* 45 degrees */
-    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
-    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
+    terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; // terrain.goal.position.z = 4.4;
+    terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; // terrain.start.position.z = 0.0;
+    terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; // terrain.goal_left.position.z = 4.4;
+    terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0; // terrain.start_left.position.z = 0.0;
+    terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; // terrain.goal_right.position.z = 4.4;
+    terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0; // terrain.start_right.position.z = 0.0;
     terrain.slope = 45.0;
     #elif defined( DEG_43_LEN_45 )
     /* 43 degrees - 45 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
     terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
+    terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.goal_left.position.z = 0.0;
+    terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0; terrain.start_left.position.z = 0.0;
+    terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.goal_right.position.z = 0.0;
+    terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0; terrain.start_right.position.z = 0.0;
     terrain.slope = 43.0;
     #else
     /* real life demonstration at 35 degrees */
     terrain.goal.position.x = 12.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
-    terrain.goal_left.position.x = 12.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
-    terrain.goal_right.position.x = 12.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
+    terrain.goal_left.position.x = 12.0; terrain.goal_left.position.y = 3.0; terrain.goal_left.position.z = 0.0;
+    terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0; terrain.start_left.position.z = 0.0;
+    terrain.goal_right.position.x = 12.0; terrain.goal_right.position.y = -3.0; terrain.goal_right.position.z = 0.0;
+    terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0; terrain.start_right.position.z = 0.0;
     terrain.slope = 35.0;
     #endif
 
-    // incorporate no obstacles
+    /* rotate negatively the start, goal and terrain margins */
+    // rotatePointAboutYAxis(terrain.goal.position, 360.0-terrain.slope); rotatePointAboutYAxis(terrain.start.position, 360.0-terrain.slope);
+    // rotatePointAboutYAxis(terrain.goal_left.position, 360.0-terrain.slope); rotatePointAboutYAxis(terrain.goal_right.position, 360.0-terrain.slope);
+    // rotatePointAboutYAxis(terrain.start_left.position, 360.0-terrain.slope); rotatePointAboutYAxis(terrain.start_right.position, 360.0-terrain.slope);
+
+    // incorporate no obstacles (no obstacles needed for the hill climbing generator)
 
     /* Print lethal obstacles -- for documentation */
     for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
@@ -267,6 +280,22 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
     for (int i = 0; i < bezier_path.size(); i++)
         ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
+    // /* Rotate Bezier path by an angle equal to the terrain's slope */
+    // rotateBezierPathPositively(bezier_path);
+
+    // /* Print Bezier path */
+    // ROS_INFO("Bezier path (rotated) (size = %ld):", bezier_path.size());
+    // for (int i = 0; i < bezier_path.size(); i++)
+    //     ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
+
+    // /* Rotate Bezier path by an angle equal to the terrain's slope */
+    // bezierPathFrom3DTo2D(bezier_path);
+
+    // /* Print Bezier path */
+    // ROS_INFO("Bezier path (grounded) (size = %ld):", bezier_path.size());
+    // for (int i = 0; i < bezier_path.size(); i++)
+    //     ROS_INFO("(%f, %f)", bezier_path.at(i).pose.pose.position.x, bezier_path.at(i).pose.pose.position.y);
 
     /* report path's creation time */
     double execution_time = (end - start).toNSec() * 1e-6;

@@ -230,6 +230,12 @@ void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, st
 void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path, bool last_one);
 /* clean up a Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path);
+/* Rotate Bezier path by an angle equal to the terrain's slope */
+void rotateBezierPathPositively(std::vector<Waypoint> & bezier_path);
+/* Rotate Bezier path by an angle equal to the negative of the terrain's slope */
+void rotateBezierPathNegatively(std::vector<Waypoint> & bezier_path);
+/* Rotate Bezier path by an angle equal to the terrain's slope */
+void bezierPathFrom3DTo2D(std::vector<Waypoint> & bezier_path);
 /* interpolate a Bezier path */
 void interpolateBezierPath(std::vector<Waypoint> & segments, double scale);
 /* evaluate a Bezier curve */

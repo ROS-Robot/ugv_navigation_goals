@@ -275,6 +275,24 @@ void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
     }
 }
 
+/* Rotate Bezier path by an angle equal to the terrain's slope */
+void rotateBezierPathPositively(std::vector<Waypoint> & bezier_path) {
+    for (std::vector<Waypoint>::iterator it = bezier_path.begin(); it != bezier_path.end(); it++)
+        rotatePointAboutYAxis(it->pose.pose.position, terrain.slope);
+}
+
+/* Rotate Bezier path by an angle equal to the negative of the terrain's slope */
+void rotateBezierPathNegatively(std::vector<Waypoint> & bezier_path) {
+    for (std::vector<Waypoint>::iterator it = bezier_path.begin(); it != bezier_path.end(); it++)
+        rotatePointAboutYAxis(it->pose.pose.position, -terrain.slope);  // negative sign "-"
+}
+
+/* Rotate Bezier path by an angle equal to the terrain's slope */
+void bezierPathFrom3DTo2D(std::vector<Waypoint> & bezier_path) {
+    for (std::vector<Waypoint>::iterator it = bezier_path.begin(); it != bezier_path.end(); it++)
+        it->pose.pose.position.z = 0.0;
+}
+
 /* interpolate a Bezier path */
 void interpolateBezierPath(std::vector<Waypoint> & segments, double scale) {
     if (segments.size() <= 2)
