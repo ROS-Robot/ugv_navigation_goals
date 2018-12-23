@@ -1,4 +1,4 @@
-#include "../../include/header.hpp"
+#include "header.hpp"
 
 /* vehicle dynamics functions definitions */
 

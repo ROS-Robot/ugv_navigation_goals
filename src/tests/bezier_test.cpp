@@ -1,4 +1,4 @@
-#include "../../include/header.hpp"
+#include "header.hpp"
 
 /* Test Bezier curve's core functions */
 void bezierTest(int argc, char *argv[]) {

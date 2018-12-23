@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES rulah_navigation_goals
 #  CATKIN_DEPENDS actionlib move_base_msgs roscpp
 #  DEPENDS system_lib
@@ -29,7 +29,7 @@ catkin_package(
 ###########
 
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -47,11 +47,3 @@ add_executable(rulah_navigation_goals
               src/generators/n_best_generator.cpp
 )
 target_link_libraries(rulah_navigation_goals ${catkin_LIBRARIES})
-
-#############
-## Install ##
-#############
-
-#############
-## Testing ##
-#############

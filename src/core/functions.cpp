@@ -1,4 +1,4 @@
-#include "../../include/header.hpp"
+#include "header.hpp"
 
 /* global variables */
 std::list<Waypoint> waypoints_list;
@@ -344,17 +344,20 @@ bool isAdmissible(Waypoint & w_c, const Waypoint & w_f){
 bool isAdmissible(const std::vector<Waypoint> & path) {
     /* iterate the best individual (path) */
     for (std::vector<Waypoint>::const_iterator it = path.begin(); it != std::prev(path.end(), 1); it++) {
-        if (throughLethalObstacle(*it, *(std::next(it, 1))))
-            return false;
+        // if (throughLethalObstacle(*it, *(std::next(it, 1))))
+        //     return false;
         if (proximityToLethalObstacle(*it))
             return false;
-        if (it != path.begin() && 
-            std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::prev(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX &&
-            std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::next(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX)
-            return false;
-        if (distanceFromLine(it->pose, terrain.start, terrain.goal) &&
-            std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::next(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX)
-            return false;
+        // if (it != path.begin() && 
+        //     std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::prev(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX &&
+        //     std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::next(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX)
+        //     return false;
+        // if (it != path.begin() && 
+        //     std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::prev(it, 1)->pose.pose.position.y)) > ROBOT_BODY_LENGTH + ROBOT_BODY_WIDTH)
+        //     return false;
+        // if (distanceFromLine(it->pose, terrain.start, terrain.goal) &&
+        //     std::abs(std::abs(it->pose.pose.position.y) - std::abs(std::next(it, 1)->pose.pose.position.y)) <= ROBOT_BODY_FIX)
+        //     return false;
     }
     
     return true;

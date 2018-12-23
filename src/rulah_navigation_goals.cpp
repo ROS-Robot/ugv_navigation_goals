@@ -4,7 +4,7 @@
 #define EVOLUTIONARY_ALGORITHM_GENERATION
 // #define N_BEST_GENERATION
 
-#include "../include/header.hpp"
+#include "header.hpp"
 
 #ifdef TEST_BEZIER
 /* Test Bezier curve's core functions */

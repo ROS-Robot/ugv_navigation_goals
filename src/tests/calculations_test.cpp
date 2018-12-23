@@ -1,4 +1,4 @@
-#include "../../include/header.hpp"
+#include "header.hpp"
 
 /* Test calculations core functions */
 void calculationsTest(int argc, char *argv[]) {

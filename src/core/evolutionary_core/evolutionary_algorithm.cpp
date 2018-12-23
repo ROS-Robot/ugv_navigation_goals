@@ -1,4 +1,4 @@
-#include "../../../include/header.hpp"
+#include "header.hpp"
 
 /* Check if termination criteria have been met */
 bool terminationCriteriaMet(std::vector< std::vector<Waypoint> > & individuals, std::vector<double> & individuals_fitness, std::deque<double> & best_generations, double curr_generation) {

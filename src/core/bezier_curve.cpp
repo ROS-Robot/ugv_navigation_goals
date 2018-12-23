@@ -1,4 +1,4 @@
-#include "../../include/header.hpp"
+#include "header.hpp"
 
 /* Bezier curve functions declarations */
 
@@ -411,9 +411,12 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
 
 /* it's still experimental */
 #ifdef EVOLUTIONARY_ALGORITHM_GENERATION
+    ROS_WARN("EXPERIMENTAL STAGE CHECK");
     /* if we can't survive while following this path, make sure that we are not going to choose it */
-    if (!isAdmissible(bezier_curve))
+    if (!isAdmissible(bezier_curve)) {
         cost = std::numeric_limits<double>::max();
+        ROS_WARN("NON ADMISSIBLE CURVE cost = %lf", cost);
+    }
 #endif
 
     ROS_WARN("evaluateBezierCurve cost = %f, s_norm_dev = %f, s_pitch = %f, s_roll = %f, s_arc = %f", cost, s_norm_dev, s_pitch, s_roll_neg+s_roll_pos, s_arc);
