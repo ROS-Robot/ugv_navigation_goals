@@ -4,7 +4,7 @@
 // #define DEG_35
 #define DEG_45
 // #define DEG_43_LEN_45
-// #define VISUALIZE_LOGIC
+#define VISUALIZE_LOGIC
 
 /* C++ ROS libraries */
 #include <ros/ros.h>
@@ -231,6 +231,8 @@ void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, st
 void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path, bool last_one);
 /* clean up a Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path);
+/* Eliminate too steep ascension paths -- Final path optimization step */
+void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path);
 /* Rotate Bezier path by an angle equal to the terrain's slope */
 void rotateBezierPathPositively(std::vector<Waypoint> & bezier_path);
 /* Rotate Bezier path by an angle equal to the negative of the terrain's slope */
@@ -241,6 +243,8 @@ void bezierPathFrom3DTo2D(std::vector<Waypoint> & bezier_path);
 void interpolateBezierPath(std::vector<Waypoint> & segments, double scale);
 /* evaluate a Bezier curve */
 double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_worst_local_cost);
+/* evaluate a Genetic Algorithm Bezier curve */
+double evaluateGeneticAlgorithmBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_worst_local_cost);
 /* evaluate a Bezier curve's potential control points */
 double evaluateBezierCurveControlPoints(std::vector<Waypoint> & control_points);
 /* calculate Bezier curve's points metrics */

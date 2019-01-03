@@ -138,7 +138,7 @@ void mutation(std::vector< std::vector<Waypoint> > & offsprings) {
 void evaluateFitness(std::vector< std::vector<Waypoint> > & individuals, std::vector<double> & individuals_fitness) {
     for (std::vector< std::vector<Waypoint> >::iterator it = individuals.begin(); it != individuals.end(); it++) {
         bool has_worst_local_cost = false;
-        double fitness = evaluateBezierCurve(*it, has_worst_local_cost);
+        double fitness = evaluateGeneticAlgorithmBezierCurve(*it, has_worst_local_cost);
         // double fitness = evaluateBezierCurveControlPoints(*it);
         individuals_fitness.push_back(fitness);
         /* Print fitness -- for debugging */

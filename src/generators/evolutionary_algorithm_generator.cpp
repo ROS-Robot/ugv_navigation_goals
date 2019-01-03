@@ -30,35 +30,35 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     ros::WallTime start, end;
 
     /* INITIALIZE PROBLEM'S ENVIRONMENT */
-    #ifdef DEG_35
+#ifdef DEG_35
     /* 35 degrees */
     terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 0.4; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
     terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.4; terrain.start_left.position.y = 3.0;
     terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.4; terrain.start_right.position.y = -3.0;
     terrain.slope = 35.0;
-    #elif defined( DEG_45 )
+#elif defined( DEG_45 )
     /* 45 degrees */
     terrain.goal.position.x = 6.2; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 0.49; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
     terrain.goal_left.position.x = 6.2; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 0.49; terrain.start_left.position.y = 3.0;
     terrain.goal_right.position.x = 6.2; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 0.49; terrain.start_right.position.y = -3.0;
     terrain.slope = 45.0;
-    #elif defined( DEG_43_LEN_45 )
+#elif defined( DEG_43_LEN_45 )
     /* 43 degrees - 45 meters (<pose frame=''>87.25 0.0 -8 0 0.125 0</pose>) */
     terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
     terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
     terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
     terrain.slope = 43.0;
-    #else
+#else
     /* real life demonstration at 35 degrees */
     terrain.goal.position.x = 45.0; terrain.goal.position.y = 0.0; terrain.goal.position.z = 0.0;
     terrain.start.position.x = 1.0; terrain.start.position.y = 0.0; terrain.start.position.z = 0.0;
     terrain.goal_left.position.x = 45.0; terrain.goal_left.position.y = 3.0; terrain.start_left.position.x = 1.0; terrain.start_left.position.y = 3.0;
     terrain.goal_right.position.x = 45.0; terrain.goal_right.position.y = -3.0; terrain.start_right.position.x = 1.0; terrain.start_right.position.y = -3.0;
     terrain.slope = 30.0;
-    #endif
+#endif
 
     /* incorporate lethal obstacles */
     geometry_msgs::Point temp;
@@ -91,7 +91,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 5.1; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
     temp.x = 5.2; temp.y = 0.829688; terrain.lethal_obstacles.push_back(temp);
     temp.x = 5.31; temp.y = 0.83; terrain.lethal_obstacles.push_back(temp);
-    #ifdef DEG_43_LEN_45
+#ifdef DEG_43_LEN_45
     // fourth lethal obstacles formation
     temp.x = 20.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
     temp.x = 21.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
@@ -113,7 +113,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 38.92; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
     temp.x = 38.8; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
     temp.x = 38.75; temp.y = 0.75; terrain.lethal_obstacles.push_back(temp);
-    #endif
+#endif
 
     /* Print lethal obstacles -- for documentation */
     for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
@@ -388,10 +388,13 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     // print path's details -- for debugging
     // printBezierPathDetails(bezier_path);    
     bool has_worst_local_cost = false;
-    ROS_INFO("Bezier path cost = %f, length = %f meters", evaluateBezierCurve(individuals.at(0), has_worst_local_cost), bezierPathLength(bezier_path));
+    ROS_INFO("Bezier path cost = %f, length = %f meters", evaluateGeneticAlgorithmBezierCurve(individuals.at(0), has_worst_local_cost), bezierPathLength(bezier_path));
 
     /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
     cleanUpBezierPath(bezier_path);
+
+    /* Eliminate too steep ascension paths -- Final path optimization step */
+    safetyOptimizationOfBezierPath(bezier_path);
 
     /* Print Bezier path */
     ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
@@ -814,7 +817,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     // print path's details -- for debugging
     // printBezierPathDetails(bezier_path);    
     bool has_worst_local_cost = false;
-    ROS_INFO("Bezier path cost = %f, length = %f meters", evaluateBezierCurve(individuals.at(0), has_worst_local_cost), bezierPathLength(bezier_path));
+    ROS_INFO("Bezier path cost = %f, length = %f meters", evaluateGeneticAlgorithmBezierCurve(individuals.at(0), has_worst_local_cost), bezierPathLength(bezier_path));
 
     /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
     cleanUpBezierPath(bezier_path);
@@ -987,7 +990,7 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
                     yawAt(*iterator);
                 }
                 /* evaluate the Bezier curve */
-                local_cost = evaluateBezierCurve(bezier_curve, has_worst_local_cost);
+                local_cost = evaluateGeneticAlgorithmBezierCurve(bezier_curve, has_worst_local_cost);
                 
                 /* if curve may be locally optimal */
                 if (local_cost < best_local_cost) {
