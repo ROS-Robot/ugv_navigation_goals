@@ -231,8 +231,10 @@ void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, st
 void createSuboptimalBezierPath(const std::vector<Waypoint> & control_points, std::vector<Waypoint> & bezier_path, bool last_one);
 /* clean up a Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
 void cleanUpBezierPath(std::vector<Waypoint> & bezier_path);
-/* Eliminate too steep ascension paths -- Final path optimization step */
+/* Eliminate too steep ascension paths -- First path optimization step, on a path level */
 void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path);
+/* Eliminate too steep ascension sub-paths -- Second path optimization step, on a waypoint level */
+void safetyOptimizationOfWaypoints(std::vector<Waypoint> & bezier_path);
 /* Rotate Bezier path by an angle equal to the terrain's slope */
 void rotateBezierPathPositively(std::vector<Waypoint> & bezier_path);
 /* Rotate Bezier path by an angle equal to the negative of the terrain's slope */

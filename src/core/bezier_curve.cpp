@@ -275,57 +275,62 @@ void cleanUpBezierPath(std::vector<Waypoint> & bezier_path) {
     }
 }
 
-/* Eliminate too steep ascension paths -- Final path optimization step */
-    /* For now we just optimize the final part of the Bezier Path (the last local bezier curve) */
+/* Eliminate too steep ascension paths -- First path optimization step, on a path level */
 void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path) {
+    /* Not incline enough to actually need this optimization */
     if (terrain.slope <= 35.0)
         return;
 
     /* Try optimization on a copy of the determined path */
     std::vector<Waypoint> temp_path = bezier_path;
 
-    /* Step 1 -- Determine the start of the last local bezier curve */
-    ROS_INFO("Step 1");
-    long int bezier_path_length = bezier_path.size(), idx = bezier_path.size();
-    int latest_local_end_idx = bezier_path.size(), latest_local_start_idx = bezier_path.size();
-    for (std::vector<Waypoint>::iterator it = std::prev(temp_path.end(), 1); it != temp_path.begin(); it--) {
-        idx--;
-        if (it != temp_path.end() && it != temp_path.begin()) {
-            if ((std::next(it, 1)->pose.pose.position.y > it->pose.pose.position.y && std::prev(it, 1)->pose.pose.position.y > it->pose.pose.position.y)
-                || (std::next(it, 1)->pose.pose.position.y < it->pose.pose.position.y && std::prev(it, 1)->pose.pose.position.y < it->pose.pose.position.y)) {
-                latest_local_start_idx = idx;
+    /* Optimize the whole path */
+    long int latest_local_end_idx = temp_path.size()-1, latest_local_start_idx = temp_path.size()-1;
+
+    while (latest_local_start_idx != 0) {
+        /* Step 1 -- Determine the start of the last local bezier curve */
+        ROS_INFO("Step 1");
+        for (long int i = latest_local_end_idx-2; i >= 0; i--) {    // because of the Bezier Curve degree, our path has at least 3 waypoints
+            if ((i == 0) 
+                || ((temp_path.at(i+1).pose.pose.position.y > temp_path.at(i).pose.pose.position.y && temp_path.at(i-1).pose.pose.position.y > temp_path.at(i).pose.pose.position.y)
+                    || (temp_path.at(i+1).pose.pose.position.y < temp_path.at(i).pose.pose.position.y && temp_path.at(i-1).pose.pose.position.y < temp_path.at(i).pose.pose.position.y))) {
+                latest_local_start_idx = i;
                 break;
             }
         }
-    }
 
-    /* Step 2 -- Determine if optimization is needed */
-    ROS_INFO("Step 2");
-    long int counter = 0;
-    for (long int i = latest_local_start_idx+1; i <= latest_local_end_idx; i++) {
-        if (std::abs(std::abs(temp_path.at(i-1).pose.pose.position.y) - std::abs(temp_path.at(i-2).pose.pose.position.y)) < ROBOT_BODY_FIX) {
-            counter++;
-            /* if this happens for more than two consecutive waypoints then we need optimization */
-            if (counter > 2)
-                break;
+        /* Step 2 -- Determine if optimization is needed */
+        ROS_INFO("Step 2");
+        long int counter = 0;
+        for (long int i = latest_local_start_idx+1; i <= latest_local_end_idx; i++) {
+            if (std::abs(std::abs(temp_path.at(i).pose.pose.position.y) - std::abs(temp_path.at(i-1).pose.pose.position.y)) < ROBOT_BODY_FIX) {
+                counter++;
+                /* if this happens for more than two consecutive waypoints then we need optimization */
+                if (counter > 2)
+                    break;
+            }
+            else
+                counter = 0;
         }
-        else
-            counter = 0;
-    }
 
-    if (counter < 2)
-        return;
+        if (counter < 2){
+            latest_local_end_idx = latest_local_start_idx;
+            continue;
+        }
 
-    /* Step 3 -- Apply optimization */
-    ROS_INFO("Step 3");
-    /* determine the relative position of the Bezier Curve slope */
-    bool goes_left = false;
-    if (temp_path.at(latest_local_end_idx-2).pose.pose.position.y > temp_path.at(latest_local_end_idx-2).pose.pose.position.y)
-        goes_left = true;
+        /* Step 3 -- Apply optimization */
+        ROS_INFO("Step 3");
+        /* determine the relative position of the Bezier Curve slope */
+        bool goes_left = false;
+        if (temp_path.at((latest_local_end_idx-latest_local_start_idx)/2).pose.pose.position.y > temp_path.at(latest_local_start_idx).pose.pose.position.y)
+            goes_left = true;
 
-    for (long int i = latest_local_start_idx+1; i <= latest_local_end_idx-1; i++) {
-        temp_path.at(i-1).pose.pose.position.x -= ROBOT_BODY_FIX / (3.6+(float)((float)terrain.slope/100.0)); // 4;
-        temp_path.at(i-1).pose.pose.position.y += (goes_left ? 1 : -1) * (2.1+(float)((float)terrain.slope/100.0)) * ROBOT_BODY_FIX; // (2*ROBOT_BODY_FIX - std::abs(bezier_path.at(i-1).pose.pose.position.y - bezier_path.at(i).pose.pose.position.y));
+        for (long int i = latest_local_start_idx+1; i <= latest_local_end_idx-1; i++) {
+            temp_path.at(i).pose.pose.position.x -= ROBOT_BODY_FIX / 4; // (3.6+(float)((float)terrain.slope/100.0));
+            temp_path.at(i).pose.pose.position.y += (goes_left ? 1 : -1) * (2*ROBOT_BODY_FIX - std::abs(bezier_path.at(i-1).pose.pose.position.y - bezier_path.at(i).pose.pose.position.y)); // (2.1+(float)((float)terrain.slope/100.0)) * ROBOT_BODY_FIX;
+        }
+
+        latest_local_end_idx = latest_local_start_idx;
     }
 
     /* Step 4 -- Check if the Bezier Path after the optimization is admissible */
@@ -333,7 +338,122 @@ void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path) {
     /* check if the new curve that we have created is admissible */
     if (isAdmissible(temp_path)) {
         /* for debugging */
-        ROS_WARN("OPTIMIZATION SUCCESS!!!");
+        ROS_WARN("FIRST OPTIMIZATION SUCCESS!!!");
+        bezier_path = temp_path;
+    }
+}
+
+// /* Eliminate too steep ascension paths -- First path optimization step, on a path level */
+//     /* For now we just optimize the final part of the Bezier Path (the last local bezier curve) */
+// void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path) {
+//     /* Not incline enough to actually need this optimization */
+//     if (terrain.slope <= 35.0)
+//         return;
+
+//     /* Try optimization on a copy of the determined path */
+//     std::vector<Waypoint> temp_path = bezier_path;
+
+//     /* Step 1 -- Determine the start of the last local bezier curve */
+//     ROS_INFO("Step 1");
+//     long int idx = temp_path.size();
+//     long int latest_local_end_idx = temp_path.size(), latest_local_start_idx = temp_path.size();
+//     for (std::vector<Waypoint>::iterator it = std::prev(temp_path.end(), 1); it != temp_path.begin(); it--) {
+//         idx--;
+//         if (it != temp_path.end() && it != temp_path.begin()) {
+//             if ((std::next(it, 1)->pose.pose.position.y > it->pose.pose.position.y && std::prev(it, 1)->pose.pose.position.y > it->pose.pose.position.y)
+//                 || (std::next(it, 1)->pose.pose.position.y < it->pose.pose.position.y && std::prev(it, 1)->pose.pose.position.y < it->pose.pose.position.y)) {
+//                 latest_local_start_idx = idx;
+//                 break;
+//             }
+//         }
+//     }
+
+//     /* Step 2 -- Determine if optimization is needed */
+//     ROS_INFO("Step 2");
+//     long int counter = 0;
+//     for (long int i = latest_local_start_idx+1; i <= latest_local_end_idx; i++) {
+//         if (std::abs(std::abs(temp_path.at(i-1).pose.pose.position.y) - std::abs(temp_path.at(i-2).pose.pose.position.y)) < ROBOT_BODY_FIX) {
+//             counter++;
+//             /* if this happens for more than two consecutive waypoints then we need optimization */
+//             if (counter > 2)
+//                 break;
+//         }
+//         else
+//             counter = 0;
+//     }
+
+//     if (counter < 2)
+//         return;
+
+//     /* Step 3 -- Apply optimization */
+//     ROS_INFO("Step 3");
+//     /* determine the relative position of the Bezier Curve slope */
+//     bool goes_left = false;
+//     if (temp_path.at((latest_local_end_idx-latest_local_start_idx)/2).pose.pose.position.y > temp_path.at(latest_local_start_idx).pose.pose.position.y)
+//         goes_left = true;
+
+//     for (long int i = latest_local_start_idx+1; i <= latest_local_end_idx-1; i++) {
+//         temp_path.at(i-1).pose.pose.position.x -= ROBOT_BODY_FIX / (3.6+(float)((float)terrain.slope/100.0)); // 4;
+//         temp_path.at(i-1).pose.pose.position.y += (goes_left ? 1 : -1) * (2.1+(float)((float)terrain.slope/100.0)) * ROBOT_BODY_FIX; // (2*ROBOT_BODY_FIX - std::abs(bezier_path.at(i-1).pose.pose.position.y - bezier_path.at(i).pose.pose.position.y));
+//     }
+
+//     /* Step 4 -- Check if the Bezier Path after the optimization is admissible */
+//     ROS_INFO("Step 4");
+//     /* check if the new curve that we have created is admissible */
+//     if (isAdmissible(temp_path)) {
+//         /* for debugging */
+//         ROS_WARN("OPTIMIZATION SUCCESS!!!");
+//         bezier_path = temp_path;
+//     }
+// }
+
+
+/* Eliminate too steep ascension sub-paths -- Second path optimization step, on a waypoint level */
+void safetyOptimizationOfWaypoints(std::vector<Waypoint> & bezier_path) {
+    /* Not incline enough to actually need this optimization */
+    if (terrain.slope <= 25.0)
+        return;
+
+    /* Try optimization on a copy of the determined path */
+    std::vector<Waypoint> temp_path = bezier_path;
+
+    /* Go through the whole path and wherever there are two consecutive waypoints
+        with almost the same y-coordinate properly change the placement of the second of them */
+    for (std::vector<Waypoint>::iterator it = std::next(temp_path.begin(), 1); it != temp_path.end(); it++) {
+        if (std::abs(it->pose.pose.position.y - std::prev(it, 1)->pose.pose.position.y) < ROBOT_BODY_FIX / 2) {
+            if (it->pose.pose.position.y > 0) {
+                if (distanceFromLine(it->pose, terrain.goal_left, terrain.start_left) > 1.5 * ROBOT_BODY_FIX)
+                    it->pose.pose.position.y += ROBOT_BODY_FIX;
+                else
+                    it->pose.pose.position.y -= ROBOT_BODY_FIX;
+            }
+            else {
+                if (distanceFromLine(it->pose, terrain.goal_right, terrain.start_right) > 1.5 * ROBOT_BODY_FIX)
+                    it->pose.pose.position.y -= ROBOT_BODY_FIX;
+                else
+                    it->pose.pose.position.y += ROBOT_BODY_FIX;
+            }
+        }
+    }
+
+    /* Go through the whole path and wherever there are two consecutive waypoints
+        with a distance such that may require the robot to ascend almost vertically for a relatively extensive
+        distance, modify the second of them, in a way that it prevents the aforementioned from happening */
+    for (std::vector<Waypoint>::iterator it = std::next(temp_path.begin(), 1); it != temp_path.end(); it++) {
+        if (std::abs(std::prev(it, 1)->pose.pose.position.x - it->pose.pose.position.x) >= 2.0 * ROBOT_BODY_LENGTH
+            && std::abs(std::prev(it, 1)->pose.pose.position.y - it->pose.pose.position.y) < ROBOT_BODY_LENGTH) {
+            it->pose.pose.position.x -= 4 * ROBOT_BODY_FIX;
+            if (it->pose.pose.position.y > 0)
+                it->pose.pose.position.y += 4*ROBOT_BODY_FIX;
+            else
+                it->pose.pose.position.y -= 4*ROBOT_BODY_FIX;
+        }
+    }
+
+    /* check if the new curve that we have created is admissible */
+    if (isAdmissible(temp_path)) {
+        /* for debugging */
+        ROS_WARN("SECOND OPTIMIZATION SUCCESS!!!");
         bezier_path = temp_path;
     }
 }

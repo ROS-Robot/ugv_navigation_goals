@@ -393,8 +393,11 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
     cleanUpBezierPath(bezier_path);
 
-    /* Eliminate too steep ascension paths -- Final path optimization step */
+    /* Eliminate too steep ascension paths -- First path optimization step, on a path level */
     safetyOptimizationOfBezierPath(bezier_path);
+
+    /* Eliminate too steep ascension sub-paths -- Second path optimization step, on a waypoint level */
+    safetyOptimizationOfWaypoints(bezier_path);
 
     /* Print Bezier path */
     ROS_INFO("Bezier path (clean) (size = %ld):", bezier_path.size());
