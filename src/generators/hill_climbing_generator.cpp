@@ -62,7 +62,7 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     terrain.slope = 35.0;
     #endif
 
-    /* rotate negatively the start, goal and terrain margins */
+    // /* rotate negatively the start, goal and terrain margins */
     // rotatePointAboutYAxis(terrain.goal.position, 360.0-terrain.slope); rotatePointAboutYAxis(terrain.start.position, 360.0-terrain.slope);
     // rotatePointAboutYAxis(terrain.goal_left.position, 360.0-terrain.slope); rotatePointAboutYAxis(terrain.goal_right.position, 360.0-terrain.slope);
     // rotatePointAboutYAxis(terrain.start_left.position, 360.0-terrain.slope); rotatePointAboutYAxis(terrain.start_right.position, 360.0-terrain.slope);
