@@ -93,26 +93,26 @@ void evolutionaryAlgorithmGenerator(int argc, char *argv[]) {
     temp.x = 5.31 / std::cos(terrain.slope); temp.y = 0.83; terrain.lethal_obstacles.push_back(temp);
 #ifdef DEG_43_LEN_45
     // fourth lethal obstacles formation
-    temp.x = 20.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 21.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 19.8; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 21.1; temp.y = 0.95; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 20.5; temp.y = 0.75; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 20.8; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 20.8 / std::cos(terrain.slope); temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 21.8 / std::cos(terrain.slope); temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 19.8 / std::cos(terrain.slope); temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 21.1 / std::cos(terrain.slope); temp.y = 0.95; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 20.5 / std::cos(terrain.slope); temp.y = 0.75; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 20.8 / std::cos(terrain.slope); temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
     // fifth lethal obstacles formation
-    temp.x = 29.825; temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 29.9; temp.y = -0.67; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 29.7; temp.y = -0.6; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 30.0; temp.y = -0.7; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 30.1; temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 29.725; temp.y = -0.775; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.825 / std::cos(terrain.slope); temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.9 / std::cos(terrain.slope); temp.y = -0.67; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.7 / std::cos(terrain.slope); temp.y = -0.6; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 30.0 / std::cos(terrain.slope); temp.y = -0.7; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 30.1 / std::cos(terrain.slope); temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.725 / std::cos(terrain.slope); temp.y = -0.775; terrain.lethal_obstacles.push_back(temp);
     // sixth lethal obstacles formation
-    temp.x = 38.82; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 38.9; temp.y = 0.9; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 38.72; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 38.92; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 38.8; temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 38.75; temp.y = 0.75; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.82 / std::cos(terrain.slope); temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.9 / std::cos(terrain.slope); temp.y = 0.9; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.72 / std::cos(terrain.slope); temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.92 / std::cos(terrain.slope); temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.8 / std::cos(terrain.slope); temp.y = 0.85; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.75 / std::cos(terrain.slope); temp.y = 0.75; terrain.lethal_obstacles.push_back(temp);
 #endif
 
     /* Print lethal obstacles -- for documentation */
