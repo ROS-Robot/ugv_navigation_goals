@@ -6,13 +6,25 @@
 #include <stdlib.h>
 
 /* useful definitions */
+#define EXTENSIVE_SEARCH
 
-#define INIT_GENERATION_SIZE 100 // size of initial generation
-#define NUM_OF_BEST_FIT 2       // number of best-fits that survive generations
-#define MAX_GENERATIONS 800     // maximum number of generations of individuals to examine
-#define MAX_STAGNATED_GENS 6    // maximum number of acceptable generations with stagnated performance
-#define STAGNATION_RATE 0.01    // if difference <= 1% then we have a generation with stagnated performance
-#define NUM_OF_MUTATIONS 2      // number of mutations that take place during each evolution process
+#ifdef EXTENSIVE_SEARCH
+    /* extensive search */
+    #define INIT_GENERATION_SIZE 100    // size of initial generation
+    #define NUM_OF_BEST_FIT 2           // number of best-fits that survive generations
+    #define MAX_GENERATIONS 800         // maximum number of generations of individuals to examine
+    #define MAX_STAGNATED_GENS 6        // maximum number of acceptable generations with stagnated performance
+    #define STAGNATION_RATE 0.01        // if difference <= 1% then we have a generation with stagnated performance
+    #define NUM_OF_MUTATIONS 2          // number of mutations that take place during each evolution process
+#else
+    /* modest search */
+    #define INIT_GENERATION_SIZE 50     // size of initial generation
+    #define NUM_OF_BEST_FIT 2           // number of best-fits that survive generations
+    #define MAX_GENERATIONS 100         // maximum number of generations of individuals to examine
+    #define MAX_STAGNATED_GENS 6        // maximum number of acceptable generations with stagnated performance
+    #define STAGNATION_RATE 0.01        // if difference <= 1% then we have a generation with stagnated performance
+    #define NUM_OF_MUTATIONS 2          // number of mutations that take place during each evolution process
+#endif
 
 /* Evolutionary algorithm core functions */
 

@@ -4,7 +4,7 @@
 // #define DEG_35
 #define DEG_45
 // #define DEG_43_LEN_45
-#define VISUALIZE_LOGIC
+// #define VISUALIZE_LOGIC
 
 /* C++ ROS libraries */
 #include <ros/ros.h>

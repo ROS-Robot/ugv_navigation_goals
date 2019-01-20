@@ -289,7 +289,7 @@ void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path) {
 
     while (latest_local_start_idx != 0) {
         /* Step 1 -- Determine the start of the last local bezier curve */
-        ROS_INFO("Step 1");
+        // ROS_INFO("Step 1");
         for (long int i = latest_local_end_idx-2; i >= 0; i--) {    // because of the Bezier Curve degree, our path has at least 3 waypoints
             if ((i == 0) 
                 || ((temp_path.at(i+1).pose.pose.position.y > temp_path.at(i).pose.pose.position.y && temp_path.at(i-1).pose.pose.position.y > temp_path.at(i).pose.pose.position.y)
@@ -300,7 +300,7 @@ void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path) {
         }
 
         /* Step 2 -- Determine if optimization is needed */
-        ROS_INFO("Step 2");
+        // ROS_INFO("Step 2");
         long int counter = 0;
         for (long int i = latest_local_start_idx+1; i <= latest_local_end_idx; i++) {
             if (std::abs(std::abs(temp_path.at(i).pose.pose.position.y) - std::abs(temp_path.at(i-1).pose.pose.position.y)) < ROBOT_BODY_FIX) {
@@ -319,7 +319,7 @@ void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path) {
         }
 
         /* Step 3 -- Apply optimization */
-        ROS_INFO("Step 3: start = %ld, end = %ld", latest_local_start_idx, latest_local_end_idx);
+        // ROS_INFO("Step 3: start = %ld, end = %ld", latest_local_start_idx, latest_local_end_idx);
         /* determine the relative position of the Bezier Curve slope */
         bool goes_left = false;
         if (temp_path.at((latest_local_end_idx-latest_local_start_idx)/2).pose.pose.position.y > temp_path.at(latest_local_start_idx).pose.pose.position.y)
@@ -334,11 +334,11 @@ void safetyOptimizationOfBezierPath(std::vector<Waypoint> & bezier_path) {
     }
 
     /* Step 4 -- Check if the Bezier Path after the optimization is admissible */
-    ROS_INFO("Step 4");
+    // ROS_INFO("Step 4");
     /* check if the new curve that we have created is admissible */
     if (isAdmissible(temp_path)) {
         /* for debugging */
-        ROS_WARN("FIRST OPTIMIZATION SUCCESS!!!");
+        // ROS_WARN("FIRST OPTIMIZATION SUCCESS!!!");
         bezier_path = temp_path;
     }
 }
@@ -388,7 +388,7 @@ void safetyOptimizationOfWaypoints(std::vector<Waypoint> & bezier_path) {
     /* check if the new curve that we have created is admissible */
     if (isAdmissible(temp_path)) {
         /* for debugging */
-        ROS_WARN("SECOND OPTIMIZATION SUCCESS!!!");
+        // ROS_WARN("SECOND OPTIMIZATION SUCCESS!!!");
         bezier_path = temp_path;
     }
 }
@@ -593,11 +593,11 @@ double evaluateGeneticAlgorithmBezierCurve(std::vector<Waypoint> & bezier_curve,
 
     if (cost > terrain.worst_global_cost) terrain.worst_global_cost = cost;
 
-    ROS_WARN("EXPERIMENTAL STAGE CHECK");
+    // ROS_WARN("EXPERIMENTAL STAGE CHECK");
     /* if we can't survive while following this path, make sure that we are not going to choose it */
     if (!isAdmissible(bezier_curve)) {
         cost = std::numeric_limits<double>::max();
-        ROS_WARN("NON ADMISSIBLE CURVE cost = %lf", cost);
+        // ROS_WARN("NON ADMISSIBLE CURVE cost = %lf", cost);
     }
 
     ROS_WARN("evaluateGeneticAlgorithmBezierCurve cost = %f, s_norm_dev = %f, s_pitch = %f, s_roll = %f, s_arc = %f", cost, s_norm_dev, s_pitch, s_roll_neg+s_roll_pos, s_arc);
