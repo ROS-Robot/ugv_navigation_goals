@@ -14,7 +14,7 @@ int nBestGenerator(int argc, char *argv[]) {
     /* SET-UP */
     ros::init(argc, argv, "rulah_navigation_goals");
     ros::NodeHandle nodeHandle("~");
-    ROS_INFO("It's on N-BEST");
+    ROS_INFO("It's on N-BEST path generator");
 
     /* GET SIMULATION'S CONFIGURATIONS */
     std::string move_base_goals_topic, initial_pose_topic, move_base_status_topic, odom_topic, header_frame_id;
@@ -64,14 +64,15 @@ int nBestGenerator(int argc, char *argv[]) {
     #endif
 
     // incorporate lethal obstacles
+    int divisor = (std::cos(terrain.slope) ? 1 : (terrain.slope > 42.0 && terrain.slope < 46.0));
     geometry_msgs::Point temp;
-    temp.x = 1.6 / std::cos(terrain.slope); temp.y = -0.027; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 2.6 / std::cos(terrain.slope); temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 4.3 / std::cos(terrain.slope); temp.y = 1.6; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 1.6 / divisor; temp.y = -0.027; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 2.6 / divisor; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 4.3 / divisor; temp.y = 1.6; terrain.lethal_obstacles.push_back(temp);
     #ifdef DEG_43_LEN_45
-    temp.x = 20.8 / std::cos(terrain.slope); temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 29.825 / std::cos(terrain.slope); temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
-    temp.x = 38.82 / std::cos(terrain.slope); temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 20.8 / divisor; temp.y = 0.8; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 29.825 / divisor; temp.y = -0.675; terrain.lethal_obstacles.push_back(temp);
+    temp.x = 38.82 / divisor; temp.y = 0.82; terrain.lethal_obstacles.push_back(temp);
     #endif
 
     /* Print lethal obstacles -- for documentation */

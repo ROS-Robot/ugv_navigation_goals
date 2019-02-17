@@ -1,8 +1,9 @@
 /* computer & execution parameters -- in this file and not header file for faster compilation */
 // #define TEST_BEZIER
 // #define TEST_CALCULATIONS
-#define EVOLUTIONARY_ALGORITHM_GENERATION
+// #define EVOLUTIONARY_ALGORITHM_GENERATION
 // #define N_BEST_GENERATION
+// #define NAIVE_GENERATION
 
 #include "header.hpp"
 
@@ -21,6 +22,14 @@ int main(int argc, char *argv[]) {
     calculationsTest(argc, argv);
     return 0;
 }
+
+#elif defined( NAIVE_GENERATION )
+/* An naive waypoint generation algorithm implementation */
+
+int main(int argc, char *argv[]) {
+    naiveGenerator(argc, argv);
+    return 0;
+} 
 
 #elif defined( EVOLUTIONARY_ALGORITHM_GENERATION )
 /* An Evolutionary-algorithm based waypoint generation implementation */

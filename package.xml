@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>rulah_navigation_goals</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>The rulah_navigation_goals package</description>
 
   <maintainer email="yorgosk@todo.todo">yorgosk</maintainer>

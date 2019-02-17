@@ -471,7 +471,7 @@ double evaluateBezierCurve(std::vector<Waypoint> & bezier_curve, bool & has_wors
     double cost = 0.0, s_norm_dev = 0.0, s_pitch = 0.0, s_yaw = 0.0, s_roll_neg = 0.0,
             s_roll_pos = 0.0, s_arc = 0.0;
     /* for debugging, since we are working with quadratic Bezier curves */
-    assert(bezier_curve.size() >= 3);
+    // assert(bezier_curve.size() >= 3);    // commented for the implementation of the naive path generator
     
     for (std::vector<Waypoint>::iterator it = bezier_curve.begin(); it != bezier_curve.end(); ++it) {
         /* for debugging */

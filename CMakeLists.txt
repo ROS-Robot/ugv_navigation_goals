@@ -45,5 +45,6 @@ add_executable(rulah_navigation_goals
               src/generators/evolutionary_algorithm_generator.cpp
               src/generators/hill_climbing_generator.cpp
               src/generators/n_best_generator.cpp
+              src/generators/naive_generator.cpp
 )
 target_link_libraries(rulah_navigation_goals ${catkin_LIBRARIES})

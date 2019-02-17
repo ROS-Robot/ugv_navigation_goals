@@ -5,7 +5,7 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     /* SET-UP */
     ros::init(argc, argv, "rulah_navigation_goals");
     ros::NodeHandle nodeHandle("~");
-    ROS_INFO("It's on with HILL-CLIMBING");
+    ROS_INFO("It's on with HILL-CLIMBING path generator");
 
     /* GET SIMULATION'S CONFIGURATIONS */
     std::string move_base_goals_topic, initial_pose_topic, move_base_status_topic, odom_topic, header_frame_id;
@@ -69,9 +69,9 @@ void hillClimbingGenerator(int argc, char *argv[]) {
 
     // incorporate no obstacles (no obstacles needed for the hill climbing generator)
 
-    /* Print lethal obstacles -- for documentation */
-    for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
-        ROS_INFO("Lethal obstacle at (x, y) = (%f, %f)", it->x, it->y);
+    // /* Print lethal obstacles -- for documentation */
+    // for (std::vector<geometry_msgs::Point>::const_iterator it = terrain.lethal_obstacles.begin(); it != terrain.lethal_obstacles.end(); it++)
+    //     ROS_INFO("Lethal obstacle at (x, y) = (%f, %f)", it->x, it->y);
 
     /* create publishers and subscribers */
     ros::Publisher goals_pub = nodeHandle.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
@@ -132,7 +132,7 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     for (int r = rows-1; r >= 0; r -= 2) {
         double local_cost = 0.0, best_local_cost = std::numeric_limits<double>::max();
         bool has_worst_local_cost = false;
-        // take every possible combination of quadratic Bezier curve control points p1 and p2 from these two lines
+        // take every possible combination of quadratic Bezier curve control points p1 and p2 from these two rows
         std::vector<Waypoint> best_local_waypoints;
         for (int i = 0; i < cols; i++) {        // row 1 (lower)
             for (int j = 0; j < cols; j++) {    // row 2 (upper)
@@ -140,11 +140,11 @@ void hillClimbingGenerator(int argc, char *argv[]) {
                         p1_y = terrain.goal_left.position.y - (left_right_border + i * SEARCH_STEP),
                         p2_x = terrain.goal.position.x - (up_down_border + (r) * SEARCH_STEP),
                         p2_y = terrain.goal_left.position.y - (left_right_border + j * SEARCH_STEP);
-                        /* if we are in the last phase of our search make an effort to reach our goal instantly */
-                        if (r == 0 || r == 1) {
-                            p2_x = terrain.goal.position.x;
-                            p2_y = terrain.goal.position.y;
-                        }
+                /* if we are in the last phase of our search make an effort to reach our goal instantly */
+                if (r == 0 || r == 1) {
+                    p2_x = terrain.goal.position.x;
+                    p2_y = terrain.goal.position.y;
+                }
                 /* we don't want to go straight ahead, also take a chance to deal with equalities caused by grid resolution */
                 if ( i == j ||
                     (p2_x == p0.pose.pose.position.x && p2_y == p0.pose.pose.position.y) ||
@@ -277,7 +277,7 @@ void hillClimbingGenerator(int argc, char *argv[]) {
     bool has_worst_local_cost = false;
     ROS_INFO("Bezier path cost = %f, length = %f meters", evaluateBezierCurve(bezier_path, has_worst_local_cost), bezierPathLength(bezier_path));
 
-    /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred buring calculations */
+    /* Clean up the Bezier path from irrational sequences of waypoints that may have occurred during calculations */
     cleanUpBezierPath(bezier_path);
 
     /* Print Bezier path */

@@ -258,6 +258,8 @@ void printBezierPathDetails(const std::vector<Waypoint> & bezier_path);
 
 /* our paths generators */
 
+/* An naive waypoint generation algorithm implementation */
+void naiveGenerator(int argc, char *argv[]);
 /* A Hill-climbing based waypoint generation implementation */
 void hillClimbingGenerator(int argc, char *argv[]);
 /* An N-best based waypoint generation implementation */
